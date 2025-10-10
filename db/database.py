@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Boolean, Column
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 
@@ -22,4 +22,7 @@ engine = create_engine(
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-Base = declarative_base()
+class CustomBase(object):
+    is_deleted = Column(Boolean, nullable=False, default=False)
+
+Base = declarative_base(cls=CustomBase)
