@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Numeric, Boolean, String, DateTime, ForeignKey, Enum as SqlEnum, func
 from sqlalchemy.orm import relationship
-from database import Base
+from db.database import Base
 import enum
 
 class UserRole(enum.Enum):
@@ -120,7 +120,7 @@ class Reports(Base):
 
     report_id = Column(String, primary_key=True, nullable=False, index=True)
     user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
-    order_id = Column(String, ForeignKey("orders.order_id"), nullable=False)
+    order_id = Column(String, ForeignKey("orders.order_id"), nullable=False, unique=True)
     dasher_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     comment = Column(String, nullable=False)
 
