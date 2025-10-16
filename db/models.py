@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Numeric, Boolean, String, DateTime, ForeignKey, Enum as SqlEnum, func
 from sqlalchemy.orm import relationship
-from db.database import Base
+from database import Base
 import enum
 
 class UserRole(enum.Enum):
@@ -16,11 +16,21 @@ class OrderStatus(enum.Enum):
     dropped = "dropped"
 
 
+class ItemType(enum.Enum):
+    entree = "entree"
+    side = "side"
+    drink = "drink"
+    dessert = "dessert"
+    other = "other"
+
+
 class User(Base):
     __tablename__ = "users"
 
     user_id = Column(String, primary_key=True, index=True)
     campus_id = Column(String, nullable=False, unique=True, index=True)
+    email = Column(String, nullable=False, unique=True, index=True)
+    password = Column(String, nullable=False)
     first_name = Column(String, nullable=False, index=True)
     last_name = Column(String)
     role = Column(SqlEnum(UserRole), nullable=False, default=UserRole.user)
@@ -77,6 +87,7 @@ class Item(Base):
 
     item_id = Column(String, primary_key=True)
     name = Column(String, nullable=False, index=True)
+    item_type = Column(SqlEnum(ItemType), nullable=False)
     description = Column(String)
     price = Column(Numeric(10,2), nullable=False, index=True)
     picture = Column(String)

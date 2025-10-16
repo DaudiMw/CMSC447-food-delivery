@@ -1,19 +1,26 @@
-from db.repositories.base import BaseRepository
-from db.models import User
+from .base import BaseRepository
+from models import User, UserRole
 from sqlalchemy.orm import Session
 from typing import Optional, List
-from models import UserRole
 
 class UserRepository(BaseRepository[User]):
     def __init__(self, session: Session):
         # The __init__ method is still needed to pass the model and session to the base class.
         super().__init__(User, session)
+    
 
     def get_by_campus_id(self, campus_id: str) -> Optional[User]:
         """Get a student by their campus id."""
         return self.session.query(User).filter(
             self.model.is_deleted == False,
             User.campus_id == campus_id
+            ).one_or_none()
+
+    def get_by_email(self, email: str) -> Optional[User]:
+        """Get a student by their email."""
+        return self.session.query(User).filter(
+            self.model.is_deleted == False,
+            User.email == email
             ).one_or_none()
     
     def get_by_user_roles(self, role: UserRole) -> List[User]:
@@ -22,5 +29,29 @@ class UserRepository(BaseRepository[User]):
             self.model.is_deleted == False,
             self.model.role == role
             ).all()
+
+    def query_by_name_or_campus_id(self, query: str) -> List[User]:
+        """Use a query to find a user by name or campus id."""
+        return self.session.query(User).filter(
+            self.model.is_deleted == False,
+            self.model.name.ilike(f"%{query}%") | self.model.campus_id.ilike(f"%{query}%")
+        ).all()
+    
+    def query_by_name_or_campus_id_and_role(self, query: str, role: UserRole) -> List[User]:
+        """Use a query to find a user by name or campus id and role."""
+        return self.session.query(User).filter(
+            self.model.is_deleted == False,
+            (self.model.name.ilike(f"%{query}%") | self.model.campus_id.ilike(f"%{query}%")) &
+            self.model.role == role
+        ).all()
+    
+    def get_sorted_by_name(self) -> List[User]:
+        """Get all users sorted by their first and last name."""
+        return self.session.query(User).filter(
+            self.model.is_deleted == False
+        ).order_by(User.first_name, User.last_name).all()
+    
+
+     
     
     

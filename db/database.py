@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, Boolean, Column
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base, DeclarativeBase
 
 
 # Get the project root directory
@@ -16,6 +16,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL environment variable not set")
 
+# 
 engine = create_engine(
     DATABASE_URL, connect_args={"check_same_thread": False}
 )
@@ -26,3 +27,10 @@ class CustomBase(object):
     is_deleted = Column(Boolean, nullable=False, default=False)
 
 Base = declarative_base(cls=CustomBase)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
