@@ -35,7 +35,7 @@ class BaseRepository(Generic[ModelType]):
         """Create a new record."""
         obj = self.model(**kwargs)
         self.session.add(obj)
-        self.session.flush()
+        self.commit()
         self.session.refresh(obj)
         return obj
 
@@ -43,18 +43,19 @@ class BaseRepository(Generic[ModelType]):
         """Update an existing record."""
         for key, value in kwargs.items():
             setattr(obj, key, value)
+        self.commit()
         self.session.flush()
         return obj
 
     def delete(self, obj: ModelType) -> None:
         """Soft-delete an existing record."""
         obj.is_deleted = True
-        self.session.flush()
+        self.commit()
 
     def hard_delete(self, obj: ModelType) -> None:
         """Hard-delete an existing record."""
         self.session.delete(obj)
-        self.session.flush()
+        self.commit()
 
     def commit(self) -> None:
         """Commit the changes to the database."""

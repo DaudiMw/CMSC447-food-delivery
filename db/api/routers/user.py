@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
-from api.schemas.user_schemas import UserSchema, UserCreate
+from api.schemas.user_schemas import UserCreate
 
 router = APIRouter()
 
@@ -30,14 +30,13 @@ async def get_all_users(token : str = Depends(oauth2_scheme),
 
 @router.post("/")
 async def create_user(user: UserCreate, 
-                token : Annotated[str, Depends(oauth2_scheme)],
                 db : Session = Depends(get_db), 
                 status_code=201):
 
     user_repo = UserRepository(db)
 
     try:
-        new_user =user_repo.create(**user.dict())
+        new_user = user_repo.create(**user.dict())
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
