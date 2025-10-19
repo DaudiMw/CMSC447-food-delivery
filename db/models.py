@@ -37,6 +37,9 @@ class User(Base):
     role = Column(SqlEnum(UserRole), nullable=False, default=UserRole.user)
     is_banned = Column(Boolean, nullable=False, default=False)
     orders = relationship("Order", back_populates="user")
+    addresses = relationship("Address", back_populates="user")
+    pickups = relationship("Pickups", back_populates="user")
+    reports = relationship("Reports", back_populates="user")
 
 
 class Order(Base):
@@ -135,6 +138,16 @@ class Reports(Base):
     order_id = Column(String, ForeignKey("orders.order_id"), nullable=False, unique=True)
     dasher_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     comment = Column(String, nullable=False)
+
+class Address(Base):
+    __tablename__ = "addresses"
+
+    user_id = Column(String, ForeignKey("users.user_id"), nullable=False, primary_key=True)
+    address_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    street = Column(String, nullable=False)
+    city = Column(String, nullable=False)
+    state = Column(String, nullable=False)
+    zip = Column(String, nullable=False)
 
 
 

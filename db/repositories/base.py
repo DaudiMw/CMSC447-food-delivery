@@ -20,6 +20,32 @@ class BaseRepository(Generic[ModelType]):
             primary_key_column == id
         ).first()
     
+    
+    def update_by_id(self, id: str, **kwargs) -> Optional[ModelType]:
+        """Update a record by primary key, safely handling soft delete."""
+
+        primary_key_column = inspect(self.model).primary_key[0]
+
+        query = self.session.query(self.model).filter(primary_key_column == id)
+
+        # Add soft-delete filter only if the column exists
+        if hasattr(self.model, "is_deleted"):
+            query = query.filter(self.model.is_deleted == False)
+
+        obj = query.first()
+        if not obj:
+            return None
+
+        # Apply updates
+        for key, value in kwargs.items():
+            if hasattr(obj, key):
+                setattr(obj, key, value)
+
+        self.commit()
+        self.session.refresh(obj)
+        return obj
+    
+
     def get_by_multiple_ids(self, ids: List[str]) -> List[ModelType]:
         """Retrieve multiple records by their primary keys, ensuring they're not soft-deleted."""
         return self.session.query(self.model).filter(
@@ -47,14 +73,15 @@ class BaseRepository(Generic[ModelType]):
         self.session.flush()
         return obj
 
-    def delete(self, obj: ModelType) -> None:
+    def delete(self, primary_key: str) -> None:
         """Soft-delete an existing record."""
-        obj.is_deleted = True
+        self.session.query(self.model).filter(self.model.id == primary_key).update({"is_deleted": True})
         self.commit()
 
-    def hard_delete(self, obj: ModelType) -> None:
+
+    def hard_delete(self, primary_key: str) -> None:
         """Hard-delete an existing record."""
-        self.session.delete(obj)
+        self.session.query(self.model).filter(self.model.id == primary_key).delete()
         self.commit()
 
     def commit(self) -> None:
