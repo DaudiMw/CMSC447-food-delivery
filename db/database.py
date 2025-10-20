@@ -1,6 +1,7 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Boolean, Column
+from sqlalchemy import create_engine, Boolean, Column, text
 from sqlalchemy.orm import sessionmaker, declarative_base, DeclarativeBase
 
 
@@ -20,6 +21,18 @@ if not DATABASE_URL:
 engine = create_engine(
     DATABASE_URL, connect_args={"check_same_thread": False}
 )
+
+print("Using SQLite DB at:", Path(DATABASE_URL.replace("sqlite:///", "")).resolve())
+
+
+
+print("DB absolute path:", engine.url.database)
+
+with engine.connect() as conn:
+    rows = conn.execute(text('SELECT * FROM users')).fetchall()
+    print("rows in db:", len(rows))
+    print(rows[:3])
+
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

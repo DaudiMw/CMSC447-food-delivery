@@ -14,6 +14,8 @@ app = FastAPI(
 # Include all your routers
 app.include_router(user.router, prefix="/api/users", tags=["users"])
 
+app.include_router(auth.router, prefix="/api/auth", tags=["token"])
+
 @app.on_event("startup")
 def startup_event():
     create_db()

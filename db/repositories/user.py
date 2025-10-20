@@ -51,6 +51,27 @@ class UserRepository(BaseRepository[User]):
             self.model.is_deleted == False
         ).order_by(User.first_name, User.last_name).all()
     
+    def update_role(self, user_id: str, new_role: UserRole) -> User:
+        """Update a user's role."""
+        user = self.get_by_id(user_id)
+        if not user:
+            raise ValueError("User not found")
+        user.role = new_role
+        self.commit()
+        self.session.refresh(user)
+        return user
+    
+    def change_ban_status(self, user_id: str, new_status: bool) -> User:
+        """Change a user's ban status."""
+        user = self.get_by_id(user_id)
+        if not user:
+            raise ValueError("User not found")
+        
+        user.is_banned = new_status
+        self.commit()
+        self.session.refresh(user)
+        return user
+    
 
      
     

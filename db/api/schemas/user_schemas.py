@@ -38,6 +38,12 @@ class UserSummary(BaseSchema):
     last_name: Optional[str] = None
 
 
+class UserAuth(BaseSchema):
+    email: str
+    user_id: str
+    role: UserRole
+
+
 
 
 

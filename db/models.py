@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, Numeric, Boolean, String, DateTime, ForeignKey, Enum as SqlEnum, func
 from sqlalchemy.orm import relationship
+import uuid
 from database import Base
 import enum
 
@@ -27,7 +28,7 @@ class ItemType(enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    user_id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     campus_id = Column(String, nullable=False, unique=True, index=True)
     email = Column(String, nullable=False, unique=True, index=True)
     password = Column(String, nullable=False)
@@ -36,12 +37,15 @@ class User(Base):
     role = Column(SqlEnum(UserRole), nullable=False, default=UserRole.user)
     is_banned = Column(Boolean, nullable=False, default=False)
     orders = relationship("Order", back_populates="user")
+    addresses = relationship("Address", back_populates="user")
+    pickups = relationship("Pickups", back_populates="user")
+    reports = relationship("Reports", back_populates="user")
 
 
 class Order(Base):
     __tablename__ = "orders"
 
-    order_id = Column(String, primary_key=True, index=True)
+    order_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     address = Column(String, nullable=False)
     status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.pending)
@@ -59,7 +63,7 @@ class Order(Base):
 class OrderItems(Base):
     __tablename__ = "user_orders"
 
-    user_items_id = Column(String, primary_key=True, index=True, nullable=False)
+    user_items_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     order_id = Column(String, ForeignKey("orders.order_id"), nullable=False)
     item_id = Column(String, ForeignKey("items.item_id"), nullable=False)
 
@@ -67,7 +71,7 @@ class OrderItems(Base):
 class Store(Base):
     __tablename__ = "stores"
 
-    store_id = Column(String, primary_key=True, index=True)
+    store_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     name = Column(String, nullable=False, index=True)
     address = Column(String, nullable=False)
     phone = Column(String)
@@ -77,7 +81,7 @@ class Store(Base):
 class StoreOwners(Base):
     __tablename__ = "store_owners"
 
-    store_owners_id = Column(String, primary_key=True)
+    store_owners_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     owner_id = Column(String, ForeignKey("users.user_id"), nullable=False)
 
@@ -85,7 +89,7 @@ class StoreOwners(Base):
 class Item(Base):
     __tablename__ = "items"
 
-    item_id = Column(String, primary_key=True)
+    item_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     name = Column(String, nullable=False, index=True)
     item_type = Column(SqlEnum(ItemType), nullable=False)
     description = Column(String)
@@ -104,7 +108,7 @@ class Item(Base):
 class ItemInfo(Base):
     __tablename__ = "item_info"
 
-    item_info_id = Column(String, primary_key=True, index=True, nullable=False)
+    item_info_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     serving_size = Column(String)
     calories = Column(Integer)
     total_fat = Column(String)
@@ -120,7 +124,7 @@ class ItemInfo(Base):
 class Pickups(Base):
     __tablename__ = "pickups"
 
-    pickups_id = Column(String, primary_key=True, index=True, nullable=False)
+    pickups_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     order_id = Column(String, ForeignKey("orders.order_id"), nullable=False)
     dasher_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     scheduled_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -129,11 +133,21 @@ class Pickups(Base):
 class Reports(Base):
     __tablename__ = "reports"
 
-    report_id = Column(String, primary_key=True, nullable=False, index=True)
+    report_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     order_id = Column(String, ForeignKey("orders.order_id"), nullable=False, unique=True)
     dasher_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     comment = Column(String, nullable=False)
+
+class Address(Base):
+    __tablename__ = "addresses"
+
+    user_id = Column(String, ForeignKey("users.user_id"), nullable=False, primary_key=True)
+    address_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    street = Column(String, nullable=False)
+    city = Column(String, nullable=False)
+    state = Column(String, nullable=False)
+    zip = Column(String, nullable=False)
 
 
 
