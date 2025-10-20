@@ -87,6 +87,16 @@ def admin_required(current_user: UserAuth = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Forbidden")
     return current_user
 
+def dasher_required(current_user: UserAuth = Depends(get_current_user)):
+    if current_user.role != "admin" or current_user.role != "dasher":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return current_user
+
+def store_owner_required(current_user : UserAuth = Depends(get_current_user)):
+    if current_user.role != "store_owner" or current_user.role != "admin":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return current_user
+
 
 # async def get_current_active_user(current_user: UserCreate = Depends(get_current_user)):
 #     if current_user.is_banned or current_user.is_deleted:

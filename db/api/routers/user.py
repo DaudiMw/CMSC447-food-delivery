@@ -131,6 +131,9 @@ async def get_user_order_history(user_id: str, token: str = Depends(oauth2_schem
 async def change_password(user_id: str, new_password: str, db: Session = Depends(get_db)):
     """Change a user's password."""
 
+    if user.user_id != user_id:
+        raise HTTPException(status_code=403, detail="You do not have permission to update this user")
+    
     user_repo = UserRepository(db)
 
     try:
