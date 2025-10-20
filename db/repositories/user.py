@@ -72,6 +72,17 @@ class UserRepository(BaseRepository[User]):
         self.session.refresh(user)
         return user
     
+    def change_password(self, user_id: str, new_password: str) -> User:
+        """Change a user's password."""
+        user = self.get_by_id(user_id)
+        if not user:
+            raise ValueError("User not found")
+        
+        user.password = new_password
+        self.commit()
+        self.session.refresh(user)
+        return user 
+    
 
      
     

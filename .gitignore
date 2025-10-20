@@ -23,6 +23,8 @@ media
 # C extensions
 *.so
 
+GEMINI.md
+
 # Distribution / packaging
 .Python
 build/

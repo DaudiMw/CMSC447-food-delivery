@@ -1,23 +1,16 @@
-
-
 from fastapi import APIRouter, Depends, HTTPException
-from api.auth.auth import admin_required, get_current_user, get_password_hash
+from api.auth.auth import admin_required
 from db.models import UserRole
 from repositories.user import UserRepository
 from sqlalchemy.orm import Session
 from database import get_db
-from typing import Annotated
-from api.auth.auth import oauth2_scheme
 from api.schemas.user_schemas import UserCreate
 
 
-router = APIRouter()
+router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(admin_required)])
 
-@router.get("/users")
-async def list_all_users(response_model: list[UserCreate],
-                         token: str = Depends(oauth2_scheme), 
-                         db: Session = Depends(get_db),
-                         dependencies=[Depends(admin_required)]):
+@router.get("/users", response_model=list[UserCreate], status_code=200)
+async def list_all_users(db: Session = Depends(get_db)):
     """List all users."""
 
     try:
@@ -30,7 +23,6 @@ async def list_all_users(response_model: list[UserCreate],
     
 @router.get("users/{user_id}", response_model=UserCreate, status_code=200)
 async def get_user_by_id(user_id: str,
-                   dependencies=[Depends(admin_required)],
                    db : Session = Depends(get_db)):
     """Get a user by their ID."""
 
@@ -50,10 +42,8 @@ async def get_user_by_id(user_id: str,
 
 @router.patch("/users/{user_id}/role")
 async def update_user_role(user_id: str, 
-                           new_role: UserRole, 
-                           token: str = Depends(oauth2_scheme),
-                           db: Session = Depends(get_db),
-                           dependencies=[Depends(admin_required)]):
+                           new_role: UserRole,
+                           db: Session = Depends(get_db)):
     """Update a user's role."""
 
     try:
@@ -67,9 +57,7 @@ async def update_user_role(user_id: str,
 
 @router.patch("/users/{user_id}/ban")
 async def ban_user(user_id: str, 
-                   token: str = Depends(oauth2_scheme),
-                    db: Session = Depends(get_db),
-                   dependencies=[Depends(admin_required)]):
+                    db: Session = Depends(get_db)):
     """Ban a user."""
 
     try:
@@ -84,9 +72,7 @@ async def ban_user(user_id: str,
     
 @router.get("/users/search")
 async def search_users(query: str, 
-                       token: str = Depends(oauth2_scheme),
-                       db: Session = Depends(get_db),
-                       dependencies=[Depends(admin_required)]):
+                       db: Session = Depends(get_db)):
     """Search for users by name or campus ID."""
     
     try:

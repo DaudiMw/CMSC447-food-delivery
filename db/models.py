@@ -11,10 +11,11 @@ class UserRole(enum.Enum):
     user = "user"
 
 class OrderStatus(enum.Enum):
-    pending = "pending"
-    accepted = "accepted"
-    completed = "completed"
-    dropped = "dropped"
+    initialized = "initialized" # Order just created in cart but not paid for
+    pending = "pending" # Order has been paid for and waiting to be picked by a dasher
+    accepted = "accepted" # Order has been picked by a dasher
+    completed = "completed" # Delivery was completed.
+    dropped = "dropped" # Order was picked up but delivery was not completed.
 
 
 class ItemType(enum.Enum):
@@ -48,7 +49,7 @@ class Order(Base):
     order_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     address = Column(String, nullable=False)
-    status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.pending)
+    status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.initialized)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
