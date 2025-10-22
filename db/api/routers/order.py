@@ -1,14 +1,18 @@
 from datetime import datetime
+from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from api.auth.auth import oauth2_scheme
 from db.api.schemas.order_schemas import OrderSchema
-from models import OrderStatus
+from db.api.schemas.user_schemas import UserAuth
+from models import Order, OrderStatus
 from db.database import get_db
 from sqlalchemy.orm import Session
 from api.auth.auth import get_current_user, admin_required
 from db.repositories.orders import OrderRepository
 
 router = APIRouter(prefix="orders", tags=["orders"], dependencies=[Depends(oauth2_scheme)])
+
+user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
 
 @router.get("/{order_id}")
@@ -32,20 +36,21 @@ async def get_order(order_id: str, token : str = Depends(oauth2_scheme), db : Se
     return order
 
 @router.post("/")
-async def create_order(order: OrderSchema, token: str = Depends(oauth2_scheme), db : Session = Depends(get_db)):
+async def create_order(order: OrderSchema, user: user_dependency, db : Session = Depends(get_db)):
     """Create a new order."""
 
 
     order_repo = OrderRepository(db)
 
-    user = await get_current_user(token)
-
     order.user_id = user.user_id
     order.created_at = str(datetime.now())
     order.updated_at = str(datetime.now())
 
+    if not admin_required(user) and user.user_id != order.user_id:
+        raise HTTPException(status_code=403, detail="You do not have permission to create an order for this user")
+    
     try:
-        order_repo.create(**order.dict())
+        order = order_repo.create(**order.dict())
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -53,30 +58,37 @@ async def create_order(order: OrderSchema, token: str = Depends(oauth2_scheme), 
     return order
 
 
-@router.put("/{order_id}", response_model=OrderSchema, status_code=200)
+@router.put("/{user_id}/{order_id}", response_model=OrderSchema, status_code=200)
 async def update_order(order_id: str, 
-                      order: OrderSchema, 
-                      token : str = Depends(oauth2_scheme), 
-                      db : Session = Depends(get_db)):
+                       user: user_dependency,
+                       order_data: OrderSchema, 
+                       db : Session = Depends(get_db)):
     """Update an order by its ID."""
 
     order_repo = OrderRepository(db)
 
-    user = await get_current_user(token)
+    db_order = order_repo.get_by_id(order_id)
 
-    if not (admin_required(user) or user.user_id == order.user_id):
+    if not db_order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if not (admin_required(user) or user.user_id == db_order.user_id):
         raise HTTPException(status_code=403, detail="You do not have permission to update this order")
     
+    if db_order.status.value != OrderStatus.initialized:
+        raise HTTPException(status_code=400, detail="Order has already been paid for")
+
+    update_data = order_data.dict(exclude_unset=True)
+
     try:
-        order_repo.update_by_id(order_id, **order.dict())
+        updated_order = order_repo.update_by_id(order_id, **update_data)
+        return updated_order
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-    return order
 
-@router.delete("/{order_id}", status_code=200)
-async def delete_order(order_id: str, token : str = Depends(oauth2_scheme), db : Session = Depends(get_db)):
+@router.delete("/{user_id}/{order_id}", status_code=200)
+async def delete_order(order_id: str, user: user_dependency, token : str = Depends(oauth2_scheme), db : Session = Depends(get_db)):
     """Delete an order by its ID."""
 
     order_repo = OrderRepository(db)
@@ -94,7 +106,7 @@ async def delete_order(order_id: str, token : str = Depends(oauth2_scheme), db :
     
     try:
         # We will hard-delete orders that have not been paid for yet.
-        if order.status == OrderStatus.initialized:
+        if order.status.value == OrderStatus.initialized:
             order_repo.hard_delete(order_id)
         else:
             order_repo.update_by_id(order_id, is_deleted=True)

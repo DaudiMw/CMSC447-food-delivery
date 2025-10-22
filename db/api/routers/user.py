@@ -7,9 +7,11 @@ from sqlalchemy.orm import Session
 from database import get_db
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
-from api.schemas.user_schemas import UserCreate
+from api.schemas.user_schemas import UserCreate, UserAuth
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(oauth2_scheme)], prefix="/users", tags=["users"])
+
+user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
 @router.get("/me", response_model=UserCreate)
 async def read_users_me(current_user: UserCreate = Depends(get_current_user)):
@@ -39,11 +41,10 @@ async def create_user(user: UserCreate,
 
 @router.put("/{user_id}", response_model=UserCreate, status_code=200)
 async def update_user(user_id: str, 
-                      token : str = Depends(oauth2_scheme), 
+                      user: user_dependency,
                       db : Session = Depends(get_db)):
     """Update a user by their ID."""
-    
-    user = await get_current_user(token)
+
 
     if user.user_id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to update this user")
@@ -60,14 +61,12 @@ async def update_user(user_id: str,
 
 @router.delete("/{user_id}", status_code=204)
 async def delete_user(user_id: str, 
-                      token : str = Depends(oauth2_scheme), 
+                      user : user_dependency,
                       db : Session = Depends(get_db)):
     """Delete a user by their ID. We will perform a hard-delete
         because emails need to be unique and we cannot keep old records with potentially
         duplicate emails if a user tries to create a new account using an email from a deleted account."""
     
-    user = await get_current_user(token)
-
     if not (admin_required(user) or user.user_id == user_id):
         raise HTTPException(status_code=403, detail="You do not have permission to delete this user")
     
@@ -83,10 +82,14 @@ async def delete_user(user_id: str,
 
 
 @router.get("/{user_id}/cart", response_model=list[OrderShow])
-async def get_user_cart(user_id: str, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def get_user_cart(user_id: str, user: user_dependency, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """Get a user's cart."""
 
     order_repo = OrderRepository(db)
+
+    if user.user_id != user_id:
+        raise HTTPException(status_code=403, detail="You do not have permission to view this user's cart")
+    
 
     try:
         orders = order_repo.get_by_user_id_ordered_by_date(user_id)
@@ -128,7 +131,7 @@ async def get_user_order_history(user_id: str, token: str = Depends(oauth2_schem
     
 
 @router.get("/{user_id}/password")
-async def change_password(user_id: str, new_password: str, db: Session = Depends(get_db)):
+async def change_password(user_id: str, user: user_dependency, new_password: str, db: Session = Depends(get_db)):
     """Change a user's password."""
 
     if user.user_id != user_id:

@@ -48,9 +48,10 @@ class BaseRepository(Generic[ModelType]):
 
     def get_by_multiple_ids(self, ids: List[str]) -> List[ModelType]:
         """Retrieve multiple records by their primary keys, ensuring they're not soft-deleted."""
+        primary_key_column = inspect(self.model).primary_key[0]
         return self.session.query(self.model).filter(
             self.model.is_deleted == False,
-            self.model.id.in_(ids)
+            primary_key_column.in_(ids)
         ).all()
 
     def get_all(self) -> List[ModelType]:
@@ -75,13 +76,15 @@ class BaseRepository(Generic[ModelType]):
 
     def delete(self, primary_key: str) -> None:
         """Soft-delete an existing record."""
-        self.session.query(self.model).filter(self.model.id == primary_key).update({"is_deleted": True})
+        primary_key_column = inspect(self.model).primary_key[0]
+        self.session.query(self.model).filter(primary_key_column == primary_key).update({"is_deleted": True})
         self.commit()
 
 
     def hard_delete(self, primary_key: str) -> None:
         """Hard-delete an existing record."""
-        self.session.query(self.model).filter(self.model.id == primary_key).delete()
+        primary_key_column = inspect(self.model).primary_key[0]
+        self.session.query(self.model).filter(primary_key_column == primary_key).delete()
         self.commit()
 
     def commit(self) -> None:
