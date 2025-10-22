@@ -1,0 +1,21 @@
+.content {
+    background-color: gold;
+    height: 100vh;
+}
+
+.header {
+    background-color: black;
+    width: 100vw;
+    height: 55px;
+    position: fixed;
+}
+
+.button {
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
+    position: absolute;
+    font-size: x-large;
+    right: 400px;
+    top: 5px;
+    border:rgba(0, 0, 0, 0);
+}
