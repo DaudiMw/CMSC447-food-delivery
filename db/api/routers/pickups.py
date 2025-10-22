@@ -1,14 +1,12 @@
-from db.api.schemas.user_schemas import UserAuth
-from db.repositories.pickups import PickUpsRepository
+from api.schemas.user_schemas import UserAuth
+from repositories.pickups import PickUpsRepository
 from fastapi import APIRouter, Depends, HTTPException
 from api.auth.auth import get_current_user, dasher_required
-from repositories.user import UserRepository
 from sqlalchemy.orm import Session
 from database import get_db
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
-from schemas.pickup_schema import PickUpSchema
-
+from api.schemas.pickup_schemas import PickUpSchema
 
 router = APIRouter(prefix="/pickups", tags=["pickups"], dependencies=[Depends(dasher_required), Depends(oauth2_scheme)])
 

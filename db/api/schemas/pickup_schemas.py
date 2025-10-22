@@ -1,7 +1,7 @@
 
 
 
-from db.api.schemas.base_schema import BaseSchema
+from api.schemas.base_schema import BaseSchema
 
 
 class PickUpSchema(BaseSchema):

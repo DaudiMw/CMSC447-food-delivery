@@ -2,15 +2,15 @@ from datetime import datetime
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from api.auth.auth import oauth2_scheme
-from db.api.schemas.order_schemas import OrderSchema
-from db.api.schemas.user_schemas import UserAuth
-from models import Order, OrderStatus
-from db.database import get_db
+from api.schemas.order_schemas import OrderSchema
+from api.schemas.user_schemas import UserAuth
+from models import OrderStatus
+from database import get_db
 from sqlalchemy.orm import Session
 from api.auth.auth import get_current_user, admin_required
-from db.repositories.orders import OrderRepository
+from repositories.orders import OrderRepository
 
-router = APIRouter(prefix="orders", tags=["orders"], dependencies=[Depends(oauth2_scheme)])
+router = APIRouter(prefix="/orders", tags=["orders"], dependencies=[Depends(oauth2_scheme)])
 
 user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 

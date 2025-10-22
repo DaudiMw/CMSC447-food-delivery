@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from api.auth.auth import admin_required, get_current_user, get_password_hash
-from db.models import UserRole
+from models import UserRole
 from repositories.user import UserRepository
 from sqlalchemy.orm import Session
 from database import get_db
