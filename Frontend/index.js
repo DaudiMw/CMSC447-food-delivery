@@ -13,10 +13,23 @@ class BasePage extends React.Component {
     }
 }
 
+class HomePage extends React.Component {
+    render() {
+        return (
+            <div className="homepage">
+
+            </div>
+        )
+    }
+}
+
 class MyApp extends React.Component {
     render() {
         return (
-            <BasePage />
+            <div>
+                <BasePage />
+                <HomePage />
+            </div>
         )
     }
 };
