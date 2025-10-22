@@ -23,7 +23,7 @@ async def list_all_users(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("users/{user_id}", response_model=UserCreate, status_code=200)
+@router.get("/users/{user_id}", response_model=UserCreate, status_code=200)
 async def get_user_by_id(user_id: str,
                    db : Session = Depends(get_db)):
     """Get a user by their ID."""

@@ -35,7 +35,7 @@ async def get_order(order_id: str, token : str = Depends(oauth2_scheme), db : Se
     
     return order
 
-@router.post("/")
+@router.post("", status_code=201, response_model=OrderSchema)
 async def create_order(order: OrderSchema, user: user_dependency, db : Session = Depends(get_db)):
     """Create a new order."""
 

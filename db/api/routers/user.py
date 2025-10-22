@@ -17,7 +17,7 @@ user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 async def read_users_me(current_user: UserCreate = Depends(get_current_user)):
     return current_user
 
-@router.post("/")
+@router.post("", response_model=UserCreate, status_code=201)
 async def create_user(user: UserCreate, 
                 db : Session = Depends(get_db), 
                 status_code=201):
@@ -130,7 +130,7 @@ async def get_user_order_history(user_id: str, token: str = Depends(oauth2_schem
         raise HTTPException(status_code=500, detail=str(e))
     
 
-@router.get("/{user_id}/password")
+@router.post("/{user_id}/password")
 async def change_password(user_id: str, user: user_dependency, new_password: str, db: Session = Depends(get_db)):
     """Change a user's password."""
 
