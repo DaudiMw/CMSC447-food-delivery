@@ -1,14 +1,15 @@
 from fastapi import FastAPI
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from db_setup import create_db
 from api.routers import user
 from api.auth import auth
 
 app = FastAPI(
-    title="Your API",
-    description="Your API Description",
-    version="1.0.0"
+    title = "Your API",
+    description = "Your API Description",
+    version = "1.0.0"
 )
 
 # Include all your routers

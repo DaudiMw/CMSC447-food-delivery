@@ -36,7 +36,7 @@ class User(Base):
     last_name = Column(String)
     role = Column(SqlEnum(UserRole), nullable=False, default=UserRole.user)
     is_banned = Column(Boolean, nullable=False, default=False)
-    orders = relationship("Order", back_populates="user")
+    """orders = relationship("Order", back_populates="user")"""
 
 
 class Order(Base):
@@ -49,7 +49,7 @@ class Order(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
-    user = relationship("User", back_populates="orders")
+    """user = relationship("User", back_populates="orders")"""
 
     items = relationship(
         "Item",
