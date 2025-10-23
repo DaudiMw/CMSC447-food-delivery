@@ -1,0 +1,36 @@
+.basepage {
+    background-color: rgb(253, 181, 21);
+    height: 100vh;
+}
+
+.banner {
+    background-color: black;
+    width: 100vw;
+    height: 55px;
+    position: fixed;
+}
+
+.restaurantButton {
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
+    position: absolute;
+    font-size: x-large;
+    font-family: "InterVariable", "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-optical-sizing: auto;
+    right: 400px;
+    top: 6.9px;
+    border:rgba(0, 0, 0, 0);
+}
+
+.homepage {
+    color: green;
+    height: 100vw;
+}
+
+.logo {
+    position: absolute;
+    top: 6.9px;
+    left: 10px;
+    width: 180px;
+    height: auto;
+}
