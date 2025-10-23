@@ -14,21 +14,27 @@ class BasePage extends React.Component {
 }
 
 class HomePage extends React.Component {
+    constructor(props) {
+        super(props);
+    }
     render() {
+        this.data = this.props.GetData()
         return (
             <div className="homepage">
-
             </div>
         )
     }
 }
 
 class MyApp extends React.Component {
+    FetchRestaurantData = () => {
+        return;
+    }
     render() {
         return (
             <div>
                 <BasePage />
-                <HomePage />
+                <HomePage GetData={this.FetchRestaurantData} />
             </div>
         )
     }
