@@ -5,6 +5,9 @@ from pydantic import BaseModel
 from db_setup import create_db
 from api.routers import user
 from api.auth import auth
+from api.routers import admin
+from api.routers import order
+from api.routers import pickups
 
 app = FastAPI(
     title = "Your API",
@@ -13,7 +16,15 @@ app = FastAPI(
 )
 
 # Include all your routers
-app.include_router(user.router, prefix="/api/users", tags=["users"])
+app.include_router(user.router, tags=["users"])
+
+app.include_router(auth.router, tags=["token"])
+
+app.include_router(admin.router, tags=["admin"])
+
+app.include_router(order.router, tags=["orders"])
+
+app.include_router(pickups.router, tags=["pickups"])
 
 @app.on_event("startup")
 def startup_event():

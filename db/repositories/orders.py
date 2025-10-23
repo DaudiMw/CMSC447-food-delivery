@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models import Item, Order, OrderStatus
-from base import BaseRepository
+from models import Order, OrderStatus
+from repositories.base import BaseRepository
 
 
 class OrderRepository(BaseRepository[Order]):

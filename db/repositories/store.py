@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlalchemy.orm import Session
-from models import Store
+from models import Store, StoreOwners
 from base import BaseRepository
 
 
@@ -34,6 +34,14 @@ class StoreRepository(BaseRepository[Store]):
         return self.session.query(Store).filter(
             self.model.is_deleted == False
         ).order_by(Store.created_at).all()
+    
+    def get_store_owner(self, user_id, store_id, query: str) -> list[StoreOwners]:
+        return self.session.query(StoreOwners).filter(
+            self.model.is_deleted == False,
+            query == StoreOwners.store_id,
+            query == StoreOwners.user_id
+        ).order_by(StoreOwners.store_id).all()
+
     
 
     

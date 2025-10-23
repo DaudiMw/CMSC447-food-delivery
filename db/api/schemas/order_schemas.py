@@ -12,3 +12,14 @@ class OrderSchema(BaseSchema):
     created_at: str
     updated_at: str
     items: list["ItemSchema"]
+
+
+class OrderShow(BaseSchema):
+    address: str
+    status: str
+    created_at: str
+    updated_at: str
+    items: list["ItemSchema"]
+
+
+
