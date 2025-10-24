@@ -125,8 +125,30 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
             headers={"WWW-Authenticate": "Bearer"},
             )
     
-    token = create_access_token(data={"sub": user.email, "role": user.role, "user_id": user.user_id})
+    token = create_access_token(data={"sub": user.email, "role": user.role.value, "user_id": user.user_id})
     # Create an access token for the authenticated user
     return {"access_token": token, "token_type": "bearer"}
+
+
+@router.post("/signup", response_model=UserCreate, status_code=201)
+async def create_user(user: UserCreate, 
+                db : Session = Depends(get_db), 
+                status_code=201):
+    """Create a new user."""
+
+    user_repo = UserRepository(db)
+
+    try:
+        # Hash the password before saving
+        user_data = user.dict()
+        user_data["password"] = get_password_hash(user_data["password"])
+
+        new_user = user_repo.create(**user_data)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+    return new_user
     
     

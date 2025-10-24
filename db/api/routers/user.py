@@ -17,28 +17,6 @@ user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 async def read_users_me(current_user: UserCreate = Depends(get_current_user)):
     return current_user
 
-@router.post("", response_model=UserCreate, status_code=201)
-async def create_user(user: UserCreate, 
-                db : Session = Depends(get_db), 
-                status_code=201):
-    """Create a new user."""
-
-    user_repo = UserRepository(db)
-
-    try:
-        # Hash the password before saving
-        user_data = user.dict()
-        user_data["password"] = get_password_hash(user_data["password"])
-
-        new_user = user_repo.create(**user_data)
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-
-    return new_user
-
-
 @router.put("/{user_id}", response_model=UserCreate, status_code=200)
 async def update_user(user_id: str, 
                       user: user_dependency,
