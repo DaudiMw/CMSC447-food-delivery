@@ -3,6 +3,7 @@ from fastapi import Depends, HTTPException, status, APIRouter
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from api.schemas.user_schemas import UserAuth, UserSchema, UserCreate
+from repositories.store import StoreRepository
 from models import UserRole
 from repositories.user import UserRepository
 from sqlalchemy.orm import Session
@@ -92,11 +93,14 @@ def dasher_required(current_user: UserAuth = Depends(get_current_user)):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return current_user
 
-def store_owner_required(current_user : UserAuth = Depends(get_current_user)):
-    if current_user.role != "store_owner" or current_user.role != "admin":
+def is_store_owner(store_id, current_user : UserAuth = Depends(get_current_user)):
+    db = Session()
+    store_repo = StoreRepository(db)
+    store_owners_list = store_repo.get_store_owner(current_user.user_id, store_id)
+    if store_owners_list.empty():
+        return True
+    else:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    return current_user
-
 
 # async def get_current_active_user(current_user: UserCreate = Depends(get_current_user)):
 #     if current_user.is_banned or current_user.is_deleted:

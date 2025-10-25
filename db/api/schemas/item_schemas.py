@@ -26,3 +26,13 @@ class ItemInfoSchema(BaseSchema):
     added_sugars: str | None = None
     protein: str | None = None
     ingredients: str | None = None
+
+
+class ItemCreateSchema(BaseSchema):
+    name: str
+    item_type: str
+    description: str | None = None
+    price: float
+    picture: str | None = None
+    store_id: str
+    info_id: str | None = None

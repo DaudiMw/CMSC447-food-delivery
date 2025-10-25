@@ -37,7 +37,6 @@ class User(Base):
     last_name = Column(String)
     role = Column(SqlEnum(UserRole), nullable=False, default=UserRole.user)
     is_banned = Column(Boolean, nullable=False, default=False)
-    is_deleted = Column(Boolean, nullable=False, default=False)  # Add this if you're using it
     
     # Relationships
     orders = relationship("Order", back_populates="user", foreign_keys="Order.user_id")
@@ -168,8 +167,8 @@ class Reports(Base):
 class Address(Base):
     __tablename__ = "addresses"
 
-    user_id = Column(String, ForeignKey("users.user_id"), nullable=False, primary_key=True)
     address_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    user_id = Column(String, ForeignKey("users.user_id"), nullable=False, primary_key=True)
     street = Column(String, nullable=False)
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)

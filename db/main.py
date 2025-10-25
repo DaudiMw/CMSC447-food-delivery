@@ -6,6 +6,8 @@ from api.auth import auth
 from api.routers import admin
 from api.routers import order
 from api.routers import pickups
+from utils import BaseFactory
+
 
 app = FastAPI(
     title="Your API",

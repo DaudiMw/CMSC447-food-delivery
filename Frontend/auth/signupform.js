@@ -12,6 +12,7 @@ function SignupForm() {
     const [error, setError] = React.useState('');
     const [loading, setLoading] = React.useState(false);
 
+
     const Signup = async (userData) => {
         try {
             const response = await fetch(`${API_BASE_URL}/signup`, {
