@@ -49,6 +49,7 @@ class Order(Base):
 
     order_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
+    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     address = Column(String, nullable=False)
     status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.initialized)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -129,6 +130,7 @@ class Pickups(Base):
     pickups_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     order_id = Column(String, ForeignKey("orders.order_id"), nullable=False)
     dasher_id = Column(String, ForeignKey("users.user_id"), nullable=False)
+    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     scheduled_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     completed_at = Column(DateTime, default=None)
 
@@ -138,6 +140,7 @@ class Reports(Base):
     report_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     order_id = Column(String, ForeignKey("orders.order_id"), nullable=False, unique=True)
+    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     dasher_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     comment = Column(String, nullable=False)
 

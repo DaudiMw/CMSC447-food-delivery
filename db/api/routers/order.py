@@ -35,6 +35,16 @@ async def get_order(order_id: str, token : str = Depends(oauth2_scheme), db : Se
     
     return order
 
+@router.get("/{order_id}")
+async def get_store_orders(store_id: str, db: Session = Depends(get_db)):
+
+    order_repo = OrderRepository(db)
+
+    order = order_repo.get_by_store(store_id)
+
+    if not order or order.is_deleted:
+        raise HTTPException(status_code=404, detail="Order not found")
+
 @router.post("", status_code=201, response_model=OrderSchema)
 async def create_order(order: OrderSchema, user: user_dependency, db : Session = Depends(get_db)):
     """Create a new order."""

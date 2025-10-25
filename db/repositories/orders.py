@@ -28,6 +28,12 @@ class OrderRepository(BaseRepository[Order]):
             self.model.is_deleted == False
         ).order_by(Order.created_at).all()
     
+    def get_by_store(self, store_id: str) -> list[Order]:
+        """Gets all orders from a store"""
+        return self.session.query(Order).filter(
+            self.model.store_id == store_id
+        ).all()
+    
     def get_by_user_id_ordered_by_date(self, user_id: str) -> list[Order]:
         """Get all orders for a given user ID ordered by date."""
         return self.session.query(Order).filter(

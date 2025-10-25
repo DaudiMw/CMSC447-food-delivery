@@ -41,7 +41,3 @@ class StoreRepository(BaseRepository[Store]):
             query == StoreOwners.store_id,
             query == StoreOwners.user_id
         ).order_by(StoreOwners.store_id).all()
-
-    
-
-    
