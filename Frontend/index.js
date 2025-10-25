@@ -17,10 +17,20 @@ class HomePage extends React.Component {
     constructor(props) {
         super(props);
     }
+
     render() {
-        this.data = this.props.GetData()
+        let data = GetRestaurants();
+        const restaurants = document.getElementById("restaurants");
+        if (restaurants != null) {
+            data.forEach(element => {
+                const newDiv = document.createElement('div');
+                newDiv.textContent = element;
+                restaurants.appendChild(newDiv);
+            });
+        }
         return (
             <div className="homepage">
+                <div className="restaurants"></div>
             </div>
         )
     }
@@ -28,13 +38,13 @@ class HomePage extends React.Component {
 
 class MyApp extends React.Component {
     FetchRestaurantData = () => {
-        return;
+        return ["Chick-Fil-A", "Starbucks"];
     }
     render() {
         return (
             <div>
                 <BasePage />
-                <HomePage GetData={this.FetchRestaurantData} />
+                <HomePage GetRestaurants={this.FetchRestaurantData} />
             </div>
         )
     }
