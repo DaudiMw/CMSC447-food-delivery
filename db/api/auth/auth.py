@@ -98,6 +98,7 @@ def store_owner_required(current_user : UserAuth = Depends(get_current_user)):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return current_user
 
+<<<<<<< HEAD
 def is_store_owner(store_id, current_user : UserAuth = Depends(get_current_user)):
     db = Session()
     store_repo = StoreRepository(db)
@@ -106,6 +107,9 @@ def is_store_owner(store_id, current_user : UserAuth = Depends(get_current_user)
         return True
     else:
         raise HTTPException(status_code=401, detail="Unauthorized")
+=======
+
+>>>>>>> a5443b679ab58f9e31a24e8cdef396becd993efd
 # async def get_current_active_user(current_user: UserCreate = Depends(get_current_user)):
 #     if current_user.is_banned or current_user.is_deleted:
 #         raise HTTPException(status_code=400, detail="Inactive user")
