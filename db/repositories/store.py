@@ -33,7 +33,15 @@ class StoreRepository(BaseRepository[Store]):
         """Get all stores ordered by time created."""
         return self.session.query(Store).filter(
             self.model.is_deleted == False
-        ).order_by(Store.created_at).all()
+        ).order_by(self.model.created_at).all()
+    
+    def get_store_owner(self, user_id: str, store_id: str) -> list[StoreOwners]:
+        """Get store by its owner."""
+        return self.session.query(StoreOwners).filter(
+            StoreOwners.is_deleted == False,
+            StoreOwners.owner_id == user_id,
+            StoreOwners.store_id == store_id
+        ).all()
     
     def get_store_owner(self, user_id, store_id, query: str) -> list[StoreOwners]:
         return self.session.query(StoreOwners).filter(

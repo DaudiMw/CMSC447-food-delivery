@@ -23,8 +23,9 @@ media
 # C extensions
 *.so
 
-frontend/
 GEMINI.md
+
+node_modules/
 
 # Distribution / packaging
 .Python

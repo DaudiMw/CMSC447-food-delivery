@@ -28,7 +28,7 @@ class OrderRepository(BaseRepository[Order]):
             self.model.is_deleted == False
         ).order_by(Order.created_at).all()
     
-    def get_by_store(self, store_id: str) -> list[Order]:
+    def get_by_store_id(self, store_id: str) -> list[Order]:
         """Gets all orders from a store"""
         return self.session.query(Order).filter(
             self.model.store_id == store_id
