@@ -19,7 +19,7 @@ class HomePage extends React.Component {
     }
 
     render() {
-        let data = GetRestaurants();
+        let data = this.props.GetRestaurants();
         const restaurants = document.getElementById("restaurants");
         if (restaurants != null) {
             data.forEach(element => {
