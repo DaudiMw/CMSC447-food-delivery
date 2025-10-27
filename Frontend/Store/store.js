@@ -13,31 +13,34 @@ function ItemDisplay({
 
   return (
     <>
-      <div className="flex overflow-hidden rounded-xl bg-white shadow-md hover:shadow-lg transition-shadow h-40">
-        {/* Image on the left - full height */}
-        <div className="flex w-40 flex-shrink-0 items-center justify-center bg-gray-200 text-gray-500">
+    <div className="flex flex-col sm:flex-row overflow-hidden rounded-xl bg-white shadow-md hover:shadow-lg transition-shadow">
+        {/* Image */}
+        <div className="flex h-48 sm:h-auto w-full sm:w-40 flex-shrink-0 items-center justify-center bg-gray-200 text-gray-500">
           <p className="text-sm font-medium">Image</p>
         </div>
         
-        {/* Content in the middle */}
-        <div className="flex flex-col justify-center p-4 flex-grow">
-          <h4 className="text-lg font-bold text-gray-900 mb-1">{name}</h4>
-          <p className="text-sm text-gray-600 mb-2">{description}</p>
-          <p className="text-xl font-bold text-gray-900">${price}</p>
-        </div>
+        {/* Content section */}
+        <div className="flex flex-col sm:flex-row flex-grow">
+          {/* Text content */}
+          <div className="flex flex-col justify-center p-4 flex-grow">
+            <h4 className="text-lg font-bold text-gray-900 mb-1">{name}</h4>
+            <p className="text-sm text-gray-600 mb-2 line-clamp-2">{description}</p>
+            <p className="text-xl font-bold text-gray-900">${price}</p>
+          </div>
 
-        {/* Buttons on the right */}
-        <div className="flex flex-col justify-center gap-2 p-4 w-32 flex-shrink-0">
-          <button className="rounded-lg border border-green-700 bg-gradient-to-r from-amber-400 to-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:shadow-md active:scale-95">
-            Add to Cart
-          </button>
-          
-          <button
-            onClick={() => setShowNutrition(true)}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 active:scale-95"
-          >
-            Details
-          </button>
+          {/* Buttons - stack on mobile, vertical on desktop */}
+          <div className="flex sm:flex-col justify-stretch sm:justify-center gap-2 p-4 sm:w-32 flex-shrink-0">
+            <button className="flex-1 sm:flex-none rounded-lg border border-green-700 bg-gradient-to-r from-amber-400 to-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:shadow-md active:scale-95">
+              Add to Cart
+            </button>
+            
+            <button
+              onClick={() => setShowNutrition(true)}
+              className="flex-1 sm:flex-none rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 active:scale-95"
+            >
+              Details
+            </button>
+          </div>
         </div>
       </div>
 
@@ -53,10 +56,11 @@ function ItemDisplay({
 }
 
 function NutritionModal({ onClose, nutrition_info, itemName }) {
-  return (
+  // The JSX for your modal remains the same
+  const modalContent = (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -73,6 +77,12 @@ function NutritionModal({ onClose, nutrition_info, itemName }) {
         <ItemInfoDisplay nutrition_info={nutrition_info} />
       </div>
     </div>
+  );
+
+  // Use the portal to render the modal content into the 'modal-root' div
+  return ReactDOM.createPortal(
+    modalContent,
+    document.getElementById('modal-root')
   );
 }
 
@@ -213,19 +223,26 @@ function StorePage({ store_id }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
-      {/* Hero Section - Compact at top */}
+      {/* Hero Section - Company Image */}
       <div className="relative w-full bg-gradient-to-br from-amber-500 via-yellow-500 to-orange-400">
         <div className="px-6 py-12">
-          <div className="max-w-5xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-              {store.name || 'Store'}
-            </h1>
-            <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
-              <p className="text-xl md:text-2xl text-gray-800">Open-Close</p>
-              <p className="text-lg md:text-xl text-gray-800">
-                {store.address || 'Address'}
-              </p>
-            </div>
+          <div className="max-w-5xl mx-auto flex items-center justify-center">
+            <p className="text-xl font-semibold text-gray-700">Company Image</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Store Info Section */}
+      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 px-6 py-8">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
+            {store.name || 'Store'}
+          </h1>
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+            <p className="text-xl md:text-2xl text-gray-800">Open-Close</p>
+            <p className="text-lg md:text-xl text-gray-800">
+              {store.address || 'Address'}
+            </p>
           </div>
         </div>
       </div>
