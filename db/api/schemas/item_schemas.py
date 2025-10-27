@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 from api.schemas.base_schema import BaseSchema
 
@@ -16,7 +17,7 @@ class ItemSchema(BaseSchema):
 class ItemInfoSchema(BaseSchema):
     item_info_id: str
     serving_size: str | None = None
-    calories: int | None = None
+    calories: int
     total_fat: str | None = None
     cholesterol: str | None = None
     sodium: str | None = None
@@ -26,6 +27,9 @@ class ItemInfoSchema(BaseSchema):
     added_sugars: str | None = None
     protein: str | None = None
     ingredients: str | None = None
+
+class ItemSchemaWithInfo(ItemSchema):
+    nutrition_info: Optional[ItemInfoSchema] = None
 
 
 class ItemCreateSchema(BaseSchema):

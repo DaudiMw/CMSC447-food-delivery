@@ -1,32 +1,33 @@
 // index.js - Simple hash-based routing (no React Router needed)
 
 function App() {
-  const [currentPage, setCurrentPage] = React.useState(window.location.hash || '#/');
+  // const [currentPage, setCurrentPage] = React.useState(window.location.hash || '#/');
 
-  React.useEffect(() => {
-    const handleHashChange = () => {
-      setCurrentPage(window.location.hash || '#/');
-    };
+  // React.useEffect(() => {
+  //   const handleHashChange = () => {
+  //     setCurrentPage(window.location.hash || '#/');
+  //   };
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  //   window.addEventListener('hashchange', handleHashChange);
+  //   return () => window.removeEventListener('hashchange', handleHashChange);
+  // }, []);
 
-  const renderPage = () => {
-    switch(currentPage) {
-      case '#/':
-      case '#/login':
-        return <LoginPage />;
-      case '#/signup':
-        return <SignupPage />;
-      case '#/dashboard':
-        return <DashboardPage />;
-      default:
-        return <LoginPage />;
-    }
-  };
+  // const renderPage = () => {
+  //   switch(currentPage) {
+  //     case '#/':
+  //     case '#/login':
+  //       return <LoginPage />;
+  //     case '#/signup':
+  //       return <SignupPage />;
+  //     case '#/dashboard':
+  //       return <DashboardPage />;
+  //     default:
+  //       return <LoginPage />;
+  //   }
+  // };
 
-  return renderPage();
+  // return renderPage();
+  return <StorePage store_id={'5426ff85-e5ae-42f3-8dc7-bead81ecac08'} />
 }
 
 // Login Page Component

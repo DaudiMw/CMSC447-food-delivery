@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from api.schemas.base_schema import BaseSchema
 from api.schemas.order_schemas import OrderSchema
-from api.schemas.item_schemas import ItemSchema
+from api.schemas.item_schemas import ItemSchema, ItemSchemaWithInfo
 
 
 class StoreSchema(BaseSchema):
@@ -23,5 +23,5 @@ class StoreWithItemsSchema(StoreSchema):
     address: str
     phone: str | None = None
     created_at: datetime | None = None
-    items: list[ItemSchema] = []
+    items: list[ItemSchemaWithInfo] = []
 
