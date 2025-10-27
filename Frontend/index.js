@@ -4,9 +4,13 @@ class BasePage extends React.Component {
             <div className="basepage">
                 <div className="banner">
                     <img className="logo" src="UMBCLogo.png"></img>
-                    <button className="restaurantButton">
+                    <button className="bannerButton restaurantButton">
                         Restaurants
                     </button>
+                    <button className="bannerButton ordersButton">
+                        View Orders
+                    </button>
+                    <input type="image" className="settings" src="settings.png"></input>
                 </div>
             </div>
         )
