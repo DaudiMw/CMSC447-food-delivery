@@ -30,6 +30,18 @@ function App() {
   return <StorePage store_id={'5426ff85-e5ae-42f3-8dc7-bead81ecac08'} />
 }
 
+
+
+function AppWithProvider () {
+
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  );
+}
+
 // Login Page Component
 function LoginPage() {
   return (
@@ -105,4 +117,4 @@ function DashboardPage() {
 
 // Render the app
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+root.render(<App/>);
