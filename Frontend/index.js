@@ -63,7 +63,7 @@ function AppWithProvider () {
 //       <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
 //         <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
 //           <h1 className="text-center mb-4">Login</h1>
-//           <LoginForm />
+//           <LoginForm setPage={props.setPage}/>
 //           <p className="text-center mt-3">
 //             Don't have an account? <a href="#/signup" className="text-primary" style={{textDecoration: 'none'}}>Sign Up</a>
 //           </p>
@@ -77,6 +77,7 @@ class BasePage extends React.Component {
     render() {
         return (
             <div className="basepage">
+                {this.props.page}
                 <div className="banner">
                     <img className="logo" src="images/UMBCLogo.png"></img>
                     <button className="bannerButton restaurantButton">
@@ -104,6 +105,7 @@ class HomePage extends React.Component {
         data.forEach(element => {
             const newDiv = document.createElement('div');
             newDiv.textContent = element;
+            newDiv.className = "restaurant";
             restaurants.appendChild(newDiv);
         });
     }
@@ -111,7 +113,9 @@ class HomePage extends React.Component {
     render() {
         return (
             <div className="homepage">
-                <div className="restaurants"></div>
+                <div className="restaurants">
+                    <header className="restaurantTitle">Restaurants</header>
+                </div>
             </div>
         )
     }
@@ -120,22 +124,21 @@ class HomePage extends React.Component {
 class MyApp extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {page: "Signup"};
+        this.state = {page: "Home"};
     }
 
     setPage = (id) => {
         this.setState({
             page: id
         });
-        console.log(`MyApp.setPage(name: ${this.state.page})`);
+        console.log(`MyApp.setPage(name: ${id})`);
     }
 
     getPage() {
         if (this.state.page == "Home") {
             return (
                 <div>
-                    <HomePage GetRestaurants={this.FetchRestaurantData}></HomePage>
-                    <BasePage setPage={this.setPage} />
+                    <BasePage setPage={this.setPage} page={<HomePage GetRestaurants={this.FetchRestaurantData}></HomePage>}></BasePage>
                 </div>);
         }
         else if (this.state.page == "Signup") {
@@ -147,7 +150,7 @@ class MyApp extends React.Component {
     }
 
     FetchRestaurantData = () => {
-        return ["Chick-Fil-A", "Starbucks"];
+        return ["Chick-Fil-A", "Starbucks", "Taco Bell"];
     }
 
     render() {
@@ -186,7 +189,7 @@ class SignupPage extends React.Component {
         <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
           <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
             <h1 className="text-center mb-4">Sign Up</h1>
-            <SignupForm />
+            <SignupForm setPage={this.props.setPage}/>
             <p className="text-center mt-3">
               Already have an account? <a href="#/login" className="text-primary" style={{textDecoration: 'none'}}>Login</a>
             </p>
