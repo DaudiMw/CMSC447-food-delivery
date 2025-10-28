@@ -11,7 +11,7 @@ from api.auth.auth import oauth2_scheme
 from db.api.schemas.store_schemas import StoreCreate, StoreSchema
 
 
-router = APIRouter(prefix="/stoes", tags=["stores"], dependencies=[Depends(oauth2_scheme)])
+router = APIRouter(prefix="/stores", tags=["stores"], dependencies=[Depends(oauth2_scheme)])
 
 user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
@@ -59,6 +59,8 @@ async def update_store(store: StoreSchema,
         updated_store = store_repo.update(store.store_id, **store.dict())
 
         return updated_store
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 

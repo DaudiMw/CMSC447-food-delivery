@@ -1,7 +1,7 @@
 from typing import Optional
 from sqlalchemy.orm import Session
 from models import Store, StoreOwners
-from base import BaseRepository
+from repositories.base import BaseRepository
 
 
 class StoreRepository(BaseRepository[Store]):

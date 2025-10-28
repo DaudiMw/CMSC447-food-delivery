@@ -94,10 +94,39 @@ function SignupPage() {
 // Placeholder Dashboard
 function DashboardPage() {
   return (
+    <>
+    <ul class="navbar bg-dark">
+      <a class="navbar-brand">
+        <img src="./images/UMBCLogo.png" width="30%" height="30%"/>
+      </a>
+      <li class="nav-item">
+        <a class="nav-link link-light" href="#/restaurants">Restaurants</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link link-light" href="#/orders">Orders</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link link-light" href="#/settings">Settings</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link link-light" href="#/cart">
+          <img src="./images/Shopping cart.png" width="50%" height="50%"/>
+        </a>
+      </li>
+    </ul>
     <div className="container mt-5">
       <h1>Dashboard</h1>
       <p>Welcome to your dashboard!</p>
       <a href="#/login" className="btn btn-primary">Logout</a>
+    </div>
+    </>
+  );
+}
+
+function CartPage() {
+  return (
+    <div>
+      
     </div>
   );
 }
