@@ -67,11 +67,13 @@
 .restaurants {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 50px;
+    grid-auto-rows: 300px;
     column-count: 2;
     column-width: auto;
     column-rule-style: solid;
     column-rule-width: 5px;
-    height: auto;
+    height: 130vh;
     width: 70%;
     left: 15%;
     top: 30px;
