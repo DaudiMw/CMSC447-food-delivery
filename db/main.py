@@ -10,7 +10,6 @@ from api.routers import store
 from utils import BaseFactory
 
 
-
 app = FastAPI(
     title = "Your API",
     description = "Your API Description",

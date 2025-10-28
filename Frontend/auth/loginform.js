@@ -44,7 +44,8 @@ function LoginForm() {
             }
             
             console.log('Login successful:', data);
-            window.location.href = 'dashboard.html';
+           React.Router.push('/dashboard');
+
             
         } catch (error) {
             setError(error.message || 'Login failed. Please check your credentials.');
