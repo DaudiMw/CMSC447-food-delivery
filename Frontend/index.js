@@ -11,6 +11,7 @@ class BasePage extends React.Component {
                         View Orders
                     </button>
                     <input type="image" className="settings" src="settings.png"></input>
+                    <input type="image" className="search" src="search.png"></input>
                 </div>
             </div>
         )
