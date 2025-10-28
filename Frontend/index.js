@@ -1,7 +1,6 @@
-<<<<<<< HEAD
 // index.js - Simple hash-based routing (no React Router needed)
 
-function App() {
+/* function App() {
   const [currentPage, setCurrentPage] = React.useState(window.location.hash || '#/');
 
   React.useEffect(() => {
@@ -24,32 +23,32 @@ function App() {
         return <DashboardPage />;
       default:
         return <LoginPage />;
-=======
-class BasePage extends React.Component {
-    render() {
-        return (
-            <div className="basepage">
-                <div className="banner">
-                    <img className="logo" src="UMBCLogo.png"></img>
-                    <button className="bannerButton restaurantButton">
-                        Restaurants
-                    </button>
-                    <button className="bannerButton ordersButton">
-                        View Orders
-                    </button>
-                    <input type="image" className="settings" src="settings.png"></input>
-                    <input type="image" className="search" src="search.png"></input>
-                </div>
-            </div>
-        )
->>>>>>> 8b57fce9318d968eb17d8144a96ac6d79b47a310
     }
   };
 
   return renderPage();
-}
+} */
 
-<<<<<<< HEAD
+class BasePage extends React.Component {
+  render() {
+      return (
+          <div className="basepage">
+              <div className="banner">
+                  <img className="logo" src="UMBCLogo.png"></img>
+                  <button className="bannerButton restaurantButton">
+                      Restaurants
+                  </button>
+                  <button className="bannerButton ordersButton">
+                      View Orders
+                  </button>
+                  <input type="image" className="settings" src="settings.png"></input>
+                  <input type="image" className="search" src="search.png"></input>
+              </div>
+          </div>
+      )
+  }
+};
+
 // Login Page Component
 function LoginPage() {
   return (
@@ -111,7 +110,7 @@ function SignupPage() {
     </div>
   );
 }
-=======
+
 class HomePage extends React.Component {
     constructor(props) {
         super(props);
@@ -149,7 +148,6 @@ class MyApp extends React.Component {
         )
     }
 };
->>>>>>> 8b57fce9318d968eb17d8144a96ac6d79b47a310
 
 // Placeholder Dashboard
 function DashboardPage() {
