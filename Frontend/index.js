@@ -86,6 +86,7 @@ class BasePage extends React.Component {
                         View Orders
                     </button>
                     <input type="image" className="settings" src="settings.png"></input>
+                    <input type="image" className="search" src="search.png"></input>
                 </div>
             </div>
         )
@@ -97,16 +98,17 @@ class HomePage extends React.Component {
         super(props);
     }
 
-    render() {
+    componentDidMount() {
         let data = this.props.GetRestaurants();
-        const restaurants = document.getElementById("restaurants");
-        if (restaurants != null) {
-            data.forEach(element => {
-                const newDiv = document.createElement('div');
-                newDiv.textContent = element;
-                restaurants.appendChild(newDiv);
-            });
-        }
+        const restaurants = document.getElementsByClassName("restaurants")[0];
+        data.forEach(element => {
+            const newDiv = document.createElement('div');
+            newDiv.textContent = element;
+            restaurants.appendChild(newDiv);
+        });
+    }
+
+    render() {
         return (
             <div className="homepage">
                 <div className="restaurants"></div>
