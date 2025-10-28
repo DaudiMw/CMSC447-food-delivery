@@ -44,7 +44,7 @@ function LoginForm() {
             }
             
             console.log('Login successful:', data);
-            window.location.href = '#/dashboard';
+            window.location.href = 'dashboard.html';
             
         } catch (error) {
             setError(error.message || 'Login failed. Please check your credentials.');

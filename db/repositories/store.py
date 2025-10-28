@@ -1,7 +1,10 @@
 from typing import Optional
 from sqlalchemy.orm import Session
-from models import Store, StoreOwners
+from models import Item, Store, StoreOwners
 from repositories.base import BaseRepository
+from api.schemas.store_schema import StoreWithItemsSchema
+from sqlalchemy.orm import joinedload
+
 
 
 class StoreRepository(BaseRepository[Store]):
@@ -34,6 +37,28 @@ class StoreRepository(BaseRepository[Store]):
         return self.session.query(Store).filter(
             self.model.is_deleted == False
         ).order_by(self.model.created_at).all()
+    
+    def get_store_owner(self, user_id: str, store_id: str) -> list[StoreOwners]:
+        """Get store by its owner."""
+        return self.session.query(StoreOwners).filter(
+            StoreOwners.is_deleted == False,
+            StoreOwners.owner_id == user_id,
+            StoreOwners.store_id == store_id
+        ).all()
+    
+    def get_store_with_items(self, store_id: str):
+        """Get a single store and all its related items."""
+        
+        # Your query is already perfect for this!
+        # It fetches the store and eagerly loads all nested relationships.
+        store = self.session.query(Store).options(
+            joinedload(Store.items).joinedload(Item.nutrition_info)
+        ).filter(
+            Store.store_id == store_id,
+            Store.is_deleted == False
+        ).first()
+        
+        return store
     
     def get_store_owner(self, user_id: str, store_id: str) -> list[StoreOwners]:
         """Get store by its owner."""

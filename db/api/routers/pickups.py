@@ -9,7 +9,6 @@ from api.auth.auth import oauth2_scheme
 from api.schemas.pickup_schemas import PickUpSchema
 
 router = APIRouter(prefix="/pickups", tags=["pickups"], dependencies=[Depends(dasher_required), Depends(oauth2_scheme)])
-
 user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
 @router.get("/{user_id}", response_model=list[PickUpSchema])

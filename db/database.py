@@ -28,10 +28,10 @@ print("Using SQLite DB at:", Path(DATABASE_URL.replace("sqlite:///", "")).resolv
 
 print("DB absolute path:", engine.url.database)
 
-"""with engine.connect() as conn:
-    rows = conn.execute(text('SELECT * FROM users')).fetchall()
-    print("rows in db:", len(rows))
-    print(rows[:3])"""
+# with engine.connect() as conn:
+#     rows = conn.execute(text('SELECT * FROM users')).fetchall()
+#     print("rows in db:", len(rows))
+#     print(rows[:3])
 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
