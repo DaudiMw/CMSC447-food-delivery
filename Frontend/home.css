@@ -56,6 +56,61 @@
     overflow-y: scroll;
 }
 
+.settingsPage {
+    position: absolute;
+    top: 55px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0);
+    overflow-y: scroll;
+}
+
+.ordersPage {
+    position: absolute;
+    top: 55px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0);
+    overflow-y: scroll;
+}
+
+.orders {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 100px;
+    column-count: 2;
+    column-width: auto;
+    column-rule-style: solid;
+    column-rule-width: 5px;
+    height: 130vh;
+    width: 90%;
+    left: 5%;
+    top: 30px;
+    position: absolute;
+    background-color: white;
+    border-radius: 20px;
+}
+
+.ordersGridTitle {
+    grid-column: 1 / span 2;
+    margin-top: 10px;
+    text-align: left;
+    text-indent: 35px;
+    font-size: xx-large;
+    font-weight: 650;
+}
+
+.ordersList {
+    display: grid;
+    grid-auto-rows: 100px;
+}
+
+.orderButtons {
+    display: grid;
+    column-count: 1;
+    grid-template-rows: 200px;
+}
+
 .logo {
     position: absolute;
     top: 6.9px;

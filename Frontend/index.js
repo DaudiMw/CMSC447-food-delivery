@@ -73,20 +73,69 @@ function AppWithProvider () {
 //   );
 // }
 
+class OrdersPage extends React.Component {
+    componentDidMount() {
+        let data = this.props.GetOrders();
+        const orderList = document.getElementsByClassName("ordersList")[0];
+        data.forEach(element => {
+            const orderDiv = document.createElement('div');
+            orderDiv.className = "order";
+
+            const right = document.createElement('div');
+            right.className = "orderRight";
+            orderDiv.appendChild(right);
+
+            const middle = document.createElement('div');
+            middle.className = "orderMiddle";
+            middle.textContent = "Description"
+            orderDiv.appendChild(middle);
+
+            const image = document.createElement('img');
+            image.className = "orderImage";
+            orderDiv.appendChild(image);
+        })
+    }
+
+    render() {
+        return (
+            <div className="ordersPage">
+                <div className="orders">
+                    <header className="ordersGridTitle">
+                        Your Orders
+                    </header>
+                    <div className="ordersList">
+                    </div>
+                    <div className="orderButtons"></div>
+                </div>
+            </div>
+        )
+    }
+}
+
+class SettingsPage extends React.Component {
+    render() {
+        return (
+            <div className="settingsPage">
+                Settings
+            </div>
+        )
+    }
+}
+
 class BasePage extends React.Component {
     render() {
         return (
             <div className="basepage">
                 {this.props.page}
                 <div className="banner">
-                    <img className="logo" src="images/UMBCLogo.png"></img>
+                    <input type="image" className="logo" src="images/UMBCLogo.png" onClick={() => this.props.setPage("Home")}></input>
                     <button className="bannerButton restaurantButton">
                         Restaurants
                     </button>
-                    <button className="bannerButton ordersButton">
+                    <button className="bannerButton ordersButton" onClick={() => this.props.setPage("Orders")}>
                         View Orders
                     </button>
-                    <input type="image" className="settings" src="settings.png" onClick={() => this.props.setPage("Signup")}></input>
+                    <input type="image" className="settings" src="settings.png" onClick={() => this.props.setPage("Settings")}></input>
                     <input type="image" className="search" src="search.png"></input>
                 </div>
             </div>
@@ -152,6 +201,20 @@ class MyApp extends React.Component {
                     <BasePage setPage={this.setPage} page={<HomePage GetRestaurants={this.FetchRestaurantData}></HomePage>}></BasePage>
                 </div>);
         }
+        else if (this.state.page == "Orders") {
+            return (
+                <div>
+                    <BasePage setPage={this.setPage} page={<OrdersPage GetOrders={this.GetOrders}></OrdersPage>}></BasePage>
+                </div>
+            )
+        }
+        else if (this.state.page == "Settings") {
+            return (
+                <div>
+                    <BasePage setPage={this.setPage} page={<SettingsPage></SettingsPage>}></BasePage>
+                </div>
+            )
+        }
         else if (this.state.page == "Signup") {
             return (
                 <div>
@@ -162,6 +225,10 @@ class MyApp extends React.Component {
 
     FetchRestaurantData = () => {
         return ["Chick-Fil-A", "Starbucks", "Taco Bell"];
+    }
+
+    FetchOrders = () => {
+        return ["Order 1", "Order 2", "Order 3"];
     }
 
     render() {
