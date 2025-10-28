@@ -1,6 +1,6 @@
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
-function LoginForm() {
+function LoginForm(props) {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [error, setError] = React.useState('');
@@ -45,6 +45,7 @@ function LoginForm() {
             
             console.log('Login successful:', data);
             window.location.href = 'dashboard.html';
+            props.setPage("Home");
             
         } catch (error) {
             setError(error.message || 'Login failed. Please check your credentials.');

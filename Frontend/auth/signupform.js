@@ -2,7 +2,7 @@
 
 const API_BASE_URL = 'http://127.0.0.1:8000'; // Update with your actual API URL
 
-function SignupForm() {
+function SignupForm(props) {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [confirmPassword, setConfirmPassword] = React.useState('');
@@ -63,6 +63,7 @@ function SignupForm() {
             
             // Redirect to login page
             window.location.hash = '#/login';
+            props.setPage("Home");
             
         } catch (error) {
             setError(error.message || 'Signup failed. Please try again.');

@@ -78,14 +78,14 @@ class BasePage extends React.Component {
         return (
             <div className="basepage">
                 <div className="banner">
-                    <img className="logo" src="UMBCLogo.png"></img>
+                    <img className="logo" src="images/UMBCLogo.png"></img>
                     <button className="bannerButton restaurantButton">
                         Restaurants
                     </button>
                     <button className="bannerButton ordersButton">
                         View Orders
                     </button>
-                    <input type="image" className="settings" src="settings.png"></input>
+                    <input type="image" className="settings" src="settings.png" onClick={() => this.props.setPage("Signup")}></input>
                     <input type="image" className="search" src="search.png"></input>
                 </div>
             </div>
@@ -118,49 +118,83 @@ class HomePage extends React.Component {
 }
 
 class MyApp extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {page: "Signup"};
+    }
+
+    setPage = (id) => {
+        this.setState({
+            page: id
+        });
+        console.log(`MyApp.setPage(name: ${this.state.page})`);
+    }
+
+    getPage() {
+        if (this.state.page == "Home") {
+            return (
+                <div>
+                    <HomePage GetRestaurants={this.FetchRestaurantData}></HomePage>
+                    <BasePage setPage={this.setPage} />
+                </div>);
+        }
+        else if (this.state.page == "Signup") {
+            return (
+                <div>
+                    <SignupPage setPage={this.setPage}></SignupPage>
+                </div>);
+        }
+    }
 
     FetchRestaurantData = () => {
         return ["Chick-Fil-A", "Starbucks"];
     }
+
     render() {
+        const pageNode = this.getPage();
         return (
             <div>
-                <BasePage />
-                <HomePage GetRestaurants={this.FetchRestaurantData} />
+                {pageNode}
             </div>
-        )
+        );
     }
 };
 
 // Signup Page Component
-function SignupPage() {
-  return (
-    <div style={{
-      backgroundImage: "url('images/maryland-flag-black-gray.jpg')", 
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      height: "100vh",
-      position: "relative"
-    }}>
+class SignupPage extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return (
       <div style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)"
-      }}></div>
-      <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
-        <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
-          <h1 className="text-center mb-4">Sign Up</h1>
-          <SignupForm />
-          <p className="text-center mt-3">
-            Already have an account? <a href="#/login" className="text-primary" style={{textDecoration: 'none'}}>Login</a>
-          </p>
+        backgroundImage: "url('images/maryland-flag-black-gray.jpg')", 
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        height: "100vh",
+        position: "relative"
+      }}>
+        <div style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.5)"
+        }}></div>
+        <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
+          <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
+            <h1 className="text-center mb-4">Sign Up</h1>
+            <SignupForm />
+            <p className="text-center mt-3">
+              Already have an account? <a href="#/login" className="text-primary" style={{textDecoration: 'none'}}>Login</a>
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 // Placeholder Dashboard
