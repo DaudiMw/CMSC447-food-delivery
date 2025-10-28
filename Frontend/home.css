@@ -102,13 +102,60 @@
 
 .ordersList {
     display: grid;
-    grid-auto-rows: 100px;
+    grid-auto-rows: 175px;
+    row-gap: 50px;
+    height: 100%;
+    width: 100%;
 }
 
 .orderButtons {
     display: grid;
     column-count: 1;
     grid-template-rows: 200px;
+}
+
+.order {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    left: 5%;
+}
+
+.orderRight {
+    position: absolute;
+    background-color: rgb(217, 217, 217);
+    height: 100%;
+    width: 100%;
+    border-radius: 20px;
+}
+
+.orderMiddle {
+    display: grid;
+    column-count: 2;
+    grid-template-columns: 2fr 3fr;
+    position: absolute;
+    background-color: rgb(230, 230, 230);
+    height: 100%;
+    width: 50%;
+    border-radius: 20px;
+    left: 18%;
+    place-items: center;
+    text-align: right;
+}
+
+.orderInfo {
+    background-color: rgb(109, 109, 109);
+    width: 90%;
+    height: 70%;
+    border-radius: 20px;
+}
+
+.orderImage {
+    position: absolute;
+    background-color: rgb(109, 109, 109);
+    height: 100%;
+    width: 20%;
+    border-radius: 20px;
 }
 
 .logo {

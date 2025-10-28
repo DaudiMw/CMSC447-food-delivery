@@ -89,10 +89,16 @@ class OrdersPage extends React.Component {
             middle.className = "orderMiddle";
             middle.textContent = "Description"
             orderDiv.appendChild(middle);
+            const info = document.createElement('div');
+            info.className = "orderInfo";
+            info.textContent = "Status: Pending\nTotal: &XX.XX"
+            middle.appendChild(info);
 
             const image = document.createElement('img');
             image.className = "orderImage";
             orderDiv.appendChild(image);
+
+            orderList.appendChild(orderDiv);
         })
     }
 
@@ -204,7 +210,7 @@ class MyApp extends React.Component {
         else if (this.state.page == "Orders") {
             return (
                 <div>
-                    <BasePage setPage={this.setPage} page={<OrdersPage GetOrders={this.GetOrders}></OrdersPage>}></BasePage>
+                    <BasePage setPage={this.setPage} page={<OrdersPage GetOrders={this.FetchOrders}></OrdersPage>}></BasePage>
                 </div>
             )
         }
