@@ -103,10 +103,21 @@ class HomePage extends React.Component {
         let data = this.props.GetRestaurants();
         const restaurants = document.getElementsByClassName("restaurants")[0];
         data.forEach(element => {
-            const newDiv = document.createElement('div');
-            newDiv.textContent = element;
-            newDiv.className = "restaurant";
-            restaurants.appendChild(newDiv);
+            const restaurantDiv = document.createElement('div');
+            restaurantDiv.className = "restaurant";
+            
+            const restaurantTitle = document.createElement('div');
+            restaurantTitle.className = "restaurantTitle";
+            restaurantTitle.textContent = element;
+            restaurantDiv.appendChild(restaurantTitle);
+
+            for (let i = 0; i < 4; i++) {
+                const popularItem = document.createElement('div');
+                popularItem.className = "popularItem";
+                restaurantDiv.appendChild(popularItem);
+            }
+
+            restaurants.appendChild(restaurantDiv);
         });
     }
 
@@ -114,7 +125,7 @@ class HomePage extends React.Component {
         return (
             <div className="homepage">
                 <div className="restaurants">
-                    <header className="restaurantTitle">Restaurants</header>
+                    <header className="restaurantGridTitle">Restaurants</header>
                 </div>
             </div>
         )
