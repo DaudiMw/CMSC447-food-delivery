@@ -43,35 +43,35 @@ function AppWithProvider () {
 }
 
 // // Login Page Component
-// function LoginPage() {
-//   return (
-//     <div style={{
-//       backgroundImage: "url('images/maryland-flag-black-gray.jpg')", 
-//       backgroundSize: "cover",
-//       backgroundPosition: "center",
-//       height: "100vh",
-//       position: "relative"
-//     }}>
-//       <div style={{
-//         position: "absolute",
-//         top: 0,
-//         left: 0,
-//         right: 0,
-//         bottom: 0,
-//         backgroundColor: "rgba(0, 0, 0, 0.5)"
-//       }}></div>
-//       <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
-//         <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
-//           <h1 className="text-center mb-4">Login</h1>
-//           <LoginForm />
-//           <p className="text-center mt-3">
-//             Don't have an account? <a href="#/signup" className="text-primary" style={{textDecoration: 'none'}}>Sign Up</a>
-//           </p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
+function LoginPage() {
+  return (
+    <div style={{
+      backgroundImage: "url('images/maryland-flag-black-gray.jpg')", 
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      height: "100vh",
+      position: "relative"
+    }}>
+      <div style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.5)"
+      }}></div>
+      <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
+        <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
+          <h1 className="text-center mb-4">Login</h1>
+          <LoginForm />
+          <p className="text-center mt-3">
+            Don't have an account? <a href="#/signup" className="text-primary" style={{textDecoration: 'none'}}>Sign Up</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 class BasePage extends React.Component {
     render() {
@@ -174,4 +174,4 @@ function DashboardPage() {
 
 // Render the app
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<MyApp/>);
+root.render(<LoginPage />);
