@@ -21,6 +21,9 @@ function SignupForm(props) {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(userData),
+                credentials: 'same-origin',  // Add this
+                redirect: 'manual',           // Add this - prevent auto-redirect
+                mode: 'cors'                  // Add this
             });
 
             if (!response.ok) {
@@ -36,8 +39,7 @@ function SignupForm(props) {
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async () => {  // Remove the 'e' parameter
         setError('');
 
         // Validate passwords match
@@ -61,19 +63,16 @@ function SignupForm(props) {
             
             console.log('Signup successful:', data);
             
-            // Redirect to login page
-            window.location.hash = '#/login';
             props.setPage("Home");
             
         } catch (error) {
             setError(error.message || 'Signup failed. Please try again.');
-        } finally {
             setLoading(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <div>
             <div className="mb-3">
                 <label className="form-label">First Name</label>
                 <input 
@@ -153,13 +152,14 @@ function SignupForm(props) {
             )}
             
             <button 
-                type="submit" 
+                type="button" 
                 className="btn btn-lg w-100" 
                 style={{backgroundColor: "orange", color: "black"}}
                 disabled={loading}
+                onClick={handleSubmit}
             >
                 {loading ? 'Signing up...' : 'Sign Up'}
             </button>
-        </form>
+        </div>
     );
 }

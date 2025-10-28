@@ -120,14 +120,20 @@ class HomePage extends React.Component {
 class MyApp extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {page: "Signup"};
+        this.state = {page: "Stores", store_id: null};
     }
 
-    setPage = (id) => {
+    setPage = (id, params) => {
+        console.log('=== setPage CALLED ===');
+        console.log('Called with id:', id);
+        console.log('Current state.page:', this.state.page);
+        console.trace('Call stack:'); // This shows WHERE setPage was called from
         this.setState({
-            page: id
+            page: id,
+            ...params
+        }, () => {
+            console.log('State updated. New page:', this.state.page);
         });
-        console.log(`MyApp.setPage(name: ${this.state.page})`);
     }
 
     getPage() {
@@ -143,6 +149,19 @@ class MyApp extends React.Component {
                 <div>
                     <SignupPage setPage={this.setPage}></SignupPage>
                 </div>);
+        }
+        else if (this.state.page == "Stores"){
+          return (
+            <div>
+              <StoresPage setPage={this.setPage} />
+            </div>
+          )
+        } else if (this.state.page == "Store") {
+            return (
+                <div>
+                    <StorePage store_id={this.state.store_id} />
+                </div>
+            )
         }
     }
 
@@ -186,10 +205,10 @@ class SignupPage extends React.Component {
         <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
           <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
             <h1 className="text-center mb-4">Sign Up</h1>
-            <SignupForm />
-            <p className="text-center mt-3">
+            <SignupForm setPage={this.props.setPage}/>
+            {/* <p className="text-center mt-3">
               Already have an account? <a href="#/login" className="text-primary" style={{textDecoration: 'none'}}>Login</a>
-            </p>
+            </p> */}
           </div>
         </div>
       </div>
