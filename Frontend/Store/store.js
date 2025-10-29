@@ -224,12 +224,8 @@ function StorePage({ store_id }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       {/* Hero Section - Company Image */}
-      <div className="relative w-full bg-gradient-to-br from-amber-500 via-yellow-500 to-orange-400">
-        <div className="px-6 py-12">
-          <div className="max-w-5xl mx-auto flex items-center justify-center">
-            <p className="text-xl font-semibold text-gray-700">Company Image</p>
-          </div>
-        </div>
+      <div className="relative w-full h-80 bg-cover bg-center" style={{ backgroundImage: "url('images/15254678_chick-fil-a-clean-TN-img.jpg')" }}>
+        <div className="absolute inset-0 bg-black opacity-25"></div>
       </div>
 
       {/* Store Info Section */}
