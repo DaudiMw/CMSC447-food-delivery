@@ -45,12 +45,12 @@ function MyApp() {
             <HashRouter>
                 <Switch>
                     {/* Public routes */}
-                    <Route exact path="/" component={BasePage} />
                     <Route path="/login" component={LoginPage} />
                     <Route path="/signup" component={SignupPage} />
                     <Route path="/unauthorized" component={UnauthorizedPage} />
                     
                     {/* Protected routes - any authenticated user */}
+                    <ProtectedRoute path="/" component={BasePage} />"
                     <ProtectedRoute path="/home" component={HomePage} />
                     
                     {/* Admin only routes */}
@@ -104,6 +104,7 @@ function LoginPage() {
 }
 
 class BasePage extends React.Component {
+
     render() {
         return (
             <div className="basepage">
@@ -115,6 +116,14 @@ class BasePage extends React.Component {
                     <button className="bannerButton ordersButton">
                         View Orders
                     </button>
+                    <button className="rounded-md bg-color">
+                        Settings
+                    </button>
+                    {/* <button class="mx-5 my-5 flex h-12 w-24 items-center justify-center rounded-md border border-2 border-black bg-red-600 p-4 font-semibold text-white shadow-md transition duration-200 hover:scale-110 hover:shadow-xl"
+                        onClick={() =>
+                          logout()
+                          window.ReactRouterDOM.history.push('/login')}
+                    >Logout</button> */}
                     <input type="image" className="settings" src="settings.png" onClick={() => this.props.setPage("Signup")}></input>
                     <input type="image" className="search" src="search.png"></input>
                 </div>
