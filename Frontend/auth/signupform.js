@@ -11,7 +11,8 @@ function SignupForm(props) {
     const [campusId, setCampusId] = React.useState('');
     const [error, setError] = React.useState('');
     const [loading, setLoading] = React.useState(false);
-
+    
+    const history = window.ReactRouterDOM.useHistory();
 
     const Signup = async (userData) => {
         try {
@@ -21,9 +22,9 @@ function SignupForm(props) {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(userData),
-                credentials: 'same-origin',  // Add this
-                redirect: 'manual',           // Add this - prevent auto-redirect
-                mode: 'cors'                  // Add this
+                credentials: 'same-origin',
+                redirect: 'manual',
+                mode: 'cors'
             });
 
             if (!response.ok) {
@@ -39,7 +40,7 @@ function SignupForm(props) {
         }
     };
 
-    const handleSubmit = async () => {  // Remove the 'e' parameter
+    const handleSubmit = async () => {
         setError('');
 
         // Validate passwords match
@@ -63,8 +64,9 @@ function SignupForm(props) {
             
             console.log('Signup successful:', data);
             
-            props.setPage("Home");
-            
+            // Navigate to login page on success
+            history.push('/login');
+                        
         } catch (error) {
             setError(error.message || 'Signup failed. Please try again.');
             setLoading(false);
@@ -136,7 +138,7 @@ function SignupForm(props) {
             <div className="mb-3">
                 <label className="form-label">Campus Id</label>
                 <input 
-                    type="campus_id" 
+                    type="text" 
                     className="form-control" 
                     value={campusId}
                     onChange={(e) => setCampusId(e.target.value)}
