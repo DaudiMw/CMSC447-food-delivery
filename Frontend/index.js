@@ -307,16 +307,16 @@ class SignupPage extends React.Component {
 }
 
 // Placeholder Dashboard
-function DashboardPage() {
-  return (
-    <div className="container mt-5">
-      <h1>Dashboard</h1>
-      <p>Welcome to your dashboard!</p>
-      <a href="#/login" className="btn btn-primary">Logout</a>
-    </div>
-  );
-}
+// function DashboardPage() {
+//   return (
+//     <div className="container mt-5">
+//       <h1>Dashboard</h1>
+//       <p>Welcome to your dashboard!</p>
+//       <a href="#/login" className="btn btn-primary">Logout</a>
+//     </div>
+//   );
+// }
 
 // Render the app
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<LoginPage />);
+root.render(<MyApp />);

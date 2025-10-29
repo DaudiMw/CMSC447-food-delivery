@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Numeric, Boolean, String, DateTime, ForeignKey, Enum as SqlEnum, func
+from sqlalchemy import Column, Integer, Numeric, Boolean, String, DateTime, ForeignKey, Time, Enum as SqlEnum, func
 from sqlalchemy.orm import relationship
 import uuid
 from database import Base
@@ -82,6 +82,7 @@ class Store(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
     # Relationships
+    hours = relationship("StoreHours", back_populates="store", useLists=False)
     items = relationship("Item", back_populates="store")
     owners = relationship("StoreOwners", back_populates="store")
 
@@ -96,6 +97,20 @@ class StoreOwners(Base):
     # Relationships
     store = relationship("Store", back_populates="owners")
     owner = relationship("User", back_populates="store_ownerships")
+
+class StoreHours(Base):
+    __tablename__ = "store_hours"
+
+    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
+    monday_hours = Column(Time, nullable=True)
+    tuesday_hours = Column(Time, nullable=True)
+    wednesday_hours = Column(Time, nullable=True)
+    thursday_hours = Column(Time, nullable=True)
+    friday_hours = Column(Time, nullable=True)
+    saturday_hours = Column(Time, nullable=True)
+    sunday_hours = Column(Time, nullable=True)
+
+    store = relationship("Store", back_populates="hours")
 
 
 class Item(Base):

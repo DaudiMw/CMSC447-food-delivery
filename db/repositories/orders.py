@@ -15,6 +15,14 @@ class OrderRepository(BaseRepository[Order]):
             self.model.user_id == user_id
         ).all()
     
+    def get_by_user_id_and_order_id(self, user_id: str, order_id: str) -> list[Order]:
+        """Get all orders for a given user ID and order ID."""
+        return self.session.query(Order).filter(
+            self.model.is_deleted == False,
+            self.model.user_id == user_id,
+            self.model.order_id == order_id
+        ).all()
+    
     def get_by_order_state(self, state: OrderStatus) -> list[Order]:
         """Get all orders for a given order state."""
         return self.session.query(Order).filter(

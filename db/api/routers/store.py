@@ -11,13 +11,14 @@ from api.auth.auth import oauth2_scheme
 from api.schemas.store_schemas import StoreCreate, StoreSchema, StoreWithItemsSchema
 
 
-router = APIRouter(prefix="/stores", tags=["stores"]) #, dependencies=[Depends(oauth2_scheme)])
+router = APIRouter(prefix="/stores", tags=["stores"], dependencies=[Depends(oauth2_scheme)])
 
 user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
 @router.get("/", response_model=list[StoreSchema])
 async def get_all_stores(db : Session = Depends(get_db)):
     """Get all stores"""
+    """Perms: none"""
     store_repo = StoreRepository(db)
     stores = store_repo.get_all()
     return stores
@@ -28,6 +29,7 @@ async def create_store(store: StoreCreate,
                        user: user_dependency,
                        db : Session = Depends(get_db)):
     """Create a new store"""
+    """Perms: admin"""
           
     if user.role != "admin":
         raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
@@ -65,7 +67,8 @@ async def create_store(store: StoreCreate,
 
 @router.get("/{store_id}", response_model=StoreSchema)
 async def get_store_by_id(store_id: str, db : Session = Depends(get_db)):
-    """Get store by its ID. We will also return all items in the store."""
+    """Get store by its ID. We will also return all items in the store."""\
+    """Perms: none"""
     try: 
         store_repo = StoreRepository(db)
 
@@ -82,6 +85,7 @@ async def get_store_by_id(store_id: str, db : Session = Depends(get_db)):
 @router.get("/{store_id}/items-full", response_model=StoreWithItemsSchema)
 async def get_store_items_full(store_id: str, db : Session = Depends(get_db)):
     """Get all items in a store with their info."""
+    """Perms: none"""
     try: 
         store_repo = StoreRepository(db)
 
@@ -98,6 +102,7 @@ async def get_store_items_full(store_id: str, db : Session = Depends(get_db)):
 @router.get("/{store_id}/items", response_model=list[ItemSchema])
 async def get_store_items(store_id: str, db : Session = Depends(get_db)):
     """Get all items in a store."""
+    """Perms: none"""
 
     try:
         item_repo = ItemRepository(db)
@@ -116,18 +121,13 @@ async def get_store_items(store_id: str, db : Session = Depends(get_db)):
 @router.post("/{store_id}/items", response_model=ItemSchema, status_code=201)
 async def create_store_item(user: user_dependency, store_id: str, item: ItemSchema, db : Session = Depends(get_db)):
     """Create a new item in a store."""
+    """Perms: admin, store owner"""
     try: 
-
-        # Check if the user is admin or store owner could be added here
-
-        if user.role != "admin" and user.role != "store_owner":
-            raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
-        
         store_repo = StoreRepository(db)
         
         owners = store_repo.get_store_owner(user.user_id, store_id)
 
-        if not owners:
+        if user.role != "admin" and user.role != "store_owner" and not owners:
             raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
         
         

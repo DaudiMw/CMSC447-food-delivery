@@ -22,9 +22,9 @@ async def update_user(user_id: str,
                       user: user_dependency,
                       db : Session = Depends(get_db)):
     """Update a user by their ID."""
+    """Perms: admin, user"""
 
-
-    if user.user_id != user_id:
+    if user.role != "admin" and user.user_id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to update this user")
     
     user_repo = UserRepository(db)
@@ -44,6 +44,7 @@ async def delete_user(user_id: str,
     """Delete a user by their ID. We will perform a hard-delete
         because emails need to be unique and we cannot keep old records with potentially
         duplicate emails if a user tries to create a new account using an email from a deleted account."""
+    """Perms: admin, user"""
     
     if not (admin_required(user) or user.user_id == user_id):
         raise HTTPException(status_code=403, detail="You do not have permission to delete this user")
@@ -62,10 +63,11 @@ async def delete_user(user_id: str,
 @router.get("/{user_id}/cart", response_model=list[OrderShow])
 async def get_user_cart(user_id: str, user: user_dependency, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """Get a user's cart."""
+    """Perms: admin, user"""
 
     order_repo = OrderRepository(db)
 
-    if user.user_id != user_id:
+    if user.role != "admin" and user.user_id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to view this user's cart")
     
 
@@ -81,6 +83,7 @@ async def get_user_cart(user_id: str, user: user_dependency, token: str = Depend
 @router.get("/{user_id}/orders", response_model=list[OrderShow])
 async def get_user_orders(user_id: str, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """Get a user's orders."""
+    """Perms: none"""
 
     order_repo = OrderRepository(db)
 
@@ -96,6 +99,7 @@ async def get_user_orders(user_id: str, token: str = Depends(oauth2_scheme), db:
 @router.get("/{user_id}/order-history", response_model=list[OrderShow])
 async def get_user_order_history(user_id: str, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """Get a user's order history."""
+    """Perms: none"""
 
     order_repo = OrderRepository(db)
 
@@ -111,8 +115,9 @@ async def get_user_order_history(user_id: str, token: str = Depends(oauth2_schem
 @router.post("/{user_id}/password")
 async def change_password(user_id: str, user: user_dependency, new_password: str, db: Session = Depends(get_db)):
     """Change a user's password."""
+    """Perms: admin, user"""
 
-    if user.user_id != user_id:
+    if user.role != "admin" and user.user_id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to update this user")
     
     user_repo = UserRepository(db)

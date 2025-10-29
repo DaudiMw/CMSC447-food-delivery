@@ -23,7 +23,7 @@ SECRET_KEY= "883169540dc377b78b96831aacebcf3a136f34ce14752f41217d6d6f5e4a334e"
 ALGORITHM="HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 class Token(BaseModel):
     access_token: str
