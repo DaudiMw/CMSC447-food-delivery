@@ -55,7 +55,9 @@ class StoreRepository(BaseRepository[Store]):
             joinedload(Store.items).joinedload(Item.nutrition_info)
         ).filter(
             Store.store_id == store_id,
-            Store.is_deleted == False
+            Store.is_deleted == False,
+            Store.items.is_deleted == False,
+            Store.items.nutrition_info.is_deleted == False
         ).first()
         
         return store

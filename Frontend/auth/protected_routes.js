@@ -36,6 +36,7 @@ function logout() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userId');
+    window.location.href = '#/login';
 }
 
 function getAuthToken() {
@@ -49,21 +50,28 @@ function ProtectedRoute({ component: Component, allowedRoles, ...rest }) {
     
     return (
         <Route
-            {...rest}
-            render={(props) => {
-                if (!isAuthenticated) {
-                    return <Redirect to="/login" />;
-                }
-                
-                if (allowedRoles && !allowedRoles.includes(userRole)) {
-                    return <Redirect to="/unauthorized" />;
-                }
-                
-                return <Component {...props} />;
-            }}
+        {...rest}
+        render={(props) => {
+            // First, check for authentication
+            if (!isAuthenticated) {
+            return <Redirect to="/login" />;
+            }
+            
+            // Next, check for role authorization
+            if (allowedRoles && !allowedRoles.includes(userRole)) {
+            return <Redirect to="/unauthorized" />;
+            }
+            
+            // 2. IF ALL CHECKS PASS, RENDER THE COMPONENT INSIDE THE LAYOUT
+            return (
+            <Banner>
+                <Component {...props} />
+            </Banner>
+            );
+        }}
         />
     );
-}
+    }
 
 // Unauthorized Page
 function UnauthorizedPage() {

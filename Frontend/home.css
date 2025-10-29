@@ -8,23 +8,36 @@
 .banner {
     background-color: black;
     width: 100vw;
-    height: 55px;
+    height: 70px;
     position: fixed;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 4;
+    justify-content: space-between;
+    padding: 10px 25px;
+    gap: 0px 20px;
+    box-sizing: border-box;
+}
+
+.banner-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px; 
 }
 
 .bannerButton {
     color: white;
     background-color: rgba(0, 0, 0, 0);
-    position: absolute;
+    /* position: absolute; */
     font-size: x-large;
     font-family: "InterVariable", "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     font-optical-sizing: auto;
     border:rgba(0, 0, 0, 0);
-    top: 6.9px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.bannerButton:hover {
+    transform:scale(1.1);
+    cursor: pointer;
 }
 
 .restaurantButton {
@@ -35,16 +48,23 @@
     right: 250px;
 }
 
-.settings {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    top: 2.5px;
-    right: 198.5px;
+.logoutButton {
+    display:flex;
+    align-items:center;
+    background-color: rgba(202, 7, 7, 0.932);
+    justify-content: center;
+    border-radius:15px;
+    padding: 10px;
+    /* margin-left: 80px; */
+    
 }
 
+/* .settings {
+
+} */
+
 .search {
-    position: absolute;
+    /* position: absolute; */
     width: 50px;
     height: 50px;
     top: 2.5px;
@@ -52,16 +72,32 @@
 }
 
 .homepage {
-    position: absolute;
     top: 55px;
     width: 100%;
     height: 100%;
 }
 
 .logo {
-    position: absolute;
     top: 6.9px;
     left: 10px;
     width: 180px;
     height: auto;
+}
+
+/* media query for mobile devices */
+@media (max-width: 768px) {
+  .logo {
+    /* Make the logo smaller on mobile */
+    height: 35px; 
+  }
+
+  .banner {
+    /* reduce padding on mobile to save space */
+    padding: 0 15px;
+  }
+
+  .banner-controls {
+    /* reduce the space between buttons too */
+    gap: 10px;
+  }
 }

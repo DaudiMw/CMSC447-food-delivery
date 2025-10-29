@@ -50,7 +50,7 @@ function MyApp() {
                     <Route path="/unauthorized" component={UnauthorizedPage} />
                     
                     {/* Protected routes - any authenticated user */}
-                    <ProtectedRoute path="/" component={BasePage} />"
+                    {/* <ProtectedRoute path="/" component={BasePage} />" */}
                     <ProtectedRoute path="/home" component={HomePage} />
                     
                     {/* Admin only routes */}
@@ -103,14 +103,13 @@ function LoginPage() {
   );
 }
 
-class BasePage extends React.Component {
+class Banner extends React.Component {
 
     render() {
         return (
-            <div className="basepage">
                 <div className="banner">
                     <img className="logo" src="images/UMBCLogo.png"></img>
-                    <button className="bannerButton restaurantButton">
+                    {/* <button className="bannerButton restaurantButton">
                         Restaurants
                     </button>
                     <button className="bannerButton ordersButton">
@@ -118,16 +117,16 @@ class BasePage extends React.Component {
                     </button>
                     <button className="rounded-md bg-color">
                         Settings
-                    </button>
-                    {/* <button class="mx-5 my-5 flex h-12 w-24 items-center justify-center rounded-md border border-2 border-black bg-red-600 p-4 font-semibold text-white shadow-md transition duration-200 hover:scale-110 hover:shadow-xl"
-                        onClick={() =>
-                          logout()
-                          window.ReactRouterDOM.history.push('/login')}
-                    >Logout</button> */}
-                    <input type="image" className="settings" src="settings.png" onClick={() => this.props.setPage("Signup")}></input>
-                    <input type="image" className="search" src="search.png"></input>
+                    </button> */}
+                    <div className="banner-controls">
+                      <button className="bannerButton" onClick={() => this.props.setPage("Signup")}>
+                        <img src="settings.png" alt="Settings" />
+                      </button>
+                      <button class="bannerButton logoutButton" onClick={() => logout()}>Logout</button>
+                    </div>
+                    
+                    {/* <input type="image" className="search" src="search.png"></input> */}
                 </div>
-            </div>
         )
     }
 }
@@ -137,21 +136,19 @@ class HomePage extends React.Component {
         super(props);
     }
 
-    componentDidMount() {
-        let data = this.props.GetRestaurants();
-        const restaurants = document.getElementsByClassName("restaurants")[0];
-        data.forEach(element => {
-            const newDiv = document.createElement('div');
-            newDiv.textContent = element;
-            restaurants.appendChild(newDiv);
-        });
-    }
+    // componentDidMount() {
+    //     let data = this.props.GetRestaurants();
+    //     const restaurants = document.getElementsByClassName("restaurants")[0];
+    //     data.forEach(element => {
+    //         const newDiv = document.createElement('div');
+    //         newDiv.textContent = element;
+    //         restaurants.appendChild(newDiv);
+    //     });
+    // }
 
     render() {
         return (
-            <div className="homepage">
-                <div className="restaurants"></div>
-            </div>
+          
         )
     }
 }
@@ -245,7 +242,8 @@ class SignupPage extends React.Component {
             <h1 className="text-center mb-4">Sign Up</h1>
             <SignupForm setPage={this.props.setPage}/>
             <p className="text-center mt-3">
-              Already have an account? <Link to="/login" className="text-primary" style={{textDecoration: 'none'}}>
+              Already have an account? 
+              <Link to="/login" className="text-primary" style={{textDecoration: 'none'}}>
                  Login
               </Link>
             </p>
@@ -256,16 +254,16 @@ class SignupPage extends React.Component {
   }
 }
 
-// Placeholder Dashboard
-function DashboardPage() {
-  return (
-    <div className="container mt-5">
-      <h1>Dashboard</h1>
-      <p>Welcome to your dashboard!</p>
-      <a href="#/login" className="btn btn-primary">Logout</a>
-    </div>
-  );
-}
+// // Placeholder Dashboard
+// function DashboardPage() {
+//   return (
+//     <div className="container mt-5">
+//       <h1>Dashboard</h1>
+//       <p>Welcome to your dashboard!</p>
+//       <a href="#/login" className="btn btn-primary">Logout</a>
+//     </div>
+//   );
+// }
 
 // Render the app
 const root = ReactDOM.createRoot(document.getElementById('root'));
