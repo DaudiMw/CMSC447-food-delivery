@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
-from api.schemas.store_schema import StoreCreate, StoreSchema, StoreWithItemsSchema
+from api.schemas.store_schemas import StoreCreate, StoreSchema, StoreWithItemsSchema
 
 
 router = APIRouter(prefix="/stores", tags=["stores"]) #, dependencies=[Depends(oauth2_scheme)])

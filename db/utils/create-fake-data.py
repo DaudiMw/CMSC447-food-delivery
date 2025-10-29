@@ -1,6 +1,6 @@
 from BaseFactory import BaseFactory
 from api.schemas.user_schemas import UserSchema
-from api.schemas.store_schema import StoreCreate, StoreSchema
+from api.schemas.store_schemas import StoreCreate, StoreSchema
 from StoreFactory import StoreFactory
 from models import User, Store
 

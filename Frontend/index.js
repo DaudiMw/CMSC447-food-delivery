@@ -131,87 +131,56 @@ class BasePage extends React.Component {
   }
 };
 
-class BasePage extends React.Component {
-  render() {
-      return (
-          <div className="basepage">
-              <div className="banner">
-                  <img className="logo" src="UMBCLogo.png"></img>
-                  <button className="bannerButton restaurantButton">
-                      Restaurants
-                  </button>
-                  <button className="bannerButton ordersButton">
-                      View Orders
-                  </button>
-                  <input type="image" className="settings" src="settings.png"></input>
-                  <input type="image" className="search" src="search.png"></input>
-              </div>
-          </div>
-      )
-  }
-};
+// class BasePage extends React.Component {
+//   render() {
+//       return (
+//           <div className="basepage">
+//               <div className="banner">
+//                   <img className="logo" src="UMBCLogo.png"></img>
+//                   <button className="bannerButton restaurantButton">
+//                       Restaurants
+//                   </button>
+//                   <button className="bannerButton ordersButton">
+//                       View Orders
+//                   </button>
+//                   <input type="image" className="settings" src="settings.png"></input>
+//                   <input type="image" className="search" src="search.png"></input>
+//               </div>
+//           </div>
+//       )
+//   }
+// };
 
-// Login Page Component
-function LoginPage() {
-  return (
-    <div style={{
-      backgroundImage: "url('images/maryland-flag-black-gray.jpg')", 
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      height: "100vh",
-      position: "relative"
-    }}>
-      <div style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)"
-      }}></div>
-      <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
-        <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
-          <h1 className="text-center mb-4">Login</h1>
-          <LoginForm />
-          <p className="text-center mt-3">
-            Don't have an account? <a href="#/signup" className="text-primary" style={{textDecoration: 'none'}}>Sign Up</a>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Signup Page Component
-function SignupPage() {
-  return (
-    <div style={{
-      backgroundImage: "url('images/maryland-flag-black-gray.jpg')", 
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      height: "100vh",
-      position: "relative"
-    }}>
-      <div style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)"
-      }}></div>
-      <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
-        <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
-          <h1 className="text-center mb-4">Sign Up</h1>
-          <SignupForm />
-          <p className="text-center mt-3">
-            Already have an account? <a href="#/login" className="text-primary" style={{textDecoration: 'none'}}>Login</a>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
+// // Signup Page Component
+// function SignupPage() {
+//   return (
+//     <div style={{
+//       backgroundImage: "url('images/maryland-flag-black-gray.jpg')", 
+//       backgroundSize: "cover",
+//       backgroundPosition: "center",
+//       height: "100vh",
+//       position: "relative"
+//     }}>
+//       <div style={{
+//         position: "absolute",
+//         top: 0,
+//         left: 0,
+//         right: 0,
+//         bottom: 0,
+//         backgroundColor: "rgba(0, 0, 0, 0.5)"
+//       }}></div>
+//       <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
+//         <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
+//           <h1 className="text-center mb-4">Sign Up</h1>
+//           <SignupForm />
+//           <p className="text-center mt-3">
+//             Already have an account? <a href="#/login" className="text-primary" style={{textDecoration: 'none'}}>Login</a>
+//           </p>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
 
 class HomePage extends React.Component {
     constructor(props) {

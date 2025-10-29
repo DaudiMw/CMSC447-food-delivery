@@ -2,7 +2,7 @@
 
 
 import random
-from api.schemas.store_schema import StoreSchema
+from api.schemas.store_schemas import StoreSchema
 from api.schemas.item_schemas import ItemInfoSchema, ItemSchema
 from utils.BaseFactory import BaseFactory
 from models import ItemInfo, Store, Item
