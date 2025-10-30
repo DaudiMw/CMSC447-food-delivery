@@ -73,7 +73,7 @@ function SignupForm(props) {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit="handleSubmit();return false">
             <div className="mb-3">
                 <label className="form-label">First Name</label>
                 <input 

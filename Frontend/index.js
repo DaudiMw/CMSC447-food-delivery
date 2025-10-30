@@ -220,7 +220,7 @@ class MyApp extends React.Component {
         super();
         // Here the initial state is set. The state is just something else that React.Component gives us,
         // it's not defined here. It also cannot be set directly outside of the constructor....
-        this.state = {page: "Home"};
+        this.state = {page: "Signup"};
     }
 
     // ....That's what this function is for. It accepts an ID (which in this case should be a string),
