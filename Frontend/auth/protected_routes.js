@@ -43,35 +43,36 @@ function getAuthToken() {
     return localStorage.getItem('authToken');
 }
 
-// Protected Route Component
 function ProtectedRoute({ component: Component, allowedRoles, ...rest }) {
     const isAuthenticated = checkAuth();
     const userRole = getUserRole();
-    
+
     return (
         <Route
-        {...rest}
-        render={(props) => {
-            // First, check for authentication
-            if (!isAuthenticated) {
-            return <Redirect to="/login" />;
-            }
-            
-            // Next, check for role authorization
-            if (allowedRoles && !allowedRoles.includes(userRole)) {
-            return <Redirect to="/unauthorized" />;
-            }
-            
-            // 2. IF ALL CHECKS PASS, RENDER THE COMPONENT INSIDE THE LAYOUT
-            return (
-            <Banner>
-                <Component {...props} />
-            </Banner>
-            );
-        }}
+            {...rest}
+            render={(props) => {
+                if (!isAuthenticated) {
+                    return <Redirect to="/login" />;
+                }
+                
+                if (allowedRoles && !allowedRoles.includes(userRole)) {
+                    return <Redirect to="/unauthorized" />;
+                }
+                
+                return (
+                    <div className="flex flex-col min-h-screen">  {/* Changed to min-h-screen */}
+                        <div className="flex-shrink-0">  {/* Banner won't shrink */}
+                            <Banner />
+                        </div>
+                        <div className="flex-1 overflow-auto bg-gray-50">  {/* Added bg-gray-50 */}
+                            <Component {...props} />
+                        </div>
+                    </div>
+                );
+            }}
         />
     );
-    }
+}
 
 // Unauthorized Page
 function UnauthorizedPage() {
