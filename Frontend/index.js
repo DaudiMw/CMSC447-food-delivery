@@ -84,14 +84,26 @@ class OrdersPage extends React.Component {
             const right = document.createElement('div');
             right.className = "orderRight";
             orderDiv.appendChild(right);
+            const checkbox = document.createElement('input');
+            checkbox.className = "ordersCheckbox";
+            checkbox.type = "checkbox"
+            right.appendChild(checkbox);
 
             const middle = document.createElement('div');
             middle.className = "orderMiddle";
-            middle.textContent = "Description"
+            middle.textContent = "Description";
             orderDiv.appendChild(middle);
             const info = document.createElement('div');
             info.className = "orderInfo";
-            info.textContent = "Status: Pending\nTotal: &XX.XX"
+            const status = document.createElement('div');
+            status.textContent = "Status: Pending";
+            info.appendChild(status);
+            const total = document.createElement('div');
+            total.textContent = "Total: $XX.XX";
+            info.appendChild(total);
+            const arrivalTime = document.createElement('div');
+            arrivalTime.textContent = "Estimated Arrival: XX:XXam/pm";
+            info.appendChild(arrivalTime);
             middle.appendChild(info);
 
             const image = document.createElement('img');
@@ -135,7 +147,7 @@ class BasePage extends React.Component {
                 {this.props.page}
                 <div className="banner">
                     <input type="image" className="logo" src="images/UMBCLogo.png" onClick={() => this.props.setPage("Home")}></input>
-                    <button className="bannerButton restaurantButton">
+                    <button className="bannerButton restaurantButton" onClick={() => this.props.setPage("Home")}>
                         Restaurants
                     </button>
                     <button className="bannerButton ordersButton" onClick={() => this.props.setPage("Orders")}>

@@ -125,8 +125,14 @@
     position: absolute;
     background-color: rgb(217, 217, 217);
     height: 100%;
-    width: 100%;
+    width: 12%;
+    left: 64%;
     border-radius: 20px;
+    align-content: center;
+}
+
+.ordersCheckbox {
+    margin-left: 63%;
 }
 
 .orderMiddle {
@@ -148,6 +154,10 @@
     width: 90%;
     height: 70%;
     border-radius: 20px;
+    display: grid;
+    column-count: 1;
+    grid-template-rows: 1fr 1fr 1fr;
+    place-items: center;
 }
 
 .orderImage {
