@@ -2,6 +2,7 @@ from api.schemas.user_schemas import UserAuth
 from api.schemas.item_schemas import ItemSchema
 from repositories.items import ItemRepository
 from repositories.store import StoreRepository
+from models import StoreHours
 from fastapi import APIRouter, Depends, HTTPException
 from api.auth.auth import get_current_user
 from sqlalchemy.orm import Session
@@ -36,8 +37,9 @@ async def create_store(store: StoreCreate,
     
     try:
         store_repo = StoreRepository(db)
+        new_storehours = StoreHours()
 
-        new_store = store_repo.create(**store.dict())
+        new_store = store_repo.create(**store.dict(), hours=new_storehours)
 
         return new_store
     

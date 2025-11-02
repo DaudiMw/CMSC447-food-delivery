@@ -59,33 +59,3 @@ class StoreRepository(BaseRepository[Store]):
         ).first()
         
         return store
-    
-    def get_store_owner(self, user_id: str, store_id: str) -> list[StoreOwners]:
-        """Get store by its owner."""
-        return self.session.query(StoreOwners).filter(
-            StoreOwners.is_deleted == False,
-            StoreOwners.owner_id == user_id,
-            StoreOwners.store_id == store_id
-        ).all()
-    
-    def get_store_with_items(self, store_id: str):
-        """Get a single store and all its related items."""
-        
-        # Your query is already perfect for this!
-        # It fetches the store and eagerly loads all nested relationships.
-        store = self.session.query(Store).options(
-            joinedload(Store.items).joinedload(Item.nutrition_info)
-        ).filter(
-            Store.store_id == store_id,
-            Store.is_deleted == False
-        ).first()
-        
-        return store
-    
-    def get_store_owner(self, user_id: str, store_id: str) -> list[StoreOwners]:
-        """Get store by its owner."""
-        return self.session.query(StoreOwners).filter(
-            StoreOwners.is_deleted == False,
-            StoreOwners.owner_id == user_id,
-            StoreOwners.store_id == store_id
-        ).all()

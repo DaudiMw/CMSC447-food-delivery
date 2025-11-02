@@ -26,7 +26,7 @@ async def add_item_to_store(item: ItemSchema,
 
     owners_list = store_repo.get_store_owner(user.user_id, store_id)
 
-    if user.user_id != "admin" and not owners_list:
+    if user.role != "admin" and not owners_list:
         raise HTTPException(status_code=401, detail="User does not own that store")
     
     try:
@@ -48,7 +48,7 @@ async def get_item_by_store_id_and_name(store_id: str,
 
     owners_list = store_repo.get_store_owner(user.user_id, store_id)
 
-    if user.user_id != "admin" and not owners_list:
+    if user.role != "admin" and not owners_list:
         raise HTTPException(status_code=401, detail="User does not own that store")
     
     try:
