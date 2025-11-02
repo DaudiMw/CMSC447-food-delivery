@@ -115,3 +115,14 @@
   }
 }
 
+.adminButton {
+    background-color: rgba(253, 181, 21, 0.15);
+    color: #fdb515;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.adminButton:hover {
+    background-color: rgba(253, 181, 21, 0.25);
+}
+

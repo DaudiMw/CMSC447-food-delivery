@@ -76,7 +76,9 @@ class Store(Base):
 
     store_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     name = Column(String, nullable=False, index=True)
-    address = Column(String, nullable=False)
+    address = Column(ForeignKey("addresses.address_id"), nullable=False)
+    description = Column(String)
+    picture = Column(String)
     phone = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
@@ -168,11 +170,21 @@ class Address(Base):
     __tablename__ = "addresses"
 
     address_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
-    user_id = Column(String, ForeignKey("users.user_id"), nullable=False, primary_key=True)
+    user_id = Column(String, ForeignKey("users.user_id"))
+    store_id = Column(String, ForeignKey("stores.store_id"))
     street = Column(String, nullable=False)
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
     zip = Column(String, nullable=False)
+    label = Column(String)
     
     # Relationships
     user = relationship("User", back_populates="addresses")
+
+class DasherApplications(Base):
+    __tablename__ = "dasher_applications"
+
+    application_id = Column(String, primary_key=True, default= lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    user_id = Column(String, ForeignKey("users.user_id"), nullable=False, unique=True)
+    content = Column(String, nullable=False)
+    date_applied = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

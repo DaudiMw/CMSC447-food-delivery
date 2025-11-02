@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
-from api.schemas.store_schema import StoreCreate, StoreSchema, StoreWithItemsSchema
+from api.schemas.store_schema import StoreSchema, StoreWithItemsSchema
 
 
 router = APIRouter(prefix="/stores", tags=["stores"]) #, dependencies=[Depends(oauth2_scheme)])
@@ -24,7 +24,7 @@ async def get_all_stores(db : Session = Depends(get_db)):
 
 
 @router.post("/", response_model=StoreSchema, status_code=201)
-async def create_store(store: StoreCreate,
+async def create_store(store: StoreSchema,
                        user: user_dependency,
                        db : Session = Depends(get_db)):
     """Create a new store"""

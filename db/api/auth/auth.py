@@ -75,17 +75,18 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
             raise credentials_exception
         
         token_data = TokenData(username=username)
+
+        userData = UserAuth(email=token_data.username, role=UserRole(role), user_id=user_id)
+
+        print(userData)
+    
+        return userData
     
     except InvalidTokenError:
         raise credentials_exception
-    
-    userData = UserAuth(email=token_data.username, role=UserRole(role), user_id=user_id)
-    
-    
-    return userData
 
 def admin_required(current_user: UserAuth = Depends(get_current_user)):
-    if current_user.role != "admin":
+    if current_user.role != UserRole.admin:
         raise HTTPException(status_code=403, detail="Forbidden")
     return current_user
 
