@@ -1,40 +1,11 @@
-// index.js - Simple hash-based routing (no React Router needed)
+import OrdersPage from "./OrdersPage";
+import SettingsPage from "./SettingsPage";
+import HomePage from "./HomePage";
+import SignupPage from "./SignupPage";
 
 const { HashRouter, Switch, Route, Link } = window.ReactRouterDOM;
 const { QueryClient, QueryClientProvider } = window.ReactQuery;
 const { ReactQueryDevtools } = window.ReactQueryDevtools;
-
-
-
-// function App() {
-//   // const [currentPage, setCurrentPage] = React.useState(window.location.hash || '#/');
-
-//   // React.useEffect(() => {
-//   //   const handleHashChange = () => {
-//   //     setCurrentPage(window.location.hash || '#/');
-//   //   };
-
-//   //   window.addEventListener('hashchange', handleHashChange);
-//   //   return () => window.removeEventListener('hashchange', handleHashChange);
-//   // }, []);
-
-//   // const renderPage = () => {
-//   //   switch(currentPage) {
-//   //     case '#/':
-//   //     case '#/login':
-//   //       return <LoginPage />;
-//   //     case '#/signup':
-//   //       return <SignupPage />;
-//   //     case '#/dashboard':
-//   //       return <DashboardPage />;
-//   //     default:
-//   //       return <LoginPage />;
-//   //   }
-//   // };
-
-//   // return renderPage();
-//   return <StorePage store_id={'5426ff85-e5ae-42f3-8dc7-bead81ecac08'} />
-// }
 
 const queryClient = new QueryClient()
 
@@ -245,57 +216,6 @@ class Banner extends React.Component {
     }
 }
 
-class HomePage extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    // This is what gets called after the render() function has been called, so the elements in that function
-    // have been added to the webpage and can be altered.
-    componentDidMount() {
-        // This function, props.GetRestaurants(), is what was given to us when constructing the object.
-        // See farther below to see how to pass props into a constructor.
-        let data = ["Chick-Fil-A", "Starbucks", "Taco Bell"];
-
-        // Gets the div called restaurants, you can see where it is in this class's render() function.
-        const restaurants = document.getElementsByClassName("restaurants")[0];
-        // For every restaurant in the database, do this.
-        data.forEach(element => {
-            // Create a new div
-            const restaurantDiv = document.createElement('div');
-            // Give it a className, which home.css has parameters to modify.
-            restaurantDiv.className = "restaurant";
-            
-            const restaurantTitle = document.createElement('div');
-            restaurantTitle.className = "restaurantTitle";
-            // This is the title, which in the case is the name of the restaurant.
-            restaurantTitle.textContent = element;
-            // Add the title to the other previously created div.
-            restaurantDiv.appendChild(restaurantTitle);
-
-            // Popular items, same logic as above
-            for (let i = 0; i < 4; i++) {
-                const popularItem = document.createElement('div');
-                popularItem.className = "popularItem";
-                restaurantDiv.appendChild(popularItem);
-            }
-
-            // Add the first div we created to the restaurants div, so it will now be rendered as well.
-            restaurants.appendChild(restaurantDiv);
-        });
-    }
-
-    render() {
-        return (
-            <div className="homepage">
-                <div className="restaurants">
-                    <header className="restaurantGridTitle">Restaurants</header>
-                </div>
-            </div>
-        )
-    }
-}
-
 // STARTING HERE!!!
 // The class must extend React.Component so that React is able to call the render() function
 // class MyApp extends React.Component {
@@ -457,33 +377,6 @@ class HomePage extends React.Component {
   // };
 
 // Signup Page Component
-class SignupPage extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    return (
-      <div className="bg-cover bg-center h-screen" style={{
-        backgroundImage: "url('images/maryland-flag-black-gray.jpg')", 
-      }}>
-        <div className="bg-black bg-opacity-50 h-full">
-          <div className="d-flex justify-content-center align-items-center vh-100">
-            <div className="card p-4 shadow w-100 mx-3" style={{ maxWidth: "500px" }}>
-              <h1 className="text-center mb-4">Sign Up</h1>
-              <SignupForm setPage={this.props.setPage}/>
-              <p className="text-center mt-3">
-                Already have an account? <Link to="/login" className="text-primary" style={{textDecoration: 'none'}}>
-                    Login
-                </Link>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-}
 
 // // Placeholder Dashboard
 // function DashboardPage() {
