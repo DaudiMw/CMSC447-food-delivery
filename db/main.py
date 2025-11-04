@@ -60,9 +60,12 @@ async def options_handler(full_path: str):
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    print(f"Method: {request.method}, Path: {request.url.path}")
+    print(f"Method: {request.method}\n, Path: {request.url.path}")
     print(f"Headers: {request.headers}")
+    print(f"Query Params: {request.query_params}")
     response = await call_next(request)
     print(f"Response status: {response.status_code}")
+    print(f"Response headers: {response.headers}")
+    print("-----")
     return response
 

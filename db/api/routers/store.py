@@ -26,7 +26,7 @@ async def get_all_stores(db : Session = Depends(get_db)):
 
 
 @router.post("/", response_model=StoreSchema, status_code=201)
-async def create_store(store: StoreCreate,
+async def create_store(store: StoreSchema,
                        user: user_dependency,
                        db : Session = Depends(get_db)):
     """Create a new store"""

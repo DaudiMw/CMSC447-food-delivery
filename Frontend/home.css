@@ -6,45 +6,78 @@
 }
 
 .banner {
-    background-color: black;
+    background-color: #000000;
     width: 100vw;
-    height: 55px;
+    height: 70px;
     position: fixed;
+    top: 0;
+    left: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 4;
+    justify-content: space-between;
+    padding: 12px 24px;
+    box-sizing: border-box;
+    border-bottom: 3px solid #fdb515;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+.banner .logo {
+    height: 48px;
+    object-fit: contain;
+}
+
+.banner-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .bannerButton {
-    color: white;
-    background-color: rgba(0, 0, 0, 0);
-    position: absolute;
-    font-size: x-large;
+    background-color: transparent;
+    border: none;
+    color: #fdb515;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-family: "InterVariable", "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    font-optical-sizing: auto;
-    border:rgba(0, 0, 0, 0);
-    top: 6.9px;
 }
 
-.restaurantButton {
-    right: 400px;
+.bannerButton:hover {
+    background-color: rgba(253, 181, 21, 0.1);
+    transform: translateY(-1px);
 }
 
-.ordersButton {
-    right: 250px;
+.bannerButton svg {
+    width: 20px;
+    height: 20px;
 }
 
-.settings {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    top: 2.5px;
-    right: 198.5px;
+.logoutButton {
+    background-color: #dc2626;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
 }
+
+.logoutButton:hover {
+    background-color: #b91c1c;
+    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
+}
+
+/* .settings {
+
+} */
 
 .search {
-    position: absolute;
+    /* position: absolute; */
     width: 50px;
     height: 50px;
     top: 2.5px;
@@ -52,16 +85,186 @@
 }
 
 .homepage {
+    top: 55px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0);
+    overflow-y: scroll;
+}
+
+.settingsPage {
     position: absolute;
     top: 55px;
     width: 100%;
     height: 100%;
+    background-color: rgba(0,0,0,0);
+    overflow-y: scroll;
+}
+
+.ordersPage {
+    position: absolute;
+    top: 55px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0);
+    overflow-y: scroll;
+}
+
+.orders {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 100px;
+    column-count: 2;
+    column-width: auto;
+    column-rule-style: solid;
+    column-rule-width: 5px;
+    height: 130vh;
+    width: 90%;
+    left: 5%;
+    top: 30px;
+    position: absolute;
+    background-color: white;
+    border-radius: 20px;
+}
+
+.ordersGridTitle {
+    grid-column: 1 / span 2;
+    margin-top: 10px;
+    text-align: left;
+    text-indent: 35px;
+    font-size: xx-large;
+    font-weight: 650;
+}
+
+.ordersList {
+    display: grid;
+    grid-auto-rows: 175px;
+    row-gap: 50px;
+    height: 100%;
+    width: 100%;
+}
+
+.orderButtons {
+    display: grid;
+    column-count: 1;
+    grid-template-rows: 200px;
+}
+
+.order {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    left: 5%;
+}
+
+.orderRight {
+    position: absolute;
+    background-color: rgb(217, 217, 217);
+    height: 100%;
+    width: 12%;
+    left: 64%;
+    border-radius: 20px;
+    align-content: center;
+}
+
+.ordersCheckbox {
+    margin-left: 63%;
+}
+
+.orderMiddle {
+    display: grid;
+    column-count: 2;
+    grid-template-columns: 2fr 3fr;
+    position: absolute;
+    background-color: rgb(230, 230, 230);
+    height: 100%;
+    width: 50%;
+    border-radius: 20px;
+    left: 18%;
+    place-items: center;
+    text-align: right;
+}
+
+.orderInfo {
+    background-color: rgb(109, 109, 109);
+    width: 90%;
+    height: 70%;
+    border-radius: 20px;
+    display: grid;
+    column-count: 1;
+    grid-template-rows: 1fr 1fr 1fr;
+    place-items: center;
+}
+
+.orderImage {
+    position: absolute;
+    background-color: rgb(109, 109, 109);
+    height: 100%;
+    width: 20%;
+    border-radius: 20px;
 }
 
 .logo {
-    position: absolute;
     top: 6.9px;
     left: 10px;
     width: 180px;
     height: auto;
+}
+
+.restaurants {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 50px;
+    grid-auto-rows: 300px;
+    column-count: 2;
+    column-width: auto;
+    column-rule-style: solid;
+    column-rule-width: 5px;
+    height: 130vh;
+    width: 70%;
+    left: 15%;
+    top: 70px;
+    position: absolute;
+    background-color: white;
+    border-radius: 20px;
+}
+
+.restaurantGridTitle {
+    grid-column: 1 / span 2;
+    margin-top: 10px;
+    text-align: left;
+    text-indent: 35px;
+    font-size: xx-large;
+    font-weight: 650;
+}
+
+.restaurant {
+    background-color: rgb(230, 230, 230);
+    color: black;
+    width: auto;
+    height: 250px;
+    margin-top: 30px;
+    margin-left: 30px;
+    margin-right: 30px;
+    border-radius: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 2fr;
+}
+
+.restaurantTitle {
+    text-align: center;
+    grid-column: 1 / span 4;
+    font-size: x-large;
+    font-weight: 650;
+    margin-top: 20px;
+}
+
+.popularItem {
+    background-color: rgb(109, 109, 109);
+    height: 70%;
+    margin-top: 20%;
+    margin-left: 5%;
+    margin-right: 5%;
+    border-radius: 30px;
 }

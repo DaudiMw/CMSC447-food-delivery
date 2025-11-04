@@ -42,6 +42,10 @@ class UserAuth(BaseSchema):
     user_id: str
     role: UserRole
 
+class ApplicationCreate(BaseSchema):
+    user_id: str
+    content: str
+
 
 
 

@@ -36,17 +36,17 @@ function logout() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userId');
+    window.location.href = '#/login';
 }
 
 function getAuthToken() {
     return localStorage.getItem('authToken');
 }
 
-// Protected Route Component
 function ProtectedRoute({ component: Component, allowedRoles, ...rest }) {
     const isAuthenticated = checkAuth();
     const userRole = getUserRole();
-    
+
     return (
         <Route
             {...rest}
@@ -59,7 +59,16 @@ function ProtectedRoute({ component: Component, allowedRoles, ...rest }) {
                     return <Redirect to="/unauthorized" />;
                 }
                 
-                return <Component {...props} />;
+                return (
+                    <div className="flex flex-col min-h-screen">  {/* Changed to min-h-screen */}
+                        <div className="flex-shrink-0">  {/* Banner won't shrink */}
+                            <Banner />
+                        </div>
+                        <div className="flex-1 overflow-auto bg-gray-50">  {/* Added bg-gray-50 */}
+                            <Component {...props} />
+                        </div>
+                    </div>
+                );
             }}
         />
     );

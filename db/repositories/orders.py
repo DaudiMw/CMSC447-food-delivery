@@ -48,6 +48,14 @@ class OrderRepository(BaseRepository[Order]):
             self.model.is_deleted == False,
             self.model.user_id == user_id
         ).order_by(Order.created_at).all()
+
+    def get_by_user_id_and_status(self, user_id: str, status: str) -> Order:
+        """Get an order for a given user ID and status."""
+        return self.session.query(Order).filter(
+            self.model.is_deleted == False,
+            self.model.user_id == user_id,
+            self.model.status == status
+        ).first()
     
     
 

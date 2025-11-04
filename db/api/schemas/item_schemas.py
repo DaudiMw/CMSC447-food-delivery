@@ -2,8 +2,6 @@ from typing import Optional
 from pydantic import BaseModel
 from api.schemas.base_schema import BaseSchema
 
-
-
 class ItemSchema(BaseSchema):
     item_id: str
     name: str

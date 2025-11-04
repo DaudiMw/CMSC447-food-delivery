@@ -71,6 +71,7 @@ function SignupForm(props) {
             setError(error.message || 'Signup failed. Please try again.');
             setLoading(false);
         }
+        return false;
     };
 
     return (

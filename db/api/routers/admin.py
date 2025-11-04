@@ -2,14 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from api.auth.auth import admin_required
 from models import UserRole
 from repositories.user import UserRepository
+from repositories.dasherapplication import ApplicationRepository
 from sqlalchemy.orm import Session
 from database import get_db
-from api.schemas.user_schemas import UserCreate
+from api.schemas.user_schemas import UserSchema, UserCreate
+
 
 
 router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(admin_required)])
 
-@router.get("/users", response_model=list[UserCreate], status_code=200)
+@router.get("/users", response_model=list[UserSchema], status_code=200)
 async def list_all_users(db: Session = Depends(get_db)):
     """List all users."""
 
@@ -80,5 +82,59 @@ async def search_users(query: str,
         users = user_repo.query_by_name_or_campus_id(query)
         return users
     
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.get("/dasher-applications")
+async def get_dasher_applications(db: Session = Depends(get_db)):
+    """Get all dasher applications."""
+
+    app_repo = ApplicationRepository(db)
+    user_repo = UserRepository(db)
+
+    try:
+        applications = app_repo.get_all()
+        for application in applications:
+            user = user_repo.get_by_id(str(application.user_id))
+            if user:
+                application.user = user
+
+        return applications
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/dasher-deliveries")
+async def get_dasher_deliveries(db: Session = Depends(get_db)):
+    """Get all dasher deliveries."""
+
+    return []
+
+@router.get("/orders")
+async def get_orders(db: Session = Depends(get_db)):
+    """Get all orders."""
+
+    return []
+
+@router.post("/dasher-applications/{application_id}/approve")
+async def approve_dasher_application(application_id: str, db: Session = Depends(get_db)):
+    """Approve a dasher application."""
+
+    app_repo = ApplicationRepository(db)
+
+    try:
+        application = app_repo.get_by_id(application_id)
+
+        if not application:
+            raise HTTPException(status_code=404, detail="Application not found")
+        
+        # Get the user associated with the application
+        user_repo = UserRepository(db)
+        user = user_repo.update_by_id(str(application.user_id), role=UserRole.dasher)
+
+        return {"message": "Application approved", "user": user}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
