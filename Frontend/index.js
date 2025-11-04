@@ -1,40 +1,11 @@
-// index.js - Simple hash-based routing (no React Router needed)
+import OrdersPage from "./OrdersPage";
+import SettingsPage from "./SettingsPage";
+import HomePage from "./HomePage";
+import SignupPage from "./SignupPage";
 
 const { HashRouter, Switch, Route, Link } = window.ReactRouterDOM;
 const { QueryClient, QueryClientProvider } = window.ReactQuery;
 const { ReactQueryDevtools } = window.ReactQueryDevtools;
-
-
-
-// function App() {
-//   // const [currentPage, setCurrentPage] = React.useState(window.location.hash || '#/');
-
-//   // React.useEffect(() => {
-//   //   const handleHashChange = () => {
-//   //     setCurrentPage(window.location.hash || '#/');
-//   //   };
-
-//   //   window.addEventListener('hashchange', handleHashChange);
-//   //   return () => window.removeEventListener('hashchange', handleHashChange);
-//   // }, []);
-
-//   // const renderPage = () => {
-//   //   switch(currentPage) {
-//   //     case '#/':
-//   //     case '#/login':
-//   //       return <LoginPage />;
-//   //     case '#/signup':
-//   //       return <SignupPage />;
-//   //     case '#/dashboard':
-//   //       return <DashboardPage />;
-//   //     default:
-//   //       return <LoginPage />;
-//   //   }
-//   // };
-
-//   // return renderPage();
-//   return <StorePage store_id={'5426ff85-e5ae-42f3-8dc7-bead81ecac08'} />
-// }
 
 const queryClient = new QueryClient()
 
@@ -85,103 +56,6 @@ function LoginPage() {
   );
 }
 
-// // Login Page Component
-// function LoginPage() {
-//   return (
-//     <div style={{
-//       backgroundImage: "url('images/maryland-flag-black-gray.jpg')", 
-//       backgroundSize: "cover",
-//       backgroundPosition: "center",
-//       height: "100vh",
-//       position: "relative"
-//     }}>
-//       <div style={{
-//         position: "absolute",
-//         top: 0,
-//         left: 0,
-//         right: 0,
-//         bottom: 0,
-//         backgroundColor: "rgba(0, 0, 0, 0.5)"
-//       }}></div>
-//       <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
-//         <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
-//           <h1 className="text-center mb-4">Login</h1>
-//           <LoginForm setPage={props.setPage}/>
-//           <p className="text-center mt-3">
-//             Don't have an account? <a href="#/signup" className="text-primary" style={{textDecoration: 'none'}}>Sign Up</a>
-//           </p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-class OrdersPage extends React.Component {
-    componentDidMount() {
-        let data = this.props.GetOrders();
-        const orderList = document.getElementsByClassName("ordersList")[0];
-        data.forEach(element => {
-            const orderDiv = document.createElement('div');
-            orderDiv.className = "order";
-
-            const right = document.createElement('div');
-            right.className = "orderRight";
-            orderDiv.appendChild(right);
-            const checkbox = document.createElement('input');
-            checkbox.className = "ordersCheckbox";
-            checkbox.type = "checkbox"
-            right.appendChild(checkbox);
-
-            const middle = document.createElement('div');
-            middle.className = "orderMiddle";
-            middle.textContent = "Description";
-            orderDiv.appendChild(middle);
-            const info = document.createElement('div');
-            info.className = "orderInfo";
-            const status = document.createElement('div');
-            status.textContent = "Status: Pending";
-            info.appendChild(status);
-            const total = document.createElement('div');
-            total.textContent = "Total: $XX.XX";
-            info.appendChild(total);
-            const arrivalTime = document.createElement('div');
-            arrivalTime.textContent = "Estimated Arrival: XX:XXam/pm";
-            info.appendChild(arrivalTime);
-            middle.appendChild(info);
-
-            const image = document.createElement('img');
-            image.className = "orderImage";
-            orderDiv.appendChild(image);
-
-            orderList.appendChild(orderDiv);
-        })
-    }
-
-    render() {
-        return (
-            <div className="ordersPage">
-                <div className="orders">
-                    <header className="ordersGridTitle">
-                        Your Orders
-                    </header>
-                    <div className="ordersList">
-                    </div>
-                    <div className="orderButtons"></div>
-                </div>
-            </div>
-        )
-    }
-}
-
-class SettingsPage extends React.Component {
-    render() {
-        return (
-            <div className="settingsPage">
-                Settings
-            </div>
-        )
-    }
-}
 
 // class BasePage extends React.Component {
 //     render() {
@@ -242,57 +116,6 @@ class Banner extends React.Component {
                 </div>
             </div>
         );
-    }
-}
-
-class HomePage extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    // This is what gets called after the render() function has been called, so the elements in that function
-    // have been added to the webpage and can be altered.
-    componentDidMount() {
-        // This function, props.GetRestaurants(), is what was given to us when constructing the object.
-        // See farther below to see how to pass props into a constructor.
-        let data = ["Chick-Fil-A", "Starbucks", "Taco Bell"];
-
-        // Gets the div called restaurants, you can see where it is in this class's render() function.
-        const restaurants = document.getElementsByClassName("restaurants")[0];
-        // For every restaurant in the database, do this.
-        data.forEach(element => {
-            // Create a new div
-            const restaurantDiv = document.createElement('div');
-            // Give it a className, which home.css has parameters to modify.
-            restaurantDiv.className = "restaurant";
-            
-            const restaurantTitle = document.createElement('div');
-            restaurantTitle.className = "restaurantTitle";
-            // This is the title, which in the case is the name of the restaurant.
-            restaurantTitle.textContent = element;
-            // Add the title to the other previously created div.
-            restaurantDiv.appendChild(restaurantTitle);
-
-            // Popular items, same logic as above
-            for (let i = 0; i < 4; i++) {
-                const popularItem = document.createElement('div');
-                popularItem.className = "popularItem";
-                restaurantDiv.appendChild(popularItem);
-            }
-
-            // Add the first div we created to the restaurants div, so it will now be rendered as well.
-            restaurants.appendChild(restaurantDiv);
-        });
-    }
-
-    render() {
-        return (
-            <div className="homepage">
-                <div className="restaurants">
-                    <header className="restaurantGridTitle">Restaurants</header>
-                </div>
-            </div>
-        )
     }
 }
 
@@ -457,33 +280,6 @@ class HomePage extends React.Component {
   // };
 
 // Signup Page Component
-class SignupPage extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    return (
-      <div className="bg-cover bg-center h-screen" style={{
-        backgroundImage: "url('images/maryland-flag-black-gray.jpg')", 
-      }}>
-        <div className="bg-black bg-opacity-50 h-full">
-          <div className="d-flex justify-content-center align-items-center vh-100">
-            <div className="card p-4 shadow w-100 mx-3" style={{ maxWidth: "500px" }}>
-              <h1 className="text-center mb-4">Sign Up</h1>
-              <SignupForm setPage={this.props.setPage}/>
-              <p className="text-center mt-3">
-                Already have an account? <Link to="/login" className="text-primary" style={{textDecoration: 'none'}}>
-                    Login
-                </Link>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-}
 
 // // Placeholder Dashboard
 // function DashboardPage() {
