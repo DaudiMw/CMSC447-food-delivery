@@ -173,15 +173,15 @@ class OrdersPage extends React.Component {
     }
 }
 
-class SettingsPage extends React.Component {
-    render() {
-        return (
-            <div className="settingsPage">
-                Settings
-            </div>
-        )
-    }
-}
+// class SettingsPage extends React.Component {
+//     render() {
+//         return (
+//             <div className="settingsPage">
+//                 Settings
+//             </div>
+//         )
+//     }
+// }
 
 // class BasePage extends React.Component {
 //     render() {

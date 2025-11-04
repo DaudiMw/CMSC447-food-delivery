@@ -84,7 +84,7 @@ class Store(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
     # Relationships
-    hours = relationship("StoreHours", back_populates="store", useLists=False)
+    hours = relationship("StoreHours", back_populates="store")
     items = relationship("Item", back_populates="store")
     owners = relationship("StoreOwners", back_populates="store")
 
@@ -103,6 +103,7 @@ class StoreOwners(Base):
 class StoreHours(Base):
     __tablename__ = "store_hours"
 
+    store_hours_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     monday_hours = Column(Time, nullable=True)
     tuesday_hours = Column(Time, nullable=True)
