@@ -113,6 +113,30 @@
     /* reduce the space between buttons too */
     gap: 10px;
   }
+
+  .bannerButton span {
+    display: none;
+  }
+
+  .bannerButton svg {
+    margin-right: 0;
+  }
+
+  .logoutButton {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-controls {
+    gap: 5px;
+  }
+
+  .logoutButton {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
 }
 
 .adminButton {

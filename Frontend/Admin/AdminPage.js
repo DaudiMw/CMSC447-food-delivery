@@ -151,7 +151,7 @@ function AdminPage() {
     // Show loading state
     if (usersLoading || dasherApplicationsLoading || dasherApplicationsPending || ordersLoading || deliveriesLoading) {
         return (
-            <div className="flex min-h-full items-center justify-center pt-20">
+            <div className="flex min-h-full items-center justify-center">
                 <div className="text-2xl font-semibold text-gray-600">Loading...</div>
             </div>
         );
@@ -160,7 +160,7 @@ function AdminPage() {
     // Show error state
     if (usersError) {
         return (
-            <div className="flex min-h-full items-center justify-center pt-20">
+            <div className="flex min-h-full items-center justify-center">
                 <div className="text-2xl font-semibold text-red-600">Error loading data: {usersError.message}</div>
             </div>
         );
@@ -200,14 +200,14 @@ function AdminPage() {
     });
 
     return (
-        <div className="flex min-h-full flex-col p-10 bg-gray-50 pt-20">
+        <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
             <h1 className="text-4xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
             <p className="text-gray-600 mb-4">Manage users, orders, and dasher applications</p>
             <div className="mt-4 h-px w-full bg-gray-400"></div>
             
             {/* Search and Date Filters */}
-            <div className="mt-5 flex gap-4 items-end bg-white p-4 rounded-lg border border-gray-300">
-                <div className="flex-1">
+            <div className="mt-5 flex flex-col md:flex-row gap-4 items-end bg-white p-4 rounded-lg border border-gray-300">
+                <div className="flex-1 w-full">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
                     <input
                         type="text"
@@ -217,35 +217,35 @@ function AdminPage() {
                         className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
                 </div>
-                <div>
+                <div class="w-full md:w-auto">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
                     <input
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
+                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
                 </div>
-                <div>
+                <div class="w-full md:w-auto">
                     <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
                     <input
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
+                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
                 </div>
                 <button 
                     onClick={() => { setSearchQuery(''); setStartDate(''); setEndDate(''); }}
-                    className="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-all"
+                    className="w-full md:w-auto px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-all"
                 >
                     Clear
                 </button>
             </div>
 
             {/* Tabs */}
-            <div className="mt-5 flex w-full flex-row gap-x-10 rounded-md p-4 border border-gray-300 bg-white">
-                <div className="flex h-fit w-1/4 flex-col gap-2 rounded-2xl shadow-lg border border-gray-200 p-2">
+            <div className="mt-5 flex w-full flex-col md:flex-row gap-x-10 rounded-md p-4 border border-gray-300 bg-white">
+                <div className="flex h-fit w-full md:w-1/4 flex-col gap-2 rounded-2xl shadow-lg border border-gray-200 p-2 mb-4 md:mb-0">
                     <button
                         onClick={() => setActiveTab('users')}
                         className={`p-3 font-semibold text-black transition-all duration-200 rounded-lg ${
@@ -280,13 +280,13 @@ function AdminPage() {
                     </button>
                 </div>
                 
-                <div className="w-3/4 flex flex-col space-y-4">
+                <div className="w-full md:w-3/4 flex flex-col space-y-4">
                     {/* Users Tab */}
                     {activeTab === 'users' && (
                         <>
                             <h2 className="text-3xl font-bold text-gray-800">User Management</h2>
                             <div className="overflow-x-auto">
-                                <table className="w-full border-collapse">
+                                <table className="w-full border-collapse min-w-[600px]">
                                     <thead>
                                         <tr className="bg-gray-100">
                                             <th className="p-3 text-left font-semibold border-b">Name</th>
@@ -354,7 +354,7 @@ function AdminPage() {
                         <>
                             <h2 className="text-3xl font-bold text-gray-800">Order Reports</h2>
                             <div className="overflow-x-auto">
-                                <table className="w-full border-collapse">
+                                <table className="w-full border-collapse min-w-[600px]">
                                     <thead>
                                         <tr className="bg-gray-100">
                                             <th className="p-3 text-left font-semibold border-b">Order ID</th>
@@ -408,7 +408,7 @@ function AdminPage() {
                                     dasherApplications.length > 0 &&
                                     dasherApplications.map(app => (
                                     <div key={app.id} className="p-4 border border-gray-300 rounded-lg bg-white">
-                                        <div className="flex justify-between items-start">
+                                        <div className="flex flex-col md:flex-row justify-between items-start">
                                             <div className="flex-1">
                                                 <h3 className="font-semibold text-lg">{app.user.first_name + ' ' + app.user.last_name}</h3>
                                                 <p className="text-sm text-gray-600">{app.user.email}</p>
@@ -420,7 +420,7 @@ function AdminPage() {
                                                     <p className="text-sm text-gray-800 whitespace-pre-wrap">{app.content}</p>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-2 ml-4">
+                                            <div className="flex gap-2 ml-0 md:ml-4 mt-4 md:mt-0">
                                                 <button 
                                                     onClick={() => handleDasherApplication(app.id, 'approve')}
                                                     className="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all"
@@ -446,7 +446,7 @@ function AdminPage() {
                         <>
                             <h2 className="text-3xl font-bold text-gray-800">Dasher Deliveries</h2>
                             <div className="overflow-x-auto">
-                                <table className="w-full border-collapse">
+                                <table className="w-full border-collapse min-w-[600px]">
                                     <thead>
                                         <tr className="bg-gray-100">
                                             <th className="p-3 text-left font-semibold border-b">Dasher</th>
@@ -484,7 +484,7 @@ function AdminPage() {
             {/* User Details Modal */}
             {showUserDetails && selectedUser && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowUserDetails(false)}>
-                    <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-start mb-4">
                             <h3 className="text-2xl font-bold">{selectedUser.name}</h3>
                             <button onClick={() => setShowUserDetails(false)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>

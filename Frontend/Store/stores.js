@@ -32,11 +32,11 @@ function StoresPage ({ setPage }) {
 
     // else {
         return (
-            <div className="flex h-screen w-screen flex-col gap-4 p-10 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
+            <div className="flex min-h-screen w-full flex-col gap-4 p-4 md:p-10 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
                 <h1 className="text-5xl font-semibold">Stores</h1>
                 <div className="mt-2 h-1 w-full border bg-black"></div>
-                <div className="flex w-full justify-center flex-wrap gap-6 px-20">
-                    <div onClick={() => setPage("Store", { store_id: '49f378ca-5509-4abd-bcfc-ab2ece923817' })} className="flex h-60 w-full min-w-[320px] sm:w-80 md:w-[600px] lg:w-[700px] flex-col overflow-hidden rounded-2xl shadow-lg transition duration-200 hover:scale-105 hover:shadow-xl cursor-pointer">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div onClick={() => setPage("Store", { store_id: '49f378ca-5509-4abd-bcfc-ab2ece923817' })} className="flex h-60 w-full flex-col overflow-hidden rounded-2xl shadow-lg transition duration-200 hover:scale-105 hover:shadow-xl cursor-pointer">
                     {/* Image Container */}
                     <div className="h-3/4 w-full">
                         <img 
@@ -51,11 +51,11 @@ function StoresPage ({ setPage }) {
                         Chick-fil-a
                     </div>
                     </div>
-                    <div className="flex h-60 w-full min-w-[320px] sm:w-80 md:w-[600px] lg:w-[700px] flex-col overflow-hidden rounded-2xl shadow-lg transition duration-200 hover:shadow-xl hover:scale-105">
+                    <div className="flex h-60 w-full flex-col overflow-hidden rounded-2xl shadow-lg transition duration-200 hover:shadow-xl hover:scale-105">
                         <div className="flex h-3/4 w-full items-center justify-center bg-amber-300 text-3xl font-semibold text-gray-400 ">Image</div>
                         <div className="flex h-1/4 w-full justify-center items-center bg-black text-3xl text-white">Store 2</div>
                     </div>
-                    <div className="flex h-60 w-full min-w-[320px] sm:w-80 md:w-[600px] lg:w-[700px] flex-col overflow-hidden rounded-2xl shadow-lg transition duration-200 hover:shadow-xl hover:scale-105">
+                    <div className="flex h-60 w-full flex-col overflow-hidden rounded-2xl shadow-lg transition duration-200 hover:shadow-xl hover:scale-105">
                         <div className="flex h-3/4 w-full items-center justify-center bg-amber-300 text-3xl font-semibold text-gray-400 ">Image</div>
                         <div className="flex h-1/4 w-full justify-center items-center bg-black text-3xl text-white">Store 3</div>
                     </div>

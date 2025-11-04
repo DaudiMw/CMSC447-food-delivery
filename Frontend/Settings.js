@@ -224,11 +224,11 @@ function SettingsPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col p-10 bg-gray-50 pt-20">
-      <h1 className="text-4xl font-bold text-gray-800">Settings</h1>
+    <div className="flex min-h-full flex-col p-4 md:p-10 bg-gray-50 pt-20">
+      <h1 className="text-4xl font-bold text-gray-800 pt-24">Settings</h1>
       <div className="mt-4 h-px w-full bg-gray-400"></div>
-      <div className="mt-5 flex w-full flex-row gap-x-10 rounded-md p-4 border border-gray-300 bg-white">
-        <div className="flex h-fit w-1/4 flex-col gap-2 rounded-2xl shadow-lg border border-gray-200 p-2">
+      <div className="mt-5 flex w-full flex-col md:flex-row gap-x-10 rounded-md p-4 border border-gray-300 bg-white">
+        <div className="flex h-fit w-full md:w-1/4 flex-col gap-2 rounded-2xl shadow-lg border border-gray-200 p-2 mb-4 md:mb-0">
           <button
             onClick={() => setActiveTab('profile')}
             className={`p-3 font-semibold text-black transition-all duration-200 rounded-lg ${
@@ -251,7 +251,7 @@ function SettingsPage() {
           </button>
         </div>
         
-        <div className="w-3/4 flex flex-col space-y-6">
+        <div className="w-full md:w-3/4 flex flex-col space-y-6">
           {activeTab === 'profile' && (
             <>
               <h2 className="text-3xl font-bold text-gray-800">Profile Settings</h2>
@@ -360,14 +360,14 @@ function SettingsPage() {
                       placeholder="City"
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
-                    <div className="flex gap-3">
+                    <div className="flex flex-col md:flex-row gap-3">
                       <input
                         type="text"
                         value={addressForm.state}
                         onChange={(e) => setAddressForm({...addressForm, state: e.target.value})}
                         placeholder="State"
                         maxLength="2"
-                        className="w-1/3 px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
+                        className="w-full md:w-1/3 px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                       />
                       <input
                         type="text"
@@ -375,7 +375,7 @@ function SettingsPage() {
                         onChange={(e) => setAddressForm({...addressForm, zip: e.target.value})}
                         placeholder="ZIP Code"
                         maxLength="5"
-                        className="w-2/3 px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
+                        className="w-full md:w-2/3 px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                       />
                     </div>
                     <button 
@@ -393,8 +393,8 @@ function SettingsPage() {
                 ) : (
                   <div className="space-y-2">
                     {addresses.map(addr => (
-                      <div key={addr.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
+                      <div key={addr.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="mb-2 md:mb-0">
                           <p className="font-medium text-gray-800">{addr.label}</p>
                           <p className="text-sm text-gray-600">{addr.address}</p>
                         </div>
@@ -466,8 +466,8 @@ function SettingsPage() {
                 ) : (
                   <div className="space-y-2">
                     {paymentMethods.map(pm => (
-                      <div key={pm.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
+                      <div key={pm.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="mb-2 md:mb-0">
                           <p className="font-medium text-gray-800">{pm.type} •••• {pm.last4}</p>
                           <p className="text-sm text-gray-600">Expires {pm.expiry}</p>
                         </div>
@@ -487,8 +487,8 @@ function SettingsPage() {
               {/* Apply to be a Dasher */}
               <div className="p-4 border-2 border-[#fdb515] rounded-lg bg-orange-50">
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-3">
+                    <div class="mb-2 md:mb-0">
                       <h3 className="font-semibold text-gray-800">Become a Dasher</h3>
                       <p className="text-sm text-gray-600">Earn money by delivering orders on campus</p>
                     </div>
@@ -529,8 +529,8 @@ function SettingsPage() {
 
               {/* Delete Account */}
               <div className="p-4 border-2 border-red-300 rounded-lg bg-red-50">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+                  <div class="mb-2 md:mb-0">
                     <h3 className="font-semibold text-red-800">Delete Account</h3>
                     <p className="text-sm text-red-600">Permanently delete your account and all data</p>
                   </div>

@@ -60,7 +60,7 @@ function NutritionModal({ onClose, nutrition_info, itemName }) {
   const modalContent = (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -150,7 +150,7 @@ function ItemList({ data }) {
   };
 
   return (
-    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-8 px-6">
+    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-8 px-4 md:px-6">
       <div className="max-w-5xl mx-auto">
         {itemTypeOrder.map(type => {
           const items = groupedItems[type];
@@ -224,19 +224,19 @@ function StorePage({ store_id }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       {/* Hero Section - Company Image */}
-      <div className="relative w-full h-80 bg-cover bg-center" style={{ backgroundImage: "url('images/15254678_chick-fil-a-clean-TN-img.jpg')" }}>
+      <div className="relative w-full h-60 md:h-80 bg-cover bg-center" style={{ backgroundImage: "url('images/15254678_chick-fil-a-clean-TN-img.jpg')" }}>
         <div className="absolute inset-0 bg-black opacity-25"></div>
       </div>
 
       {/* Store Info Section */}
-      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 px-6 py-8">
+      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 px-4 md:px-6 py-8">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
             {store.name || 'Store'}
           </h1>
-          <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
-            <p className="text-xl md:text-2xl text-gray-800">Open-Close</p>
-            <p className="text-lg md:text-xl text-gray-800">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-2 md:gap-4">
+            <p className="text-lg md:text-2xl text-gray-800">Open-Close</p>
+            <p className="text-base md:text-xl text-gray-800">
               {store.address || 'Address'}
             </p>
           </div>
