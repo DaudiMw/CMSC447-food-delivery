@@ -1,0 +1,4 @@
+
+const { useSuspenseQuery } = window.ReactQuery;
+
+

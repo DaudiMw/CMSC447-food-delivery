@@ -11,7 +11,8 @@ function SignupForm(props) {
     const [campusId, setCampusId] = React.useState('');
     const [error, setError] = React.useState('');
     const [loading, setLoading] = React.useState(false);
-
+    
+    const history = window.ReactRouterDOM.useHistory();
 
     const Signup = async (userData) => {
         try {
@@ -21,6 +22,9 @@ function SignupForm(props) {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(userData),
+                credentials: 'same-origin',
+                redirect: 'manual',
+                mode: 'cors'
             });
 
             if (!response.ok) {
@@ -36,8 +40,7 @@ function SignupForm(props) {
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         setError('');
 
         // Validate passwords match
@@ -61,20 +64,18 @@ function SignupForm(props) {
             
             console.log('Signup successful:', data);
             
-            // Redirect to login page
-            window.location.hash = '#/login';
-            props.setPage("Home");
-            
+            // Navigate to login page on success
+            history.push('/login');
+                        
         } catch (error) {
             setError(error.message || 'Signup failed. Please try again.');
-        } finally {
             setLoading(false);
         }
         return false;
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <div>
             <div className="mb-3">
                 <label className="form-label">First Name</label>
                 <input 
@@ -138,7 +139,7 @@ function SignupForm(props) {
             <div className="mb-3">
                 <label className="form-label">Campus Id</label>
                 <input 
-                    type="campus_id" 
+                    type="text" 
                     className="form-control" 
                     value={campusId}
                     onChange={(e) => setCampusId(e.target.value)}
@@ -154,13 +155,14 @@ function SignupForm(props) {
             )}
             
             <button 
-                type="submit" 
+                type="button" 
                 className="btn btn-lg w-100" 
                 style={{backgroundColor: "orange", color: "black"}}
                 disabled={loading}
+                onClick={handleSubmit}
             >
                 {loading ? 'Signing up...' : 'Sign Up'}
             </button>
-        </form>
+        </div>
     );
 }

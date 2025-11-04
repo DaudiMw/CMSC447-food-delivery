@@ -6,6 +6,8 @@ function LoginForm(props) {
     const [error, setError] = React.useState('');
     const [loading, setLoading] = React.useState(false);
 
+    const history = window.ReactRouterDOM.useHistory();
+
     const Login = async (username, password) => {
         try {
             // Create form data the correct way
@@ -15,7 +17,7 @@ function LoginForm(props) {
 
             const response = await fetch(`${API_BASE_URL}/token`, {
                 method: 'POST',
-                body: formData, // Don't set Content-Type header - let browser set it
+                body: formData,
             });
 
             if (!response.ok) {
@@ -23,6 +25,7 @@ function LoginForm(props) {
                 throw new Error(errorData.detail || 'Login failed');
             }
 
+            // Parse and return the JSON data
             return await response.json();
 
         } catch (error) {
@@ -37,15 +40,21 @@ function LoginForm(props) {
         setLoading(true);
 
         try {
+            // Login already returns parsed JSON
             const data = await Login(email, password);
+
+            // Store the token
+            localStorage.setItem('authToken', data.access_token);
             
-            if (data.access_token) {
-                localStorage.setItem('token', data.access_token);
-            }
+            // Decode the JWT to get the role (simple base64 decode)
+            const tokenParts = data.access_token.split('.');
+            const payload = JSON.parse(atob(tokenParts[1]));
             
-            console.log('Login successful:', data);
-            window.location.href = 'dashboard.html';
-            props.setPage("Home");
+            // Store role and user_id
+            localStorage.setItem('userRole', payload.role);
+            localStorage.setItem('userId', payload.user_id);
+
+            history.push('/home');
             
         } catch (error) {
             setError(error.message || 'Login failed. Please check your credentials.');

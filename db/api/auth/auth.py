@@ -6,8 +6,9 @@ from api.schemas.user_schemas import UserAuth, UserSchema, UserCreate
 from repositories.store import StoreRepository
 from models import UserRole
 from repositories.user import UserRepository
+from repositories.store import StoreRepository
 from sqlalchemy.orm import Session
-from database import get_db
+from database import SessionLocal, get_db
 from datetime import datetime, timedelta, timezone
 import jwt
 from jwt.exceptions import InvalidTokenError
@@ -22,7 +23,7 @@ SECRET_KEY= "883169540dc377b78b96831aacebcf3a136f34ce14752f41217d6d6f5e4a334e"
 ALGORITHM="HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 class Token(BaseModel):
     access_token: str
@@ -74,17 +75,18 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
             raise credentials_exception
         
         token_data = TokenData(username=username)
+
+        userData = UserAuth(email=token_data.username, role=UserRole(role), user_id=user_id)
+
+        print(userData)
+    
+        return userData
     
     except InvalidTokenError:
         raise credentials_exception
-    
-    userData = UserAuth(email=token_data.username, role=UserRole(role), user_id=user_id)
-    
-    
-    return userData
 
 def admin_required(current_user: UserAuth = Depends(get_current_user)):
-    if current_user.role != "admin":
+    if current_user.role != UserRole.admin:
         raise HTTPException(status_code=403, detail="Forbidden")
     return current_user
 
@@ -93,14 +95,27 @@ def dasher_required(current_user: UserAuth = Depends(get_current_user)):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return current_user
 
-def is_store_owner(store_id, current_user : UserAuth = Depends(get_current_user)):
-    db = Session()
-    store_repo = StoreRepository(db)
-    store_owners_list = store_repo.get_store_owner(current_user.user_id, store_id)
-    if store_owners_list.empty():
+def is_first_user():
+    db = SessionLocal()
+    user_repo = UserRepository(db)
+
+    users = user_repo.get_all()
+
+    if len(users) == 0:
         return True
     else:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        return False
+
+
+
+# def is_store_owner(store_id, current_user : UserAuth = Depends(get_current_user)):
+#     db = Session()
+#     store_repo = StoreRepository(db)
+#     store_owners_list = store_repo.get_store_owner(current_user.user_id, store_id)
+#     if store_owners_list.empty():
+#         return True
+#     else:
+#         raise HTTPException(status_code=401, detail="Unauthorized")
 
 # async def get_current_active_user(current_user: UserCreate = Depends(get_current_user)):
 #     if current_user.is_banned or current_user.is_deleted:
@@ -146,6 +161,11 @@ async def create_user(user: UserCreate,
         # Hash the password before saving
         user_data = user.dict()
         user_data["password"] = get_password_hash(user_data["password"])
+
+        if is_first_user():
+            user_data["role"] = "admin"
+        else:
+            user_data["role"] = "user"
 
         new_user = user_repo.create(**user_data)
 
