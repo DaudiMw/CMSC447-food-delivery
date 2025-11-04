@@ -52,6 +52,7 @@ function MyApp() {
                     <ProtectedRoute exact path="/" component={HomePage} />
                     <ProtectedRoute path="/home" component={HomePage} />
                     <ProtectedRoute path="/settings" component={SettingsPage} />
+                    <ProtectedRoute path="/{user_id}/orders" component={OrdersPage} />
                     <ProtectedRoute path="/stores" component={StoresPage} />
                     <ProtectedRoute path="/store/:store_id" component={StorePage} />
                     <ProtectedRoute path="/admin" component={AdminPage} allowed_roles={['admin']} />
@@ -62,7 +63,8 @@ function MyApp() {
         </QueryClientProvider>
     );
 }
-// // Login Page Component
+
+// Login Page Component
 function LoginPage() {
   return (
     <div className="bg-cover bg-center h-screen" style={{
@@ -204,6 +206,7 @@ class Banner extends React.Component {
                     className="logo" 
                     src="images/UMBCLogo.png" 
                     alt="UMBC Logo"
+                    onClick={() => window.location.hash = '#/home'}
                 />
                 
                 <div className="banner-controls">
@@ -252,7 +255,7 @@ class HomePage extends React.Component {
     componentDidMount() {
         // This function, props.GetRestaurants(), is what was given to us when constructing the object.
         // See farther below to see how to pass props into a constructor.
-        let data = this.props.GetRestaurants();
+        let data = ["Chick-Fil-A", "Starbucks", "Taco Bell"];
 
         // Gets the div called restaurants, you can see where it is in this class's render() function.
         const restaurants = document.getElementsByClassName("restaurants")[0];
@@ -295,86 +298,86 @@ class HomePage extends React.Component {
 
 // STARTING HERE!!!
 // The class must extend React.Component so that React is able to call the render() function
-class MyApp extends React.Component {
-    // First, this gets called. It's just a normal constructor, it has to get called before render
-    constructor() {
-        super();
-        // Here the initial state is set. The state is just something else that React.Component gives us,
-        // it's not defined here. It also cannot be set directly outside of the constructor....
-        this.state = {page: "Signup"};
-    }
+// class MyApp extends React.Component {
+//     // First, this gets called. It's just a normal constructor, it has to get called before render
+//     constructor() {
+//         super();
+//         // Here the initial state is set. The state is just something else that React.Component gives us,
+//         // it's not defined here. It also cannot be set directly outside of the constructor....
+//         this.state = {page: "Signup"};
+//     }
 
-    // ....That's what this function is for. It accepts an ID (which in this case should be a string),
-    // and then calls setState (another React thing), setting this object's state.page variable to the
-    // ID that was passed in.
-    setPage = (id) => {
-        // Also, calling this forces React to reload the page, which is relevant for reasons below.
-        this.setState({
-            page: id
-        });
-        console.log(`MyApp.setPage(name: ${id})`);
-    }
+//     // ....That's what this function is for. It accepts an ID (which in this case should be a string),
+//     // and then calls setState (another React thing), setting this object's state.page variable to the
+//     // ID that was passed in.
+//     setPage = (id) => {
+//         // Also, calling this forces React to reload the page, which is relevant for reasons below.
+//         this.setState({
+//             page: id
+//         });
+//         console.log(`MyApp.setPage(name: ${id})`);
+//     }
 
-    // This is used in MyApp's render function below. It just checks the current object's state.page
-    // variable, and returns a page based on that.
-    // Also, if you're wondering why we don't need to make these fields, idk why but it's just
-    // JavaScript being able to do that and being cursed.
-    getPage() {
-        // This is the home "landing" page, currently what it is initialized to show up first.
-        if (this.state.page == "Home") {
-            return (
-                // All this needs to do is return an object.
-                // However, here is where we get to set the props.
-                // I think it's similar to how passing a function's arguments works, kinda.
-                // For every variable in props you want to set (props.setPage and props.page in this case),
-                // you just declare it here by setting a name equal to something and it works.
-                // Also it must be enclosed in {} because reasons.
-                // props.page in this case is set to another page to render inside the BasePage render() function,
-                // and that also gets its own props, which is GetRestaurant.
-                <BasePage setPage={this.setPage} page={<HomePage GetRestaurants={this.FetchRestaurantData}></HomePage>}></BasePage>
-            );
-        }
-        // A similar process for all below.
-        else if (this.state.page == "Orders") {
-            return (
-                <BasePage setPage={this.setPage} page={<OrdersPage GetOrders={this.FetchOrders}></OrdersPage>}></BasePage>
-            );
-        }
-        else if (this.state.page == "Settings") {
-            return (
-                <BasePage setPage={this.setPage} page={<SettingsPage></SettingsPage>}></BasePage>
-            );
-        }
-        else if (this.state.page == "Signup") {
-            return (
-                <SignupPage setPage={this.setPage}></SignupPage>
-            );
-        }
-    }
+//     // This is used in MyApp's render function below. It just checks the current object's state.page
+//     // variable, and returns a page based on that.
+//     // Also, if you're wondering why we don't need to make these fields, idk why but it's just
+//     // JavaScript being able to do that and being cursed.
+//     getPage() {
+//         // This is the home "landing" page, currently what it is initialized to show up first.
+//         if (this.state.page == "Home") {
+//             return (
+//                 // All this needs to do is return an object.
+//                 // However, here is where we get to set the props.
+//                 // I think it's similar to how passing a function's arguments works, kinda.
+//                 // For every variable in props you want to set (props.setPage and props.page in this case),
+//                 // you just declare it here by setting a name equal to something and it works.
+//                 // Also it must be enclosed in {} because reasons.
+//                 // props.page in this case is set to another page to render inside the BasePage render() function,
+//                 // and that also gets its own props, which is GetRestaurant.
+//                 <BasePage setPage={this.setPage} page={<HomePage GetRestaurants={this.FetchRestaurantData}></HomePage>}></BasePage>
+//             );
+//         }
+//         // A similar process for all below.
+//         else if (this.state.page == "Orders") {
+//             return (
+//                 <BasePage setPage={this.setPage} page={<OrdersPage GetOrders={this.FetchOrders}></OrdersPage>}></BasePage>
+//             );
+//         }
+//         else if (this.state.page == "Settings") {
+//             return (
+//                 <BasePage setPage={this.setPage} page={<SettingsPage></SettingsPage>}></BasePage>
+//             );
+//         }
+//         else if (this.state.page == "Signup") {
+//             return (
+//                 <SignupPage setPage={this.setPage}></SignupPage>
+//             );
+//         }
+//     }
 
-    // These are defined here so that they're easy to find and change, and so they can be given to multiple
-    // pages and not have to be copied.
-    // Need to be filled with actual requests to the database
-    FetchRestaurantData = () => {
-        return ["Chick-Fil-A", "Starbucks", "Taco Bell"];
-    }
+//     // These are defined here so that they're easy to find and change, and so they can be given to multiple
+//     // pages and not have to be copied.
+//     // Need to be filled with actual requests to the database
+//     FetchRestaurantData = () => {
+//         return ["Chick-Fil-A", "Starbucks", "Taco Bell"];
+//     }
 
-    FetchOrders = () => {
-        return ["Order 1", "Order 2", "Order 3"];
-    }
+//     FetchOrders = () => {
+//         return ["Order 1", "Order 2", "Order 3"];
+//     }
 
-    // Finally, this is the render function for MyApp. It is what gets called to display the page.
-    render() {
-        // Get the page...
-        const pageNode = this.getPage();
-        return (
-            // ...render it inside of a div (it has to be inside a <div> or it won't work/render anything).
-            <div>
-                {pageNode}
-            </div>
-        );
-    }
-};
+//     // Finally, this is the render function for MyApp. It is what gets called to display the page.
+//     render() {
+//         // Get the page...
+//         const pageNode = this.getPage();
+//         return (
+//             // ...render it inside of a div (it has to be inside a <div> or it won't work/render anything).
+//             <div>
+//                 {pageNode}
+//             </div>
+//         );
+//     }
+// };
     // componentDidMount() {
     //     let data = this.props.GetRestaurants();
     //     const restaurants = document.getElementsByClassName("restaurants")[0];
@@ -464,39 +467,21 @@ class SignupPage extends React.Component {
       <div className="bg-cover bg-center h-screen" style={{
         backgroundImage: "url('images/maryland-flag-black-gray.jpg')", 
       }}>
-        <div style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.5)"
-        }}></div>
-        <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
-          <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
-            <h1 className="text-center mb-4">Sign Up</h1>
-            <SignupForm setPage={this.props.setPage}/>
-            <p className="text-center mt-3">
-              Already have an account? <a href="#/login" className="text-primary" style={{textDecoration: 'none'}}>Login</a>
-            </p>
         <div className="bg-black bg-opacity-50 h-full">
           <div className="d-flex justify-content-center align-items-center vh-100">
             <div className="card p-4 shadow w-100 mx-3" style={{ maxWidth: "500px" }}>
               <h1 className="text-center mb-4">Sign Up</h1>
               <SignupForm setPage={this.props.setPage}/>
               <p className="text-center mt-3">
-                Already have an account? 
-                <Link to="/login" className="text-primary" style={{textDecoration: 'none'}}>
-                   Login
+                Already have an account? <Link to="/login" className="text-primary" style={{textDecoration: 'none'}}>
+                    Login
                 </Link>
               </p>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    </div>
-    );
+    )
   }
 }
 
