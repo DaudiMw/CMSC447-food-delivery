@@ -2,7 +2,7 @@
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from models import Item, ItemType
-from base import BaseRepository
+from repositories.base import BaseRepository
 
 
 class ItemRepository(BaseRepository[Item]):

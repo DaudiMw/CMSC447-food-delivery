@@ -9,4 +9,12 @@ class BaseSchema(BaseModel):
 
     class Config:
         from_attributes = True
-        orm_mode = True
+        # orm_mode = True
+
+class Address(BaseModel):
+    user_id: str | None = None
+    label: str | None = None
+    street: str
+    city: str
+    state: str
+    zip: str

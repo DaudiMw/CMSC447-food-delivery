@@ -82,7 +82,6 @@ class UserRepository(BaseRepository[User]):
         self.commit()
         self.session.refresh(user)
         return user 
-    
 
      
     

@@ -37,10 +37,13 @@ class User(Base):
     last_name = Column(String)
     role = Column(SqlEnum(UserRole), nullable=False, default=UserRole.user)
     is_banned = Column(Boolean, nullable=False, default=False)
-    orders = relationship("Order", back_populates="user")
+    
+    # Relationships
+    orders = relationship("Order", back_populates="user", foreign_keys="Order.user_id")
     addresses = relationship("Address", back_populates="user")
-    pickups = relationship("Pickups", back_populates="user")
-    reports = relationship("Reports", back_populates="user")
+    pickups = relationship("Pickups", back_populates="dasher", foreign_keys="Pickups.dasher_id")
+    reports_made = relationship("Reports", back_populates="user", foreign_keys="Reports.user_id")
+    store_ownerships = relationship("StoreOwners", back_populates="owner")
 
 
 class Order(Base):
@@ -53,13 +56,12 @@ class Order(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
+    # Relationships
     user = relationship("User", back_populates="orders")
+    items = relationship("Item", secondary="user_orders", back_populates="orders")
+    pickups = relationship("Pickups", back_populates="order")
+    reports = relationship("Reports", back_populates="order")
 
-    items = relationship(
-        "Item",
-        secondary="user_orders",
-        back_populates="orders"
-    )
 
 class OrderItems(Base):
     __tablename__ = "user_orders"
@@ -74,9 +76,15 @@ class Store(Base):
 
     store_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     name = Column(String, nullable=False, index=True)
-    address = Column(String, nullable=False)
+    address = Column(ForeignKey("addresses.address_id"), nullable=False)
+    description = Column(String)
+    picture = Column(String)
     phone = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    
+    # Relationships
+    items = relationship("Item", back_populates="store")
+    owners = relationship("StoreOwners", back_populates="store")
 
 
 class StoreOwners(Base):
@@ -85,6 +93,10 @@ class StoreOwners(Base):
     store_owners_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     owner_id = Column(String, ForeignKey("users.user_id"), nullable=False)
+    
+    # Relationships
+    store = relationship("Store", back_populates="owners")
+    owner = relationship("User", back_populates="store_ownerships")
 
 
 class Item(Base):
@@ -99,11 +111,10 @@ class Item(Base):
     store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     info_id = Column(String, ForeignKey("item_info.item_info_id"))
 
-    orders = relationship(
-        "Order",
-        secondary="user_orders",
-        back_populates="items"
-    )
+    # Relationships
+    orders = relationship("Order", secondary="user_orders", back_populates="items")
+    store = relationship("Store", back_populates="items")
+    nutrition_info = relationship("ItemInfo", back_populates="items")
 
 
 class ItemInfo(Base):
@@ -121,6 +132,10 @@ class ItemInfo(Base):
     added_sugars = Column(String)
     protein = Column(String)
     ingredients = Column(String)
+    
+    # Relationships
+    items = relationship("Item", back_populates="nutrition_info")
+
 
 class Pickups(Base):
     __tablename__ = "pickups"
@@ -130,6 +145,11 @@ class Pickups(Base):
     dasher_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     scheduled_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     completed_at = Column(DateTime, default=None)
+    
+    # Relationships
+    order = relationship("Order", back_populates="pickups")
+    dasher = relationship("User", back_populates="pickups")
+
 
 class Reports(Base):
     __tablename__ = "reports"
@@ -139,18 +159,32 @@ class Reports(Base):
     order_id = Column(String, ForeignKey("orders.order_id"), nullable=False, unique=True)
     dasher_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     comment = Column(String, nullable=False)
+    
+    # Relationships
+    user = relationship("User", back_populates="reports_made", foreign_keys=[user_id])
+    order = relationship("Order", back_populates="reports")
+    # Note: dasher relationship might need special handling since it's also a User
+
 
 class Address(Base):
     __tablename__ = "addresses"
 
-    user_id = Column(String, ForeignKey("users.user_id"), nullable=False, primary_key=True)
     address_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    user_id = Column(String, ForeignKey("users.user_id"))
+    store_id = Column(String, ForeignKey("stores.store_id"))
     street = Column(String, nullable=False)
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
     zip = Column(String, nullable=False)
+    label = Column(String)
+    
+    # Relationships
+    user = relationship("User", back_populates="addresses")
 
+class DasherApplications(Base):
+    __tablename__ = "dasher_applications"
 
-
-
-
+    application_id = Column(String, primary_key=True, default= lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    user_id = Column(String, ForeignKey("users.user_id"), nullable=False, unique=True)
+    content = Column(String, nullable=False)
+    date_applied = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

@@ -1,18 +1,31 @@
-from fastapi import FastAPI
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
+from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 from db_setup import create_db
 from api.routers import user
 from api.auth import auth
 from api.routers import admin
 from api.routers import order
 from api.routers import pickups
+from api.routers import store
+from utils import BaseFactory
+
 
 app = FastAPI(
     title="Your API",
     description="Your API Description",
     version="1.0.0"
 )
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
+
 
 # Include all your routers
 app.include_router(user.router, tags=["users"])
@@ -25,6 +38,10 @@ app.include_router(order.router, tags=["orders"])
 
 app.include_router(pickups.router, tags=["pickups"])
 
+app.include_router(store.router, tags=["stores"])
+
+
+
 @app.on_event("startup")
 def startup_event():
     create_db()
@@ -32,4 +49,20 @@ def startup_event():
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+# Explicit OPTIONS handler
+@app.options("/{full_path:path}")
+async def options_handler(full_path: str):
+    return Response(status_code=200)
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    print(f"Method: {request.method}\n, Path: {request.url.path}")
+    print(f"Headers: {request.headers}")
+    print(f"Query Params: {request.query_params}")
+    response = await call_next(request)
+    print(f"Response status: {response.status_code}")
+    print(f"Response headers: {response.headers}")
+    print("-----")
+    return response
 

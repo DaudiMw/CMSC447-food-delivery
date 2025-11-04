@@ -20,7 +20,6 @@ class UserCreate(BaseSchema):
     password: str  # Only needed for creation
     first_name: str
     last_name: Optional[str] = None
-    role: UserRole
 
 class UserResponse(BaseSchema):
     user_id: str
@@ -42,6 +41,10 @@ class UserAuth(BaseSchema):
     email: str
     user_id: str
     role: UserRole
+
+class ApplicationCreate(BaseSchema):
+    user_id: str
+    content: str
 
 
 
