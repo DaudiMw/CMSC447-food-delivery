@@ -33,7 +33,7 @@ async def create_report_to_order(report: ReportSchema,
     
     return new_report
 
-@router.get("/orders", status_code=201, response_model=list[ReportSchema])
+@router.get("/{order_id}", status_code=201, response_model=list[ReportSchema])
 async def get_report_by_order_id(order_id: str,
                                  user: user_dependency,
                                  db: Session = Depends(get_db)):
@@ -51,7 +51,7 @@ async def get_report_by_order_id(order_id: str,
     
     return report
 
-@router.get("/users", status_code=201, response_model=list[ReportSchema])
+@router.get("/{user_id}", status_code=201, response_model=list[ReportSchema])
 async def get_report_by_user_id(user_id: str,
                                 user: user_dependency,
                                 db: Session = Depends(get_db)):
@@ -69,7 +69,7 @@ async def get_report_by_user_id(user_id: str,
     
     return report
 
-@router.get("/dashers", status_code=201, response_model=list[ReportSchema])
+@router.get("/{dasher_id}", status_code=201, response_model=list[ReportSchema])
 async def get_report_by_dasher_id(dasher_id: str,
                                   user: user_dependency,
                                   db: Session = Depends(get_db)):
@@ -87,7 +87,7 @@ async def get_report_by_dasher_id(dasher_id: str,
     
     return report
 
-@router.get("/stores", status_code=201, response_model=list[ReportSchema])
+@router.get("/{store_id}", status_code=201, response_model=list[ReportSchema])
 async def get_report_by_store_id(store_id: str,
                                  user: user_dependency,
                                  db: Session = Depends(get_db)):
@@ -105,7 +105,7 @@ async def get_report_by_store_id(store_id: str,
     
     return report
 
-@router.get("/stores", status_code=201, response_model=list[ReportSchema])
+@router.get("/{store_id}/users", status_code=201, response_model=list[ReportSchema])
 async def get_report_by_store_id_and_user_id(store_id: str,
                                              user: user_dependency,
                                              db: Session = Depends(get_db)):
@@ -123,7 +123,7 @@ async def get_report_by_store_id_and_user_id(store_id: str,
     
     return report
 
-@router.get("/stores", status_code=201, response_model=list[ReportSchema])
+@router.get("/{store_id}/dashers", status_code=201, response_model=list[ReportSchema])
 async def get_report_by_store_id_and_dasher_id(store_id: str,
                                                user: user_dependency,
                                                db: Session = Depends(get_db)):

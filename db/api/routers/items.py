@@ -14,7 +14,7 @@ router = APIRouter(dependencies=[Depends(oauth2_scheme)], prefix="/items", tags=
 
 user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
-@router.post("", status_code=201, response_model=list[ItemSchema])
+@router.post("/{store_id}", status_code=201, response_model=list[ItemSchema])
 async def add_item_to_store(item: ItemSchema,
                             store_id: str,
                             user: user_dependency,
@@ -36,7 +36,7 @@ async def add_item_to_store(item: ItemSchema,
     
     return new_item
 
-@router.get("", status_code=201, response_model=list[ItemSchema])
+@router.get("/{store_id}/{item_name}", status_code=201, response_model=list[ItemSchema])
 async def get_item_by_store_id_and_name(store_id: str,
                                         item_name: str,
                                         user: user_dependency,
@@ -58,7 +58,7 @@ async def get_item_by_store_id_and_name(store_id: str,
     
     return item
 
-@router.get("/search", status_code=201, response_model=list[ItemSchema])
+@router.get("/{store_id}/search", status_code=201, response_model=list[ItemSchema])
 async def search_item_by_store_id(store_id: str,
                                   query: str,
                                   user: user_dependency,
@@ -74,7 +74,7 @@ async def search_item_by_store_id(store_id: str,
     
     return item
 
-@router.get("/order", status_code=201, response_model=list[ItemSchema])
+@router.get("/{order_id}", status_code=201, response_model=list[ItemSchema])
 async def get_item_by_order_id(order_id: str,
                                user: user_dependency,
                                db: Session = Depends(get_db)):
