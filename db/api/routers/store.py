@@ -64,7 +64,21 @@ async def create_store(store: StoreSchema,
 
 #         return updated_store
 
+@router.get("/{user_id}", response_model=StoreSchema)
+async def get_user_stores(user: user_dependency, db: Session = Depends(get_db)):
+    """Gets all stores that a user owns."""
+    try:
+        store_repo = StoreRepository(db)
 
+        store = store_repo.get_user_stores(user.user_id)
+
+        if not store:
+            raise HTTPException(status_code=404, detail="Store not found.")
+        
+        return store
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{store_id}", response_model=StoreSchema)

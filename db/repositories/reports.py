@@ -12,7 +12,6 @@ class ReportsRepository(BaseRepository[Reports]):
             self.model.order_id == order_id
         ).all()
     
-    
     def get_by_dasher_id(self, dasher_id: str) -> list[Reports]:
         return self.session.query(Reports).filter(
             self.model.dasher_id == dasher_id

@@ -19,11 +19,13 @@ async def create_report_to_order(report: ReportSchema,
                                  order_id: str,
                                  user: user_dependency,
                                  db: Session = Depends(get_db)):
+    """Creates a report for an order."""
+    """Perms: admin, user of order, dasher of order"""
     reports_repo = ReportsRepository(db)
     orders_repo = OrderRepository(db)
     order = orders_repo.get_by_id(order_id)
 
-    if order.user_id != user.user_id and order.pickups.dasher_id != user.user_id:
+    if user.role != "admin" and order.user_id != user.user_id and order.pickups.dasher_id != user.user_id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     try:
@@ -37,6 +39,8 @@ async def create_report_to_order(report: ReportSchema,
 async def get_report_by_order_id(order_id: str,
                                  user: user_dependency,
                                  db: Session = Depends(get_db)):
+    """Gets a report by its order ID."""
+    """Perms: admin, store owner of order, user who reported, dasher who reported"""
     reports_repo = ReportsRepository(db)
     store_repo = StoreRepository(db)
     report = reports_repo.get_by_order_id(order_id)
@@ -55,6 +59,8 @@ async def get_report_by_order_id(order_id: str,
 async def get_report_by_user_id(user_id: str,
                                 user: user_dependency,
                                 db: Session = Depends(get_db)):
+    """Gets a report by its user ID."""
+    """Perms: admin, store owner of order, user who reported, dasher who reported"""
     reports_repo = ReportsRepository(db)
     store_repo = StoreRepository(db)
     report = reports_repo.get_by_user_id(user_id)
@@ -73,6 +79,8 @@ async def get_report_by_user_id(user_id: str,
 async def get_report_by_dasher_id(dasher_id: str,
                                   user: user_dependency,
                                   db: Session = Depends(get_db)):
+    """Gets a report by its dasher ID."""
+    """Perms: admin, store owner of order, user who reported, dasher who reported"""
     reports_repo = ReportsRepository(db)
     store_repo = StoreRepository(db)
     report = reports_repo.get_by_dasher_id(dasher_id)
@@ -91,6 +99,8 @@ async def get_report_by_dasher_id(dasher_id: str,
 async def get_report_by_store_id(store_id: str,
                                  user: user_dependency,
                                  db: Session = Depends(get_db)):
+    """Gets a report by its store ID."""
+    """Perms: admin, store owner of order, user who reported, dasher who reported"""
     reports_repo = ReportsRepository(db)
     store_repo = StoreRepository(db)
     report = reports_repo.get_by_store_id(store_id)
@@ -109,6 +119,8 @@ async def get_report_by_store_id(store_id: str,
 async def get_report_by_store_id_and_user_id(store_id: str,
                                              user: user_dependency,
                                              db: Session = Depends(get_db)):
+    """Gets a report by its store ID and user ID."""
+    """Perms: admin, store owner of order, user who reported, dasher who reported"""
     reports_repo = ReportsRepository(db)
     store_repo = StoreRepository(db)
     report = reports_repo.get_by_store_id_and_user_id(store_id, user.user_id)
@@ -127,6 +139,8 @@ async def get_report_by_store_id_and_user_id(store_id: str,
 async def get_report_by_store_id_and_dasher_id(store_id: str,
                                                user: user_dependency,
                                                db: Session = Depends(get_db)):
+    """Gets a report by its store ID and dasher ID."""
+    """Perms: admin, store owner of order, user who reported, dasher who reported"""
     reports_repo = ReportsRepository(db)
     store_repo = StoreRepository(db)
     report = reports_repo.get_by_store_id_and_dasher_id(store_id, user.user_id)
