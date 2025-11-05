@@ -4,6 +4,8 @@ const { ReactQueryDevtools } = window.ReactQueryDevtools;
 
 const queryClient = new QueryClient()
 
+const baseUrl = 'http://localhost:5500'
+
 function MyApp() {
     return (
         <QueryClientProvider client={queryClient}>

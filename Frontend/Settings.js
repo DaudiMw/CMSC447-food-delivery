@@ -45,25 +45,6 @@ const api = {
     await new Promise(resolve => setTimeout(resolve, 300));
     return settings;
   },
-  applyToDasher: async (application) => {
-    try {
-        console.log('payload:', application);
-        
-        const response = await fetch(`http://localhost:8000/users/${application.user_id}/dasher-application`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            },
-            body: JSON.stringify(application)
-        });
-        
-        return response.json();
-    } catch (error) {
-        console.error('Error:', error);
-        throw error;
-    }
-  }  
 };
 
 
@@ -210,10 +191,8 @@ function SettingsPage() {
       alert('Please provide your reasoning for wanting to become a Dasher');
       return;
     }
-    
-    // Replace 'user123' with actual user ID from your auth context/state
     applyToDasherMutation.mutate({
-      user_id: String(getUserId()), // TODO: Get from auth context
+      user_id: String(getUserId()),
       content: dasherReasoning
     });
   };

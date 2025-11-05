@@ -2,51 +2,54 @@ const { useQuery, useMutation, QueryClient, QueryClientProvider } = window.React
 
 /**
  * 
- * @param {*} userId 
+ * @param {*} user_id 
  * @returns 
  */
-async function get_user_address(userId) {
-    try {
-        const addresses = await fetch(`http://localhost:8000/users/${userId}/addresses`)
-        return addresses.json()
-    } catch (error) {
-        console.log(error)
+async function get_user_addresses(user_id) {
+    try{
+        const data = await authFetch(`/users/${user_id}/addresses`, {
+            method: 'GET'
+        });
+        return data;
+    } catch(error){
+        console.error('Error fetching addresses: ', error);
     }
 }
 
 
 /**
  * 
- * @param {*} userId: the id of the user to add the address to.
+ * @param {*} user_id: the id of the user to add the address to.
  * @param {*} address: the address body.
  * @returns 
  */
-async function add_user_address(userId, address) {
-    try {
-        const response = await fetch(`http://localhost:8000/users/${userId}/addresses`, {
+async function add_user_address(user_id, address) {
+    try{
+        const data = await authFetch(`/users/${user_id}/addresses`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify(address)
-        })
-        return response.json()
-    } catch (error) {
-        console.log(error)
+        });
+        return data;
+
+    } catch(error){
+        console.error('Error creating new address: ', error);
     }
 }
 
 /**
  * 
- * @param {*} userId 
+ * @param {*} user_id: the id of the user to add the address to.
+ * @param {*} address_id: the address id.
  * @returns 
  */
-async function get_user_payments(userId) {
+async function delete_user_address(user_id, address_id) {
     try{
-        const payments = await fetch(`http://localhost:8000/users/${userId}/payments`)
-        return payments.json()
-    } catch (error) {
-        console.log(error)
+        const data = await authFetch(`/users/${user_id}/addresses/${address_id}`, {
+            method: 'DELETE'
+        });
+        return data;
+    } catch(error){
+        console.error('Error deleting address: ', error);
     }
 }
 
@@ -56,18 +59,15 @@ async function get_user_payments(userId) {
  * @param {*} payment 
  * @returns 
  */
-async function add_user_payment(userId, payment){ 
+async function add_user_payment(user_id, payment){ 
     try {
-        const response = await fetch(`http://localhost:8000/users/${userId}/payments`, {
+        const data = await authFetch(`/users/${user_id}/payments`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payment)
+            body: JSON.stringify({user_id, payment})
         })
-        return response.json()
+        return data;
     } catch (error) {
-        console.log(error)  
+        console.error('Error adding payment details: ', error)
     }
 }
 
@@ -78,10 +78,12 @@ async function add_user_payment(userId, payment){
  */
 async function get_cart(userId){
     try {
-        const cart = await fetch(`http://localhost:8000/users/${userId}/cart`)
-        return cart.json()
+        const data = await authFetch(`/${user_id}/dasher_application`, {
+            method: 'GET'
+        })
+        return data;
     } catch (error) {
-        console.log(error)
+        console.error('Error getting cart information: ', error)
     }
 }
 
@@ -96,16 +98,43 @@ async function get_cart(userId){
  */
 async function apply_to_dasher(user_id, content) {
     try {
-        const response = await fetch(`http://localhost:8000/${user_id}/dasher_application`, {
+        const data = await authFetch(`/users/${user_id}/dasher_application`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ user_id, content })
+            body: JSON.stringify({user_id, content})
         })
-        return response.json()
+        return data;
     } catch (error) {
-        console.log(error)
+        console.error('Error applying to dasher: ', error)
+    }
+}
+
+
+async function get_payment_methods(user_id){
+    try{
+        const data = await authFetch(`/users/${user_id}/payment_methods`, {
+            method: 'GET'
+        });
+
+        return data;
+    } catch(error){
+        console.error('Error fetching payment methods: ', error);
+    }
+}
+
+/**
+ * Function to delete a users payment information
+ * @param {'*'} user_id 
+ * @param {*} payment_method_id 
+ * @returns 
+ */
+async function delete_payment_method(user_id, payment_method_id) {
+    try {
+        const data = await authfetch(`/users/${user_id}/payment_methods/${payment_method_id}`, {
+            method:'DELETE'
+        });
+        return data;
+    } catch (error){
+        console.error('Error deleting payment information: ', error);
     }
 }
 
