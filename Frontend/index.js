@@ -4,7 +4,7 @@ const { ReactQueryDevtools } = window.ReactQueryDevtools;
 
 const queryClient = new QueryClient()
 
-const baseUrl = 'http://localhost:5500'
+export const baseUrl = 'http://localhost:8000'
 
 function MyApp() {
     return (
@@ -22,7 +22,8 @@ function MyApp() {
                     <ProtectedRoute path="/settings" component={SettingsPage} />
                     <ProtectedRoute path="/{user_id}/orders" component={OrdersPage} />
                     <ProtectedRoute path="/stores" component={StoresPage} />
-                    <ProtectedRoute path="/store/:store_id" component={StorePage} />
+                    <ProtectedRoute path="/stores/create" component={StoreCreatePage} allowed_roles={['admin']} /> 
+                    <ProtectedRoute path="/store/{store_id}" component={StorePage} />
                     <ProtectedRoute path="/admin" component={AdminPage} allowed_roles={['admin']} />
 
                 </Switch>

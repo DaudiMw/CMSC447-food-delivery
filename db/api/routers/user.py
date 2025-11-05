@@ -13,6 +13,7 @@ from typing import Annotated
 from api.auth.auth import oauth2_scheme
 from api.schemas.user_schemas import ApplicationCreate, UserCreate, UserAuth
 from api.schemas.base_schema import Address
+from utils.VerifyAddress import verify_address
 
 router = APIRouter(dependencies=[Depends(oauth2_scheme)], prefix="/users", tags=["users"])
 
@@ -163,6 +164,10 @@ async def add_address(user_id: str, address_info: Address, user: user_dependency
     address_repo = AddressRepository(db)
 
     try:
+        
+        if not verify_address(address_info):
+            raise HTTPException(status_code=400, detail="Address entered is not within UMBC campus.")
+        
         address = address_repo.create(user_id=user_id, **address_info.dict())
         return address
     except Exception as e:
@@ -178,8 +183,12 @@ async def update_address(user_id: str, address_id: str, address_info: Address, u
     address_repo = AddressRepository(db)
 
     try:
+        if not verify_address(address_info):
+            raise HTTPException(status_code=400, detail="Address entered is not within UMBC campus.")
+        
         address = address_repo.update_by_id(address_id, **address_info.dict())
         return address
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     

@@ -1,55 +1,6 @@
 // Import React Query from CDN
 const { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } = window.ReactQuery;
 
-
-// Mock API functions (replace with real API calls)
-const api = {
-  getAddresses: async () => {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return [
-      { id: 1, label: 'Home', address: '1000 Hilltop Circle, Baltimore, MD 21250' },
-      { id: 2, label: 'Dorm', address: 'Walker Hall Room 302, UMBC Campus' }
-    ];
-  },
-  addAddress: async (address) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { id: Date.now(), ...address };
-  },
-  deleteAddress: async (id) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { id };
-  },
-  getPaymentMethods: async () => {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return [
-      { id: 1, type: 'Visa', last4: '4242', expiry: '12/25' },
-      { id: 2, type: 'Mastercard', last4: '8888', expiry: '06/26' }
-    ];
-  },
-  addPaymentMethod: async (method) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { id: Date.now(), ...method };
-  },
-  deletePaymentMethod: async (id) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { id };
-  },
-  getSettings: async () => {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return {
-      showOnlyOpenStores: true,
-      notifications: true
-    };
-  },
-  updateSettings: async (settings) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return settings;
-  },
-};
-
-
-
-
 // Settings Page Component
 function SettingsPage() {
   const queryClient = useQueryClient();

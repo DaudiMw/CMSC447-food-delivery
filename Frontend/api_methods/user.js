@@ -76,7 +76,7 @@ async function add_user_payment(user_id, payment){
  * @param {*} userId 
  * @returns 
  */
-async function get_cart(userId){
+async function get_cart(user_id){
     try {
         const data = await authFetch(`/${user_id}/dasher_application`, {
             method: 'GET'
@@ -108,7 +108,11 @@ async function apply_to_dasher(user_id, content) {
     }
 }
 
-
+/**
+ * 
+ * @param {*} user_id 
+ * @returns 
+ */
 async function get_payment_methods(user_id){
     try{
         const data = await authFetch(`/users/${user_id}/payment_methods`, {
@@ -135,6 +139,20 @@ async function delete_payment_method(user_id, payment_method_id) {
         return data;
     } catch (error){
         console.error('Error deleting payment information: ', error);
+    }
+}
+
+/**
+ * Function to get a users' settings
+ * @param {*} user_id 
+ * @returns 
+ */
+async function get_user_settings(user_id){
+    try {
+        const data = await authfetch(`/users/${user_id}/settings`);
+        return data;
+    } catch (error){
+        console.error('Error fetching setting information: ', error);
     }
 }
 
