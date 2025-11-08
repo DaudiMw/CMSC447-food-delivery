@@ -19,7 +19,7 @@ def verify_address(address: Address) -> bool:
     # Now we will encode our address (UMBC)
     umbc_address = "1000 Hilltop Circle, 21250, MD, USA"
 
-    umbc_location = geolocator.geocode(umbc_address, timeout=3, exactly_one=True)
+    umbc_location  = geolocator.geocode(umbc_address, timeout=3, exactly_one=True)
 
     if not umbc_location:
         raise Exception("Invalid UMBC address or request timed out")

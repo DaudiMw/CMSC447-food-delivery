@@ -1,3 +1,5 @@
+const { HashRouter, Switch, Route, Link } = window.ReactRouterDOM;
+
 function ItemDisplay({
   item_id,
   name,
@@ -185,32 +187,29 @@ function ItemList({ data }) {
   );
 }
 
-function StorePage({ store_id }) {
-  const [store, setStore] = React.useState(null);
-  const [isLoading, setIsLoading] = React.useState(true);
+function StorePage() {
 
-  React.useEffect(() => {
-    const fetchStoreData = async () => {
-      try {
-        const response = await fetch(`http://localhost:8000/stores/${store_id}/items-full`);
-        const data = await response.json();
-        setStore(data);
-      } catch (error) {
-        console.error("Failed to fetch store data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { store_id } = ReactRouterDom;
 
-    fetchStoreData();
-  }, [store_id]);
+  const { data: store = {}, isLoading: storeLoading, error: storeError, refetch: storeRefetch } = window.ReactQuery.useQuery({
+    queryKey: ['store', store_id],
+    queryFn: () => get_store_info_with_items(store_id)
+  });
 
-  if (isLoading) {
+  if (storeLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-xl text-gray-600">Loading store...</div>
       </div>
     );
+  }
+
+  if (storeError){
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="text-xl text-gray-600">Error getting store.</div>
+      </div>
+    )
   }
 
   if (!store) {
@@ -221,10 +220,12 @@ function StorePage({ store_id }) {
     );
   }
 
+  const imageUrl = store.picture ? `http://localhost:8000/media/${store.picture}` : '/placeholder.jpg';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       {/* Hero Section - Company Image */}
-      <div className="relative w-full h-60 md:h-80 bg-cover bg-center" style={{ backgroundImage: "url('images/15254678_chick-fil-a-clean-TN-img.jpg')" }}>
+      <div className="relative w-full h-60 md:h-80 bg-cover bg-center" style={{ backgroundImage: `url(${imageUrl})` }}>
         <div className="absolute inset-0 bg-black opacity-25"></div>
       </div>
 

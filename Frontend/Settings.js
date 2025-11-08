@@ -23,22 +23,22 @@ function SettingsPage() {
   // Queries
   const { data: addresses = [], isLoading: addressesLoading } = useQuery({
     queryKey: ['addresses'],
-    queryFn: api.getAddresses
+    queryFn: get_user_addresses
   });
 
   const { data: paymentMethods = [], isLoading: paymentsLoading } = useQuery({
     queryKey: ['paymentMethods'],
-    queryFn: api.getPaymentMethods
+    queryFn: get_payment_methods
   });
 
   const { data: settings = {}, isLoading: settingsLoading } = useQuery({
     queryKey: ['settings'],
-    queryFn: api.getSettings
+    queryFn: get_user_settings
   });
 
   // Mutations for addresses
   const addAddressMutation = useMutation({
-    mutationFn: api.addAddress,
+    mutationFn: add_user_address,
     onSuccess: (newAddress) => {
       queryClient.setQueryData(['addresses'], (old = []) => [...old, newAddress]);
       setShowAddAddress(false);
@@ -47,7 +47,7 @@ function SettingsPage() {
   });
 
   const deleteAddressMutation = useMutation({
-    mutationFn: api.deleteAddress,
+    mutationFn: delete_user_address,
     onSuccess: (_, deletedId) => {
       queryClient.setQueryData(['addresses'], (old = []) => 
         old.filter(addr => addr.id !== deletedId)
@@ -57,7 +57,7 @@ function SettingsPage() {
 
   // Mutations for payment methods
   const addPaymentMutation = useMutation({
-    mutationFn: api.addPaymentMethod,
+    mutationFn: add_user_payment,
     onSuccess: (newMethod) => {
       queryClient.setQueryData(['paymentMethods'], (old = []) => [...old, newMethod]);
       setShowAddPayment(false);
@@ -66,7 +66,7 @@ function SettingsPage() {
   });
 
   const deletePaymentMutation = useMutation({
-    mutationFn: api.deletePaymentMethod,
+    mutationFn: delete_payment_method,
     onSuccess: (_, deletedId) => {
       queryClient.setQueryData(['paymentMethods'], (old = []) => 
         old.filter(pm => pm.id !== deletedId)
@@ -76,7 +76,7 @@ function SettingsPage() {
 
   // Mutation for settings
   const updateSettingsMutation = useMutation({
-    mutationFn: api.updateSettings,
+    mutationFn: update_user_settings,
     onSuccess: (updatedSettings) => {
       queryClient.setQueryData(['settings'], updatedSettings);
     }
@@ -123,7 +123,7 @@ function SettingsPage() {
 
   // Add this mutation with your other mutations:
   const applyToDasherMutation = useMutation({
-    mutationFn: api.applyToDasher,
+    mutationFn: apply_to_dasher,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dasherApplications'] });
       alert('Your application has been submitted!');

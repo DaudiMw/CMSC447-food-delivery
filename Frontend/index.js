@@ -4,8 +4,6 @@ const { ReactQueryDevtools } = window.ReactQueryDevtools;
 
 const queryClient = new QueryClient()
 
-export const baseUrl = 'http://localhost:8000'
-
 function MyApp() {
     return (
         <QueryClientProvider client={queryClient}>
@@ -20,10 +18,10 @@ function MyApp() {
                     <ProtectedRoute exact path="/" component={HomePage} />
                     <ProtectedRoute path="/home" component={HomePage} />
                     <ProtectedRoute path="/settings" component={SettingsPage} />
-                    <ProtectedRoute path="/{user_id}/orders" component={OrdersPage} />
+                    <ProtectedRoute path="/:user_id/orders" component={OrdersPage} />
+                    <ProtectedRoute path="/stores/create" component={StoreCreatePage} allowed_roles={['admin']} />
                     <ProtectedRoute path="/stores" component={StoresPage} />
-                    <ProtectedRoute path="/stores/create" component={StoreCreatePage} allowed_roles={['admin']} /> 
-                    <ProtectedRoute path="/store/{store_id}" component={StorePage} />
+                    <ProtectedRoute path="/store/:store_id" component={StorePage} />
                     <ProtectedRoute path="/admin" component={AdminPage} allowed_roles={['admin']} />
 
                 </Switch>
@@ -94,6 +92,12 @@ class Banner extends React.Component {
                             <span>Admin</span>
                         </button>
                     )}
+                    <button 
+                        className="bannerButton"
+                        onClick={() => window.location.hash = '#/store/d80afdd0-88f1-4a44-a1fa-f020418c4ff8'}
+                    >
+                      Temp Store
+                    </button>
                     <button 
                         className="bannerButton" 
                         onClick={() => window.location.hash = '#/settings'}

@@ -133,7 +133,7 @@ async function get_payment_methods(user_id){
  */
 async function delete_payment_method(user_id, payment_method_id) {
     try {
-        const data = await authfetch(`/users/${user_id}/payment_methods/${payment_method_id}`, {
+        const data = await authFetch(`/users/${user_id}/payment_methods/${payment_method_id}`, {
             method:'DELETE'
         });
         return data;
@@ -149,10 +149,22 @@ async function delete_payment_method(user_id, payment_method_id) {
  */
 async function get_user_settings(user_id){
     try {
-        const data = await authfetch(`/users/${user_id}/settings`);
+        const data = await authFetch(`/users/${user_id}/settings`);
         return data;
     } catch (error){
         console.error('Error fetching setting information: ', error);
+    }
+}
+
+
+async function update_user_settings(user_id){
+    try{
+        const data = await authFetch(`/users/${user_id}/settings`,{
+            method: 'PUT'
+        });
+        return data;
+    } catch (error) {
+        console.error('Error updating settings: ', error);
     }
 }
 

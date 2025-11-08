@@ -7,14 +7,20 @@ from api.schemas.base_schema import Address
 
 
 class StoreSchema(BaseSchema):
-    store_id: str
     name: str
     description: str | None = None
     picture: str | None = None
-    address: Address
+    address_id: str
     phone: str | None = None
-    # created_at: datetime | None = None
+    created_at: datetime | None = None
 
+# class StoreResponseSchema(BaseSchema):
+#     name
+
+
+class StoreCreateSchema(BaseSchema):
+    name: str
+    
 
 class StoreWithItemsSchema(StoreSchema):
     items: list[ItemSchemaWithInfo] = []

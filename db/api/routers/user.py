@@ -154,7 +154,7 @@ async def change_password(user_id: str, user: user_dependency, new_password: str
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{user_id}/address", status_code=201)
+@router.post("/{user_id}/addresses", status_code=201)
 async def add_address(user_id: str, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):
     """Add an address to a user."""
 
@@ -173,7 +173,7 @@ async def add_address(user_id: str, address_info: Address, user: user_dependency
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.put("/{user_id}/address/{address_id}", response_model=Address, status_code=200)
+@router.put("/{user_id}/addresses/{address_id}", response_model=Address, status_code=200)
 async def update_address(user_id: str, address_id: str, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):
     """Update an address for a user."""
 

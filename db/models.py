@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Numeric, Boolean, String, DateTime, ForeignKey, Enum as SqlEnum, func
+from sqlalchemy import Column, Integer, Numeric, Boolean, BLOB, String, DateTime, ForeignKey, Enum as SqlEnum, func
 from sqlalchemy.orm import relationship
 import uuid
 from database import Base
@@ -76,9 +76,9 @@ class Store(Base):
 
     store_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     name = Column(String, nullable=False, index=True)
-    address = Column(ForeignKey("addresses.address_id"), nullable=False)
+    address_id = Column(ForeignKey("addresses.address_id"), nullable=False)
     description = Column(String)
-    picture = Column(String)
+    picture_id = Column(String, ForeignKey("media.media_id"))
     phone = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
@@ -107,7 +107,7 @@ class Item(Base):
     item_type = Column(SqlEnum(ItemType), nullable=False)
     description = Column(String)
     price = Column(Numeric(10,2), nullable=False, index=True)
-    picture = Column(String)
+    picture_id = Column(String, ForeignKey("media.media_id"))
     store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     info_id = Column(String, ForeignKey("item_info.item_info_id"))
 
@@ -171,7 +171,6 @@ class Address(Base):
 
     address_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     user_id = Column(String, ForeignKey("users.user_id"))
-    store_id = Column(String, ForeignKey("stores.store_id"))
     street = Column(String, nullable=False)
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
@@ -188,3 +187,9 @@ class DasherApplications(Base):
     user_id = Column(String, ForeignKey("users.user_id"), nullable=False, unique=True)
     content = Column(String, nullable=False)
     date_applied = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+class Media(Base):
+    __tablename__ = "media"
+    media_id = Column(String, primary_key=True, default= lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    media_data = Column(BLOB, nullable=False)
+    filename = Column(String, nullable=False)
