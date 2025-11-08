@@ -4,6 +4,7 @@ from db_setup import create_db
 from api.routers import user
 from api.auth import auth
 from api.routers import admin
+from api.routers import items
 from api.routers import order
 from api.routers import pickups
 from api.routers import store
@@ -12,9 +13,9 @@ from utils import BaseFactory
 
 
 app = FastAPI(
-    title="Your API",
-    description="Your API Description",
-    version="1.0.0"
+    title = "Your API",
+    description = "Your API Description",
+    version = "1.0.0"
 )
 
 
@@ -42,6 +43,8 @@ app.include_router(pickups.router, tags=["pickups"])
 app.include_router(store.router, tags=["stores"])
 
 app.include_router(media.router, tags=["media"])
+
+app.include_router(items.router, tags=["items"])
 
 
 

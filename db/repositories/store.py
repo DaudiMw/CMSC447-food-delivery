@@ -2,7 +2,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from models import Item, Store, StoreOwners
 from repositories.base import BaseRepository
-from api.schemas.store_schema import StoreWithItemsSchema
+from api.schemas.store_schemas import StoreWithItemsSchema
 from sqlalchemy.orm import joinedload
 
 
@@ -38,6 +38,13 @@ class StoreRepository(BaseRepository[Store]):
             self.model.is_deleted == False
         ).order_by(self.model.created_at).all()
     
+    def get_user_stores(self, user_id: str) -> list[Store]:
+        """Get all stores that user owns."""
+        return self.session.query(Store).filter(
+            self.model.owners.owner_id == user_id,
+            self.model.is_deleted == False
+        ).all()
+    
     def get_store_owner(self, user_id: str, store_id: str) -> list[StoreOwners]:
         """Get store by its owner."""
         return self.session.query(StoreOwners).filter(
@@ -61,6 +68,3 @@ class StoreRepository(BaseRepository[Store]):
         ).first()
         
         return store
-    
-
-    

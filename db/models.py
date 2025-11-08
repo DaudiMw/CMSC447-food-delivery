@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Numeric, Boolean, BLOB, String, DateTime, ForeignKey, Enum as SqlEnum, func
+from sqlalchemy import Column, Integer, Numeric, Boolean, BLOB, String, DateTime, ForeignKey, Time, Enum as SqlEnum, func
 from sqlalchemy.orm import relationship
 import uuid
 from database import Base
@@ -51,6 +51,7 @@ class Order(Base):
 
     order_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
+    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     address = Column(String, nullable=False)
     status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.initialized)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -83,6 +84,7 @@ class Store(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
     # Relationships
+    hours = relationship("StoreHours", back_populates="store")
     items = relationship("Item", back_populates="store")
     owners = relationship("StoreOwners", back_populates="store")
 
@@ -97,6 +99,21 @@ class StoreOwners(Base):
     # Relationships
     store = relationship("Store", back_populates="owners")
     owner = relationship("User", back_populates="store_ownerships")
+
+class StoreHours(Base):
+    __tablename__ = "store_hours"
+
+    store_hours_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
+    monday_hours = Column(Time, nullable=True)
+    tuesday_hours = Column(Time, nullable=True)
+    wednesday_hours = Column(Time, nullable=True)
+    thursday_hours = Column(Time, nullable=True)
+    friday_hours = Column(Time, nullable=True)
+    saturday_hours = Column(Time, nullable=True)
+    sunday_hours = Column(Time, nullable=True)
+
+    store = relationship("Store", back_populates="hours")
 
 
 class Item(Base):
@@ -143,6 +160,7 @@ class Pickups(Base):
     pickups_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     order_id = Column(String, ForeignKey("orders.order_id"), nullable=False)
     dasher_id = Column(String, ForeignKey("users.user_id"), nullable=False)
+    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     scheduled_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     completed_at = Column(DateTime, default=None)
     
@@ -157,6 +175,7 @@ class Reports(Base):
     report_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     order_id = Column(String, ForeignKey("orders.order_id"), nullable=False, unique=True)
+    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     dasher_id = Column(String, ForeignKey("users.user_id"), nullable=False)
     comment = Column(String, nullable=False)
     

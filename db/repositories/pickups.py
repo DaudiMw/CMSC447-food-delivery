@@ -20,3 +20,9 @@ class PickUpsRepository(BaseRepository[Pickups]):
             self.model.is_deleted == False,
             self.model.order_id == order_id
         ).all()
+    
+    def get_by_store_id(self, store_id: str) -> list[Pickups]:
+        """Gets all pickups from a store"""
+        return self.session.query(Pickups).filter(
+            self.model.store_id == store_id
+        ).all()

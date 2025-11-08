@@ -20,6 +20,7 @@ function MyApp() {
                     <ProtectedRoute path="/settings" component={SettingsPage} />
                     <ProtectedRoute path="/:user_id/orders" component={OrdersPage} />
                     <ProtectedRoute path="/stores/create" component={StoreCreatePage} allowed_roles={['admin']} />
+                    <ProtectedRoute path="/reports" component={ReportsPage} />
                     <ProtectedRoute path="/stores" component={StoresPage} />
                     <ProtectedRoute path="/store/:store_id" component={StorePage} />
                     <ProtectedRoute path="/admin" component={AdminPage} allowed_roles={['admin']} />
@@ -52,6 +53,103 @@ function LoginPage() {
   );
 }
 
+// // Login Page Component
+// function LoginPage() {
+//   return (
+//     <div style={{
+//       backgroundImage: "url('images/maryland-flag-black-gray.jpg')", 
+//       backgroundSize: "cover",
+//       backgroundPosition: "center",
+//       height: "100vh",
+//       position: "relative"
+//     }}>
+//       <div style={{
+//         position: "absolute",
+//         top: 0,
+//         left: 0,
+//         right: 0,
+//         bottom: 0,
+//         backgroundColor: "rgba(0, 0, 0, 0.5)"
+//       }}></div>
+//       <div className="d-flex justify-content-center align-items-center vh-100" style={{position: "relative", zIndex: 1}}>
+//         <div className="card p-4 shadow" style={{ minWidth: "500px" }}>
+//           <h1 className="text-center mb-4">Login</h1>
+//           <LoginForm setPage={props.setPage}/>
+//           <p className="text-center mt-3">
+//             Don't have an account? <a href="#/signup" className="text-primary" style={{textDecoration: 'none'}}>Sign Up</a>
+//           </p>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+class OrdersPage extends React.Component {
+    componentDidMount() {
+        let data = this.props.GetOrders();
+        const orderList = document.getElementsByClassName("ordersList")[0];
+        data.forEach(element => {
+            const orderDiv = document.createElement('div');
+            orderDiv.className = "order";
+
+            const right = document.createElement('div');
+            right.className = "orderRight";
+            orderDiv.appendChild(right);
+            const checkbox = document.createElement('input');
+            checkbox.className = "ordersCheckbox";
+            checkbox.type = "checkbox"
+            right.appendChild(checkbox);
+
+            const middle = document.createElement('div');
+            middle.className = "orderMiddle";
+            middle.textContent = "Description";
+            orderDiv.appendChild(middle);
+            const info = document.createElement('div');
+            info.className = "orderInfo";
+            const status = document.createElement('div');
+            status.textContent = "Status: Pending";
+            info.appendChild(status);
+            const total = document.createElement('div');
+            total.textContent = "Total: $XX.XX";
+            info.appendChild(total);
+            const arrivalTime = document.createElement('div');
+            arrivalTime.textContent = "Estimated Arrival: XX:XXam/pm";
+            info.appendChild(arrivalTime);
+            middle.appendChild(info);
+
+            const image = document.createElement('img');
+            image.className = "orderImage";
+            orderDiv.appendChild(image);
+
+            orderList.appendChild(orderDiv);
+        })
+    }
+
+    render() {
+        return (
+            <div className="ordersPage">
+                <div className="orders">
+                    <header className="ordersGridTitle">
+                        Your Orders
+                    </header>
+                    <div className="ordersList">
+                    </div>
+                    <div className="orderButtons"></div>
+                </div>
+            </div>
+        )
+    }
+}
+
+// class SettingsPage extends React.Component {
+//     render() {
+//         return (
+//             <div className="settingsPage">
+//                 Settings
+//             </div>
+//         )
+//     }
+// }
 
 // class BasePage extends React.Component {
 //     render() {
@@ -80,7 +178,31 @@ class Banner extends React.Component {
                 />
                 
                 <div className="banner-controls">
-                  {/* Show Admin button only if user is admin */}
+                    <button 
+                        className="bannerButton" 
+                        onClick={() => window.location.hash = '#/stores'}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>Stores</span>
+                    </button>
+
+                    {(getUserRole() === "store_owner" || getUserRole() === "admin") && (
+                      <button 
+                          className="bannerButton" 
+                          onClick={() => window.location.hash = '#/reports'}
+                      >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span>Reports</span>
+                      </button>
+                    )}
+
+                    {/* Show Admin button only if user is admin */}
                     {getUserRole() === 'admin' && (
                         <button 
                             className="bannerButton adminButton" 
@@ -92,6 +214,7 @@ class Banner extends React.Component {
                             <span>Admin</span>
                         </button>
                     )}
+
                     <button 
                         className="bannerButton"
                         onClick={() => window.location.hash = '#/store/d80afdd0-88f1-4a44-a1fa-f020418c4ff8'}
