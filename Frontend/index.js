@@ -1,8 +1,3 @@
-import OrdersPage from "./OrdersPage";
-import SettingsPage from "./SettingsPage";
-import HomePage from "./HomePage";
-import SignupPage from "./SignupPage";
-
 const { HashRouter, Switch, Route, Link } = window.ReactRouterDOM;
 const { QueryClient, QueryClientProvider } = window.ReactQuery;
 const { ReactQueryDevtools } = window.ReactQueryDevtools;
