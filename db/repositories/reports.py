@@ -12,11 +12,6 @@ class ReportsRepository(BaseRepository[Reports]):
             self.model.order_id == order_id
         ).all()
     
-    def get_by_dasher_id(self, dasher_id: str) -> list[Reports]:
-        return self.session.query(Reports).filter(
-            self.model.dasher_id == dasher_id
-        ).all()
-    
     def get_by_user_id(self, user_id: str) -> list[Reports]:
         return self.session.query(Reports).filter(
             self.model.user_id == user_id
@@ -31,12 +26,6 @@ class ReportsRepository(BaseRepository[Reports]):
         return self.session.query(Reports).filter(
             self.model.store_id == store_id,
             self.model.user_id == user_id
-        ).all()
-    
-    def get_by_store_id_and_dasher_id(self, store_id: str, dasher_id: str) -> list[Reports]:
-        return self.session.query(Reports).filter(
-            self.model.store_id == store_id,
-            self.model.dasher_id == dasher_id
         ).all()
     
     

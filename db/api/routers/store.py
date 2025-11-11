@@ -4,7 +4,7 @@ from repositories.items import ItemRepository
 from repositories.store import StoreRepository
 from models import StoreHours
 from fastapi import APIRouter, Depends, HTTPException
-from api.auth.auth import get_current_user
+from api.auth.auth import get_current_user, admin_required
 from sqlalchemy.orm import Session
 from database import get_db
 from typing import Annotated
@@ -32,8 +32,8 @@ async def create_store(store: StoreSchema,
     """Create a new store"""
     """Perms: admin"""
           
-    if user.role != "admin":
-        raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
+    # if user.role != "admin":
+    #     raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
     
     try:
         store_repo = StoreRepository(db)

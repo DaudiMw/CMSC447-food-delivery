@@ -75,26 +75,6 @@ async def get_report_by_user_id(user_id: str,
     
     return report
 
-@router.get("/{dasher_id}", status_code=201, response_model=list[ReportSchema])
-async def get_report_by_dasher_id(dasher_id: str,
-                                  user: user_dependency,
-                                  db: Session = Depends(get_db)):
-    """Gets a report by its dasher ID."""
-    """Perms: admin, store owner of order, user who reported, dasher who reported"""
-    reports_repo = ReportsRepository(db)
-    store_repo = StoreRepository(db)
-    report = reports_repo.get_by_dasher_id(dasher_id)
-
-    if not report:
-        raise HTTPException(status_code=404, detail="Report not found")
-    
-    owners_list = store_repo.get_store_owner(user.user_id, report.store_id)
-
-    if user.role != "admin" and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
-        raise HTTPException(status_code=401, detail="User is not associated with this order")
-    
-    return report
-
 @router.get("/{store_id}", status_code=201, response_model=list[ReportSchema])
 async def get_report_by_store_id(store_id: str,
                                  user: user_dependency,
@@ -124,26 +104,6 @@ async def get_report_by_store_id_and_user_id(store_id: str,
     reports_repo = ReportsRepository(db)
     store_repo = StoreRepository(db)
     report = reports_repo.get_by_store_id_and_user_id(store_id, user.user_id)
-
-    if not report:
-        raise HTTPException(status_code=404, detail="Report not found")
-    
-    owners_list = store_repo.get_store_owner(user.user_id, store_id)
-
-    if user.role != "admin" and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
-        raise HTTPException(status_code=401, detail="User is not associated with this order")
-    
-    return report
-
-@router.get("/{store_id}/dashers", status_code=201, response_model=list[ReportSchema])
-async def get_report_by_store_id_and_dasher_id(store_id: str,
-                                               user: user_dependency,
-                                               db: Session = Depends(get_db)):
-    """Gets a report by its store ID and dasher ID."""
-    """Perms: admin, store owner of order, user who reported, dasher who reported"""
-    reports_repo = ReportsRepository(db)
-    store_repo = StoreRepository(db)
-    report = reports_repo.get_by_store_id_and_dasher_id(store_id, user.user_id)
 
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")

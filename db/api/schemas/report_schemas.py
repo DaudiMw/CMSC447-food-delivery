@@ -6,5 +6,4 @@ class ReportSchema(BaseSchema):
     user_id: str
     order_id: str
     store_id: str
-    dasher_id: str
     comment: str

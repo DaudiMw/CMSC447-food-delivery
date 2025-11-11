@@ -3,9 +3,9 @@ from pydantic import BaseModel
 from api.auth.auth import admin_required, get_current_user
 from api.schemas.order_schemas import OrderShow
 from repositories.dasherapplication import ApplicationRepository
-from repositories.orderitems import OrderItemsRepository
 from repositories.address import AddressRepository
 from repositories.orders import OrderRepository
+from repositories.items import ItemRepository
 from repositories.user import UserRepository
 from sqlalchemy.orm import Session
 from database import get_db
@@ -88,7 +88,7 @@ async def get_user_cart(user_id: str, user: user_dependency, token: str = Depend
 async def add_to_cart(user_id: str, item_id: str, user: user_dependency, db: Session = Depends(get_db)):
     """Add an item to a user's cart."""
     order_repo = OrderRepository(db)
-    orderitems_repo = OrderItemsRepository(db)
+    item_repo = ItemRepository(db)
 
     if user.user_id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to add to this user's cart")
@@ -96,10 +96,11 @@ async def add_to_cart(user_id: str, item_id: str, user: user_dependency, db: Ses
     try:
         # First check if there is an already initialized order to add to.
         order = order_repo.get_by_user_id_and_status(user_id, "initialized")
+        item = item_repo.get_by_id(item_id)
         if not order:
             order = order_repo.create(user_id=user_id, status="initialized")
         
-        orderitems_repo.create(order_id=order.order_id, item_id=item_id)
+        order.items.append(item)
 
         return {"message": "Item added to cart successfully"}
     
