@@ -20,6 +20,7 @@ function MyApp() {
                     <ProtectedRoute path="/settings" component={SettingsPage} />
                     <ProtectedRoute path="/:user_id/orders" component={OrdersPage} />
                     <ProtectedRoute path="/stores/create" component={StoreCreatePage} allowed_roles={['admin']} />
+                    <ProtectedRoute path="/store/:store_id/edit" component={StoreEditPage} allowed_roles={['admin', 'store_owner']} />
                     <ProtectedRoute path="/reports" component={ReportsPage} />
                     <ProtectedRoute path="/stores" component={StoresPage} />
                     <ProtectedRoute path="/store/:store_id" component={StorePage} />
@@ -215,12 +216,6 @@ class Banner extends React.Component {
                         </button>
                     )}
 
-                    <button 
-                        className="bannerButton"
-                        onClick={() => window.location.hash = '#/store/d80afdd0-88f1-4a44-a1fa-f020418c4ff8'}
-                    >
-                      Temp Store
-                    </button>
                     <button 
                         className="bannerButton" 
                         onClick={() => window.location.hash = '#/settings'}

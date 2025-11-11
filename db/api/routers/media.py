@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
 from api.auth.auth import oauth2_scheme
 from database import get_db
 from sqlalchemy.orm import Session
 from repositories.media import MediaRepository
 
 
-router = APIRouter(prefix="/media", tags=["media"], dependencies=[Depends(oauth2_scheme)])
+router = APIRouter(prefix="/media", tags=["media"]) #, dependencies=[Depends(oauth2_scheme)])
 
 
 @router.post("", status_code=201)
@@ -44,18 +44,35 @@ async def get_media_with_info(media_id: str, db : Session = Depends(get_db)):
     
 
 @router.get("/{media_id}")
-async def get_media(media_id: str, db : Session = Depends(get_db)):
-
+async def get_media(media_id: str, db: Session = Depends(get_db)):
+    """Get media file by ID"""
     try:
         media_repo = MediaRepository(db)
-
-        content = media_repo.get_by_id(media_id)
-
-        if not content:
-            raise HTTPException(status_code=400, detail="Cannot find image.")
-
-        return content.media_data
-    
+        media = media_repo.get_by_id(media_id)
+        
+        if not media:
+            raise HTTPException(status_code=404, detail="Media not found")
+        
+        # Determine content type from filename
+        content_type = "application/octet-stream"  # default
+        if media.filename:
+            if media.filename.lower().endswith(('.jpg', '.jpeg')):
+                content_type = "image/jpeg"
+            elif media.filename.lower().endswith('.png'):
+                content_type = "image/png"
+            elif media.filename.lower().endswith('.gif'):
+                content_type = "image/gif"
+            elif media.filename.lower().endswith('.webp'):
+                content_type = "image/webp"
+        
+        # Return the binary data directly
+        return Response(
+            content=media.media_data,
+            media_type=content_type
+        )
+        
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching media content: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
     

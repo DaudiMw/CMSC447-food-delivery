@@ -19,7 +19,15 @@ async function authFetch(endpoint, options = {}) {
     const response = await fetch(`${baseUrl}${endpoint}`, config);
 
     if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const error = new Error(`HTTP error! status: ${response.status}`);
+        try {
+            error.response = {
+                data: await response.json()
+            };
+        } catch (e) {
+            // Ignore if response is not JSON
+        }
+        throw error;
     }
     return response.json();
 }

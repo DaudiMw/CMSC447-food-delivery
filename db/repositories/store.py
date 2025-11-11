@@ -56,15 +56,22 @@ class StoreRepository(BaseRepository[Store]):
     def get_store_with_items(self, store_id: str):
         """Get a single store and all its related items."""
         
-        # Your query is already perfect for this!
-        # It fetches the store and eagerly loads all nested relationships.
         store = self.session.query(Store).options(
-            joinedload(Store.items).joinedload(Item.nutrition_info)
+            joinedload(Store.items).joinedload(Item.nutrition_info),
+            joinedload(Store.address),  # Add this line
+            joinedload(Store.hours)
         ).filter(
             Store.store_id == store_id,
-            Store.is_deleted == False,
-            Store.items.is_deleted == False,
-            Store.items.nutrition_info.is_deleted == False
+            Store.is_deleted == False
         ).first()
+        
+        if not store:
+            return None
+        
+        # Filter items in Python
+        store.items = [
+            item for item in store.items 
+            if not item.is_deleted and (not item.nutrition_info or not item.nutrition_info.is_deleted)
+        ]
         
         return store

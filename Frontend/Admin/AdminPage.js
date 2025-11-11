@@ -41,6 +41,14 @@ function AdminPage() {
         queryFn: get_stores
     })
 
+    // Mutation for deleting a store
+    const deleteStoreMutation = window.ReactQuery.useMutation({
+        mutationFn: (storeId) => delete_store(storeId),
+        onSuccess: () => {
+            refetchStores(); // Refresh the stores list
+        }
+    });
+
     // Mutation for changing user role
     const changeRoleMutation = window.ReactQuery.useMutation({
         mutationFn: ({ userId, newRole }) => change_user_role(userId, newRole),
@@ -254,7 +262,7 @@ function AdminPage() {
                                     </thead>
                                     <tbody>
                                         {filteredUsers.map(user => (
-                                            <tr key={user.id} className="border-b hover:bg-gray-50">
+                                            <tr key={user.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
                                                 <td className="p-3">{user.first_name + ' ' + user.last_name}</td>
                                                 <td className="p-3">{user.email}</td>
                                                 <td className="p-3">
@@ -322,7 +330,7 @@ function AdminPage() {
                                     </thead>
                                     <tbody>
                                         {filteredOrders.map(order => (
-                                            <tr key={order.id} className="border-b hover:bg-gray-50">
+                                            <tr key={order.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
                                                 <td className="p-3">#{order.id}</td>
                                                 <td className="p-3">{order.userName}</td>
                                                 <td className="p-3">{order.store}</td>
@@ -414,7 +422,7 @@ function AdminPage() {
                                     </thead>
                                     <tbody>
                                         {filteredDeliveries.map(delivery => (
-                                            <tr key={delivery.id} className="border-b hover:bg-gray-50">
+                                            <tr key={delivery.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
                                                 <td className="p-3">{delivery.dasherName}</td>
                                                 <td className="p-3">#{delivery.orderId}</td>
                                                 <td className="p-3">{delivery.customer}</td>
@@ -453,14 +461,35 @@ function AdminPage() {
                                             <th className="p-3 text-left font-semibold border-b">Name</th>
                                             <th className="p-3 text-left font-semibold border-b">Description</th>
                                             <th className="p-3 text-left font-semibold border-b">Created At</th>
+                                            <th className="p-3 text-left font-semibold border-b">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {filteredStores.map(store => (
-                                            <tr key={store.id} className="border-b hover:bg-gray-50">
+                                            <tr key={store.store_id} className="border-b hover:bg-amber-100 transition-colors duration-200">
                                                 <td className="p-3">{store.name}</td>
                                                 <td className="p-3">{store.description}</td>
                                                 <td className="p-3">{new Date(store.created_at).toLocaleDateString()}</td>
+                                                <td className="p-3 flex gap-2">
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.store_id}`; }}
+                                                        className="px-3 py-1 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600 transition-all"
+                                                    >
+                                                        View
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.store_id}/edit`; }}
+                                                        className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition-all"
+                                                    >
+                                                        Update
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); if (confirm('Are you sure you want to delete this store?')) deleteStoreMutation.mutate(store.store_id); }}
+                                                        className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-all"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>

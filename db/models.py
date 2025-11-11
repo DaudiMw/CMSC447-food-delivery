@@ -79,11 +79,15 @@ class Store(Base):
     name = Column(String, nullable=False, index=True)
     address_id = Column(ForeignKey("addresses.address_id"), nullable=False)
     description = Column(String)
-    picture_id = Column(String, ForeignKey("media.media_id"))
+    banner_id = Column(String, ForeignKey("media.media_id"))
+    logo_id = Column(String, ForeignKey("media.media_id"))
     phone = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
     # Relationships
+    address = relationship("Address", back_populates="store", uselist=False)
+    logo = relationship("Media", foreign_keys=[logo_id], backref="store_logos")
+    banner = relationship("Media", foreign_keys=[banner_id], backref="store_banners") 
     hours = relationship("StoreHours", back_populates="store")
     items = relationship("Item", back_populates="store")
     owners = relationship("StoreOwners", back_populates="store")
@@ -105,13 +109,9 @@ class StoreHours(Base):
 
     store_hours_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
-    monday_hours = Column(Time, nullable=True)
-    tuesday_hours = Column(Time, nullable=True)
-    wednesday_hours = Column(Time, nullable=True)
-    thursday_hours = Column(Time, nullable=True)
-    friday_hours = Column(Time, nullable=True)
-    saturday_hours = Column(Time, nullable=True)
-    sunday_hours = Column(Time, nullable=True)
+    day = Column(String, nullable=False)
+    start_time = Column(Time, nullable=True)
+    end_time = Column(Time, nullable=True)
 
     store = relationship("Store", back_populates="hours")
 
@@ -198,6 +198,7 @@ class Address(Base):
     
     # Relationships
     user = relationship("User", back_populates="addresses")
+    store = relationship("Store", back_populates="address", uselist=False)
 
 class DasherApplications(Base):
     __tablename__ = "dasher_applications"

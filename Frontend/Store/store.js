@@ -187,9 +187,26 @@ function ItemList({ data }) {
   );
 }
 
+function getOpenCloseTime(hours){
+    const now = new Date();
+    const currentDay = now.getDay();
+
+    for (const dayObj of hours){
+      if (dayObj.day === currentDay){
+        if (dayObj.start_time && dayObj.end_time){
+          return {'start_time': dayObj.start_time,
+                  'end_time':dayObj.end_time
+          }
+        }
+      }
+    }
+
+    return None
+}
+
 function StorePage() {
 
-  const { store_id } = ReactRouterDom;
+  const { store_id } = ReactRouterDOM.useParams();
 
   const { data: store = {}, isLoading: storeLoading, error: storeError, refetch: storeRefetch } = window.ReactQuery.useQuery({
     queryKey: ['store', store_id],
@@ -220,10 +237,17 @@ function StorePage() {
     );
   }
 
-  const imageUrl = store.picture ? `http://localhost:8000/media/${store.picture}` : '/placeholder.jpg';
+  const imageUrl = store.banner_id ? `http://localhost:8000/media/${store.banner_id}` : '/placeholder.jpg';
+
+  // const 
+  
+  // Format the address as a string
+  const addressString = store.address 
+    ? `${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`
+    : 'Address not available';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br mt-18 from-amber-50 via-orange-50 to-yellow-50">
       {/* Hero Section - Company Image */}
       <div className="relative w-full h-60 md:h-80 bg-cover bg-center" style={{ backgroundImage: `url(${imageUrl})` }}>
         <div className="absolute inset-0 bg-black opacity-25"></div>
@@ -238,7 +262,7 @@ function StorePage() {
           <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-2 md:gap-4">
             <p className="text-lg md:text-2xl text-gray-800">Open-Close</p>
             <p className="text-base md:text-xl text-gray-800">
-              {store.address || 'Address'}
+              {addressString}
             </p>
           </div>
         </div>
