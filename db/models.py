@@ -61,6 +61,9 @@ class Store(Base):
     hours = relationship("StoreHours", back_populates="store", uselist=False) #1 to 1
     items = relationship("Item", back_populates="store") #1 to many
     owners = relationship("User", secondary="store_owners", back_populates="stores") #many to many
+    orders = relationship("Order", back_populates="store")
+    pickups = relationship("Pickups", back_populates="store")
+    reports = relationship("Report", back_populates="store")
 
 
 class StoreHours(Base):
@@ -83,12 +86,12 @@ class Item(Base):
     __tablename__ = "items"
 
     item_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     name = Column(String, nullable=False, index=True)
     item_type = Column(SqlEnum(ItemType), nullable=False)
     description = Column(String)
     price = Column(Numeric(10,2), nullable=False, index=True)
     picture = Column(String)
-    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
 
     # Relationships
     item_info = relationship("ItemInfo", back_populates="item", uselist=False) #1 to 1
@@ -131,8 +134,9 @@ class Order(Base):
     # Relationships
     user = relationship("User", back_populates="orders")
     items = relationship("Item", secondary="user_orders", back_populates="orders")
-    pickups = relationship("Pickups", back_populates="order")
-    reports = relationship("Reports", back_populates="order")
+    pickups = relationship("Pickups", back_populates="order") #1 to many
+    reports = relationship("Reports", back_populates="order") #1 to many
+    store = relationship("Store", back_populates="orders") #many to 1
 
 
 class Pickups(Base):
@@ -146,8 +150,9 @@ class Pickups(Base):
     completed_at = Column(DateTime, default=None)
     
     # Relationships
-    order = relationship("Order", back_populates="pickups", uselist=False) #1 to 1
-    dasher = relationship("User", back_populates="pickups", uselist=False) #1 to 1
+    order = relationship("Order", back_populates="pickups") #many to 1
+    dasher = relationship("User", back_populates="pickups") #many to 1
+    store = relationship("Store", back_populates="pickups") #many to 1
 
 
 class Reports(Base):
@@ -158,10 +163,12 @@ class Reports(Base):
     order_id = Column(String, ForeignKey("orders.order_id"), nullable=False, unique=True)
     store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     comment = Column(String, nullable=False)
+    response = Column(String)
     
     # Relationships
     user = relationship("User", back_populates="reports") #many to 1
     order = relationship("Order", back_populates="reports") #many to 1
+    store = relationship("Store", back_populates="reports") #many to 1
     # Note: dasher relationship might need special handling since it's also a User
 
 

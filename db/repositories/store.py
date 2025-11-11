@@ -39,14 +39,14 @@ class StoreRepository(BaseRepository[Store]):
         ).order_by(self.model.created_at).all()
     
     def get_user_stores(self, user_id: str) -> list[Store]:
-        """Get all stores that user owns."""
+        """Get all stores that a user owns."""
         return self.session.query(Store).filter(
             self.model.owners.has(owner_id = user_id),
             self.model.is_deleted == False
         ).all()
     
     def get_store_owner(self, store_id: str) -> list[User]:
-        """Get store by its owner."""
+        """Get a store's owners."""
         return self.session.query(User).filter(
             self.model.stores.has(store_id = store_id),
             self.model.is_deleted == False,
