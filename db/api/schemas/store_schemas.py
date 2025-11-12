@@ -6,7 +6,7 @@ from api.schemas.item_schemas import ItemSchema, ItemSchemaWithInfo
 from api.schemas.base_schema import Address
 
 class StoreSchema(BaseSchema):
-    store_id: str
+    store_id: int
     name: str
     description: str | None = None
     picture: str | None = None
@@ -19,4 +19,4 @@ class StoreWithItemsSchema(StoreSchema):
     items: list[ItemSchemaWithInfo] = []
 
 class StoreHoursSchema(BaseSchema):
-    store_id: str
+    store_id: int

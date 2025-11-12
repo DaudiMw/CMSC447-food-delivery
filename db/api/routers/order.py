@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from api.auth.auth import oauth2_scheme
 from api.schemas.order_schemas import OrderSchema
 from api.schemas.user_schemas import UserAuth
-from models import OrderStatus
+from models import OrderStatus, UserRole
 from database import get_db
 from sqlalchemy.orm import Session
 from api.auth.auth import get_current_user, admin_required

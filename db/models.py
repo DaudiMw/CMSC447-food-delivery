@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Numeric, Boolean, String, DateTime, ForeignKey, Time, Enum as SqlEnum, func
+from sqlalchemy import Column, String, Numeric, Boolean, String, Integer, DateTime, ForeignKey, Time, Enum as SqlEnum, func
 from sqlalchemy.orm import relationship
 import uuid
 from database import Base
@@ -29,7 +29,7 @@ class ItemType(enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    user_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
     campus_id = Column(String, nullable=False, unique=True, index=True)
     email = Column(String, nullable=False, unique=True, index=True)
     password = Column(String, nullable=False)
@@ -49,7 +49,7 @@ class User(Base):
 class Store(Base):
     __tablename__ = "stores"
 
-    store_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, index=True)
     description = Column(String)
     picture = Column(String)
@@ -69,8 +69,8 @@ class Store(Base):
 class StoreHours(Base):
     __tablename__ = "store_hours"
 
-    store_hours_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
-    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
+    id = Column(Integer, primary_key=True)
+    store_id = Column(Integer, ForeignKey("stores.store_id"), nullable=False)
     monday_hours = Column(Time, nullable=True)
     tuesday_hours = Column(Time, nullable=True)
     wednesday_hours = Column(Time, nullable=True)
@@ -85,8 +85,8 @@ class StoreHours(Base):
 class Item(Base):
     __tablename__ = "items"
 
-    item_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
-    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
+    id = Column(Integer, primary_key=True)
+    store_id = Column(Integer, ForeignKey("stores.store_id"), nullable=False)
     name = Column(String, nullable=False, index=True)
     item_type = Column(SqlEnum(ItemType), nullable=False)
     description = Column(String)
@@ -102,8 +102,8 @@ class Item(Base):
 class ItemInfo(Base):
     __tablename__ = "item_info"
 
-    item_info_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
-    item_id = Column(String, ForeignKey("items.item_id"), nullable=False)
+    id = Column(Integer, primary_key=True)
+    item_id = Column(Integer, ForeignKey("items.item_id"), nullable=False)
     serving_size = Column(String)
     calories = Column(String)
     total_fat = Column(String)
@@ -123,9 +123,9 @@ class ItemInfo(Base):
 class Order(Base):
     __tablename__ = "orders"
 
-    order_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
-    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
+    store_id = Column(Integer, ForeignKey("stores.store_id"), nullable=False)
     address = Column(String, nullable=False)
     status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.initialized)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -142,10 +142,10 @@ class Order(Base):
 class Pickups(Base):
     __tablename__ = "pickups"
 
-    pickups_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
-    order_id = Column(String, ForeignKey("orders.order_id"), nullable=False)
+    id = Column(Integer, primary_key=True)
+    order_id = Column(Integer, ForeignKey("orders.order_id"), nullable=False)
     dasher_id = Column(String, ForeignKey("users.user_id"), nullable=False)
-    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
+    store_id = Column(Integer, ForeignKey("stores.store_id"), nullable=False)
     scheduled_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     completed_at = Column(DateTime, default=None)
     
@@ -158,10 +158,10 @@ class Pickups(Base):
 class Reports(Base):
     __tablename__ = "reports"
 
-    report_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
-    order_id = Column(String, ForeignKey("orders.order_id"), nullable=False, unique=True)
-    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.order_id"), nullable=False, unique=True)
+    store_id = Column(Integer, ForeignKey("stores.store_id"), nullable=False)
     comment = Column(String, nullable=False)
     response = Column(String)
     
@@ -175,9 +175,9 @@ class Reports(Base):
 class Address(Base):
     __tablename__ = "addresses"
 
-    address_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(String, ForeignKey("users.user_id"))
-    store_id = Column(String, ForeignKey("stores.store_id"))
+    store_id = Column(Integer, ForeignKey("stores.store_id"))
     street = Column(String, nullable=False)
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
@@ -192,7 +192,7 @@ class Address(Base):
 class DasherApplications(Base):
     __tablename__ = "dasher_applications"
 
-    application_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(String, ForeignKey("users.user_id"), nullable=False, unique=True)
     content = Column(String, nullable=False)
     date_applied = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -202,7 +202,7 @@ class DasherApplications(Base):
 class OrderItems(Base):
     __tablename__ = "user_orders"
 
-    order_items_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    id = Column(Integer, primary_key=True)
     order_id = Column(String, ForeignKey("orders.order_id"), nullable=False)
     item_id = Column(String, ForeignKey("items.item_id"), nullable=False)
 
@@ -211,6 +211,6 @@ class OrderItems(Base):
 class StoreOwners(Base):
     __tablename__ = "store_owners"
 
-    store_owners_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    id = Column(Integer, primary_key=True)
     store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
     owner_id = Column(String, ForeignKey("users.user_id"), nullable=False)

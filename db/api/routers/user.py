@@ -9,6 +9,7 @@ from repositories.items import ItemRepository
 from repositories.user import UserRepository
 from sqlalchemy.orm import Session
 from database import get_db
+from models import UserRole
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
 from api.schemas.user_schemas import ApplicationCreate, UserCreate, UserAuth
@@ -29,7 +30,7 @@ async def update_user(user_id: str,
     """Update a user by their ID."""
     """Perms: admin, user"""
 
-    if user.role != "admin" and user.user_id != user_id:
+    if user.role != UserRole.admin and user.user_id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to update this user")
     
     user_repo = UserRepository(db)
@@ -72,7 +73,7 @@ async def get_user_cart(user_id: str, user: user_dependency, token: str = Depend
 
     order_repo = OrderRepository(db)
 
-    if user.role != "admin" and user.user_id != user_id:
+    if user.role != UserRole.admin and user.user_id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to view this user's cart")
     
 
@@ -85,7 +86,7 @@ async def get_user_cart(user_id: str, user: user_dependency, token: str = Depend
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/{user_id}/cart", status_code=200)
-async def add_to_cart(user_id: str, item_id: str, user: user_dependency, db: Session = Depends(get_db)):
+async def add_to_cart(user_id: str, item_id: int, user: user_dependency, db: Session = Depends(get_db)):
     """Add an item to a user's cart."""
     order_repo = OrderRepository(db)
     item_repo = ItemRepository(db)
@@ -146,7 +147,7 @@ async def change_password(user_id: str, user: user_dependency, new_password: str
     """Change a user's password."""
     """Perms: admin, user"""
 
-    if user.role != "admin" and user.user_id != user_id:
+    if user.role != UserRole.admin and user.user_id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to update this user")
     
     user_repo = UserRepository(db)
@@ -175,7 +176,7 @@ async def add_address(user_id: str, address_info: Address, user: user_dependency
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.put("/{user_id}/address/{address_id}", response_model=Address, status_code=200)
-async def update_address(user_id: str, address_id: str, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):
+async def update_address(user_id: str, address_id: int, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):
     """Update an address for a user."""
 
     if user.user_id != user_id:
@@ -210,7 +211,7 @@ async def get_user_addresses(user_id: str, user: user_dependency, db: Session = 
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.delete("/{user_id}/address/{address_id}", status_code=204)
-async def delete_user_address(user_id: str, address_id: str, user: user_dependency, db: Session = Depends(get_db)):
+async def delete_user_address(user_id: str, address_id: int, user: user_dependency, db: Session = Depends(get_db)):
     """Delete a user's address."""
     user_repo = UserRepository(db)
 

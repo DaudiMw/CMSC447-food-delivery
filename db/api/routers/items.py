@@ -5,6 +5,7 @@ from repositories.orders import OrderRepository
 from repositories.store import StoreRepository
 from sqlalchemy.orm import Session
 from database import get_db
+from models import UserRole
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
 from api.schemas.item_schemas import ItemInfoSchema, ItemSchema
@@ -26,7 +27,7 @@ async def add_item_to_store(item: ItemSchema,
 
     owners_list = store_repo.get_store_owner(user.user_id, store_id)
 
-    if user.role != "admin" and not owners_list:
+    if user.role != UserRole.admin and not owners_list:
         raise HTTPException(status_code=401, detail="User does not own that store")
     
     try:
@@ -48,7 +49,7 @@ async def get_item_by_store_id_and_name(store_id: str,
 
     owners_list = store_repo.get_store_owner(user.user_id, store_id)
 
-    if user.role != "admin" and not owners_list:
+    if user.role != UserRole.admin and not owners_list:
         raise HTTPException(status_code=401, detail="User does not own that store")
     
     try:
@@ -85,7 +86,7 @@ async def get_item_by_order_id(order_id: str,
     
     order = order_repo.get_by_user_id_and_order_id(user.user_id, order_id)
 
-    if user.role != "admin" and not order:
+    if user.role != UserRole.admin and not order:
         raise HTTPException(status_code=401, detail="User did not place that order")
 
     try:

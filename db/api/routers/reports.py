@@ -5,6 +5,7 @@ from repositories.reports import ReportsRepository
 from repositories.store import StoreRepository
 from sqlalchemy.orm import Session
 from database import get_db
+from models import UserRole
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
 from api.schemas.report_schemas import ReportSchema
@@ -16,7 +17,7 @@ user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
 @router.post("/{order_id}", status_code=201, response_model=list[ReportSchema])
 async def create_report_to_order(report: ReportSchema,
-                                 order_id: str,
+                                 order_id: int,
                                  user: user_dependency,
                                  db: Session = Depends(get_db)):
     """Creates a report for an order."""
@@ -25,7 +26,7 @@ async def create_report_to_order(report: ReportSchema,
     orders_repo = OrderRepository(db)
     order = orders_repo.get_by_id(order_id)
 
-    if user.role != "admin" and order.user_id != user.user_id and order.pickups.dasher_id != user.user_id:
+    if user.role != UserRole.admin and order.user_id != user.user_id and order.pickups.dasher_id != user.user_id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     try:
@@ -36,7 +37,7 @@ async def create_report_to_order(report: ReportSchema,
     return new_report
 
 @router.get("/{order_id}", status_code=201, response_model=list[ReportSchema])
-async def get_report_by_order_id(order_id: str,
+async def get_report_by_order_id(order_id: int,
                                  user: user_dependency,
                                  db: Session = Depends(get_db)):
     """Gets a report by its order ID."""
@@ -50,7 +51,7 @@ async def get_report_by_order_id(order_id: str,
     
     owners_list = store_repo.get_store_owner(user.user_id, report.store_id)
 
-    if user.role != "admin" and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
+    if user.role != UserRole.admin and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     return report
@@ -70,13 +71,13 @@ async def get_report_by_user_id(user_id: str,
     
     owners_list = store_repo.get_store_owner(user.user_id, report.store_id)
 
-    if user.role != "admin" and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
+    if user.role != UserRole.admin and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     return report
 
 @router.get("/{store_id}", status_code=201, response_model=list[ReportSchema])
-async def get_report_by_store_id(store_id: str,
+async def get_report_by_store_id(store_id: int,
                                  user: user_dependency,
                                  db: Session = Depends(get_db)):
     """Gets a report by its store ID."""
@@ -90,13 +91,13 @@ async def get_report_by_store_id(store_id: str,
     
     owners_list = store_repo.get_store_owner(user.user_id, store_id)
 
-    if user.role != "admin" and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
+    if user.role != UserRole.admin and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     return report
 
 @router.get("/{store_id}/users", status_code=201, response_model=list[ReportSchema])
-async def get_report_by_store_id_and_user_id(store_id: str,
+async def get_report_by_store_id_and_user_id(store_id: int,
                                              user: user_dependency,
                                              db: Session = Depends(get_db)):
     """Gets a report by its store ID and user ID."""
@@ -110,7 +111,7 @@ async def get_report_by_store_id_and_user_id(store_id: str,
     
     owners_list = store_repo.get_store_owner(user.user_id, store_id)
 
-    if user.role != "admin" and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
+    if user.role != UserRole.admin and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     return report

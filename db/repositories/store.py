@@ -41,18 +41,18 @@ class StoreRepository(BaseRepository[Store]):
     def get_user_stores(self, user_id: str) -> list[Store]:
         """Get all stores that a user owns."""
         return self.session.query(Store).filter(
-            self.model.owners.has(owner_id = user_id),
+            self.model.owners.has(id = user_id),
             self.model.is_deleted == False
         ).all()
     
-    def get_store_owner(self, store_id: str) -> list[User]:
+    def get_store_owner(self, store_id: int) -> list[User]:
         """Get a store's owners."""
         return self.session.query(User).filter(
             self.model.stores.has(store_id = store_id),
             self.model.is_deleted == False,
         ).all()
     
-    def get_store_with_items(self, store_id: str):
+    def get_store_with_items(self, store_id: int):
         """Get a single store and all its related items."""
         
         # Your query is already perfect for this!

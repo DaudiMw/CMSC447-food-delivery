@@ -1,4 +1,3 @@
-
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from models import Item, ItemType
@@ -16,14 +15,14 @@ class ItemRepository(BaseRepository[Item]):
             self.model.name == name
         ).one_or_none()
     
-    def get_by_store_id(self, store_id: str) -> List[Item]:
+    def get_by_store_id(self, store_id: int) -> List[Item]:
         """Get all items for a given store ID."""
         return self.session.query(Item).filter(
             self.model.is_deleted == False,
             self.model.store_id == store_id
         ).all()
 
-    def get_by_store_id_and_name(self, store_id: str, name: str) -> Optional[Item]:
+    def get_by_store_id_and_name(self, store_id: int, name: str) -> Optional[Item]:
         """Get an item by store ID and item name."""
         return self.session.query(Item).filter(
             self.model.is_deleted == False,
@@ -31,7 +30,7 @@ class ItemRepository(BaseRepository[Item]):
             self.model.name == name
         ).one_or_none()
     
-    def get_by_order_id(self, order_id: str) -> List[Item]:
+    def get_by_order_id(self, order_id: int) -> List[Item]:
         """Get all items for a given order ID."""
         return self.session.query(Item).filter(
             self.model.is_deleted == False,
@@ -46,7 +45,7 @@ class ItemRepository(BaseRepository[Item]):
             (self.model.description.ilike(f"%{query}%"))
         ).all()
     
-    def search_items_by_store(self, store_id: str, query: str) -> List[Item]:
+    def search_items_by_store(self, store_id: int, query: str) -> List[Item]:
         """Search for items by name or description for a specific store."""
         return self.session.query(Item).filter(
             self.model.is_deleted == False,
