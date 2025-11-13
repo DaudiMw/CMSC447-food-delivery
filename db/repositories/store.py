@@ -45,10 +45,11 @@ class StoreRepository(BaseRepository[Store]):
             self.model.is_deleted == False
         ).all()
     
-    def get_store_owner(self, store_id: int) -> list[User]:
+    def check_store_owner(self, user_id: str, store_id: int) -> list[Store]:
         """Get a store's owners."""
-        return self.session.query(User).filter(
-            self.model.stores.has(store_id = store_id),
+        return self.session.query(Store).filter(
+            self.model.id == store_id,
+            self.model.owners.has(id = user_id),
             self.model.is_deleted == False,
         ).all()
     
@@ -60,7 +61,7 @@ class StoreRepository(BaseRepository[Store]):
         store = self.session.query(Store).options(
             joinedload(Store.items).joinedload(Item.nutrition_info)
         ).filter(
-            Store.store_id == store_id,
+            Store.id == store_id,
             Store.is_deleted == False,
             Store.items.is_deleted == False,
             Store.items.nutrition_info.is_deleted == False

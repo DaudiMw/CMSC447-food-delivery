@@ -16,7 +16,7 @@ user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
 
 @router.get("/{order_id}")
-async def get_order(order_id: str, token : str = Depends(oauth2_scheme), db : Session = Depends(get_db)):
+async def get_order(order_id: int, token : str = Depends(oauth2_scheme), db : Session = Depends(get_db)):
     """Get an order by its ID."""
 
     # First make sure that order belongs to the user or they are an admin
@@ -36,7 +36,7 @@ async def get_order(order_id: str, token : str = Depends(oauth2_scheme), db : Se
     return order
 
 @router.get("/{order_id}")
-async def get_store_orders(store_id: str, db: Session = Depends(get_db)):
+async def get_store_orders(store_id: int, db: Session = Depends(get_db)):
 
     order_repo = OrderRepository(db)
 
@@ -69,7 +69,7 @@ async def create_order(order: OrderSchema, user: user_dependency, db : Session =
 
 
 @router.put("/{user_id}/{order_id}", response_model=OrderSchema, status_code=200)
-async def update_order(order_id: str, 
+async def update_order(order_id: int, 
                        user: user_dependency,
                        order_data: OrderSchema, 
                        db : Session = Depends(get_db)):
@@ -98,7 +98,7 @@ async def update_order(order_id: str,
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/{user_id}/{order_id}", status_code=200)
-async def delete_order(order_id: str, user: user_dependency, token : str = Depends(oauth2_scheme), db : Session = Depends(get_db)):
+async def delete_order(order_id: int, user: user_dependency, token : str = Depends(oauth2_scheme), db : Session = Depends(get_db)):
     """Delete an order by its ID."""
 
     order_repo = OrderRepository(db)
