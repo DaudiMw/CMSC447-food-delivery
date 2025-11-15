@@ -18,7 +18,9 @@ function MyApp() {
                     <ProtectedRoute exact path="/" component={HomePage} />
                     <ProtectedRoute path="/home" component={HomePage} />
                     <ProtectedRoute path="/settings" component={SettingsPage} />
-                    <ProtectedRoute path="/{user_id}/orders" component={OrdersPage} />
+                    <ProtectedRoute path="/:user_id/orders" component={OrdersPage} />
+                    <ProtectedRoute path="/stores/create" component={StoreCreatePage} allowed_roles={['admin']} />
+                    <ProtectedRoute path="/store/:store_id/edit" component={StoreEditPage} allowed_roles={['admin', 'store_owner']} />
                     <ProtectedRoute path="/reports" component={ReportsPage} />
                     <ProtectedRoute path="/stores" component={StoresPage} />
                     <ProtectedRoute path="/store/:store_id" component={StorePage} />

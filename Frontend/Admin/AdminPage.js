@@ -14,22 +14,11 @@ function AdminPage() {
     // Fetch users with React Query
     const { data: users = [], isLoading: usersLoading, error: usersError, refetch: refetchUsers } = window.ReactQuery.useQuery({
         queryKey: ['users'],
-        queryFn: async () => {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch('http://127.0.0.1:8000/admin/users', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (!response.ok) throw new Error('Failed to fetch users');
-            
-            return response.json();
-        }
+        queryFn: get_all_users
     });
 
     // Fetch dasher applications
-    const { data: dasherApplications = [], isLoading: dasherApplicationsLoading, error: dasherApplicationsError, Pending: dasherApplicationsPending} = useQuery({
+    const { data: dasherApplications = [], isLoading: dasherApplicationsLoading, error: dasherApplicationsError, Pending: dasherApplicationsPending, refetch: refetchApplications} = useQuery({
         queryKey: ['dasherApplications'],
         queryFn: get_dasher_applications
     });
@@ -37,50 +26,32 @@ function AdminPage() {
     // Fetch orders
     const { data: orders = [], isLoading: ordersLoading, refetch: refetchOrders } = window.ReactQuery.useQuery({
         queryKey: ['orders'],
-        queryFn: async () => {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch('http://127.0.0.1:8000/admin/orders', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (!response.ok) throw new Error('Failed to fetch orders');
-            return response.json();
-        }
+        queryFn: get_all_orders
     });
 
     // Fetch dasher deliveries
     const { data: dasherDeliveries = [], isLoading: deliveriesLoading, refetch: refetchDeliveries } = window.ReactQuery.useQuery({
         queryKey: ['dasher-deliveries'],
-        queryFn: async () => {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch('http://127.0.0.1:8000/admin/dasher-deliveries', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (!response.ok) throw new Error('Failed to fetch deliveries');
-            return response.json();
+        queryFn: get_dasher_deliveries
+    });
+
+    // Fetch all stores
+    const { data: stores = [], isLoading: storesLoading, refetch: refetchStores } = window.ReactQuery.useQuery({
+        queryKey: ['stores'],
+        queryFn: get_stores
+    })
+
+    // Mutation for deleting a store
+    const deleteStoreMutation = window.ReactQuery.useMutation({
+        mutationFn: (storeId) => delete_store(storeId),
+        onSuccess: () => {
+            refetchStores(); // Refresh the stores list
         }
     });
 
     // Mutation for changing user role
     const changeRoleMutation = window.ReactQuery.useMutation({
-        mutationFn: async ({ userId, newRole }) => {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch(`http://127.0.0.1:8000/admin/users/${userId}/role`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ role: newRole })
-            });
-            if (!response.ok) throw new Error('Failed to change role');
-            return response.json();
-        },
+        mutationFn: ({ userId, newRole }) => change_user_role(userId, newRole),
         onSuccess: () => {
             refetchUsers(); // Refresh the users list
         }
@@ -88,19 +59,7 @@ function AdminPage() {
 
     // Mutation for banning/unbanning user
     const banUserMutation = window.ReactQuery.useMutation({
-        mutationFn: async ({ userId, status }) => {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch(`http://127.0.0.1:8000/admin/users/${userId}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ status })
-            });
-            if (!response.ok) throw new Error('Failed to update status');
-            return response.json();
-        },
+        mutationFn: ({ userId, status }) => ban_user(userId, status),
         onSuccess: () => {
             refetchUsers();
         }
@@ -108,19 +67,7 @@ function AdminPage() {
 
     // Mutation for handling dasher applications
     const handleApplicationMutation = window.ReactQuery.useMutation({
-        mutationFn: async ({ appId, action }) => {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch(`http://127.0.0.1:8000/admin/dasher-applications/${appId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ action })
-            });
-            if (!response.ok) throw new Error('Failed to handle application');
-            return response.json();
-        },
+        mutationFn: ({ appId, action }) => handle_dasher_application(appId, action),
         onSuccess: () => {
             refetchApplications();
             refetchUsers(); // Refresh users if approved
@@ -198,6 +145,14 @@ function AdminPage() {
         
         return matchesSearch && matchesDate;
     });
+
+    const filteredStores = stores.filter(store => {
+        const matchesSearch = searchQuery === '' || 
+            store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            store.description.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        return matchesSearch;
+    })
 
     return (
         <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
@@ -278,6 +233,14 @@ function AdminPage() {
                     >
                         Dasher Deliveries
                     </button>
+                    <button
+                        onClick={() => setActiveTab('stores')}
+                        className={`p-3 font-semibold text-black transition-all duration-200 rounded-lg ${
+                            activeTab === 'stores' ? 'bg-[#fdb515]' : 'bg-gray-100 hover:bg-gray-200'
+                        }`}
+                    >
+                        Stores
+                    </button>
                 </div>
                 
                 <div className="w-full md:w-3/4 flex flex-col space-y-4">
@@ -299,7 +262,7 @@ function AdminPage() {
                                     </thead>
                                     <tbody>
                                         {filteredUsers.map(user => (
-                                            <tr key={user.id} className="border-b hover:bg-gray-50">
+                                            <tr key={user.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
                                                 <td className="p-3">{user.first_name + ' ' + user.last_name}</td>
                                                 <td className="p-3">{user.email}</td>
                                                 <td className="p-3">
@@ -367,7 +330,7 @@ function AdminPage() {
                                     </thead>
                                     <tbody>
                                         {filteredOrders.map(order => (
-                                            <tr key={order.id} className="border-b hover:bg-gray-50">
+                                            <tr key={order.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
                                                 <td className="p-3">#{order.id}</td>
                                                 <td className="p-3">{order.userName}</td>
                                                 <td className="p-3">{order.store}</td>
@@ -459,7 +422,7 @@ function AdminPage() {
                                     </thead>
                                     <tbody>
                                         {filteredDeliveries.map(delivery => (
-                                            <tr key={delivery.id} className="border-b hover:bg-gray-50">
+                                            <tr key={delivery.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
                                                 <td className="p-3">{delivery.dasherName}</td>
                                                 <td className="p-3">#{delivery.orderId}</td>
                                                 <td className="p-3">{delivery.customer}</td>
@@ -475,6 +438,62 @@ function AdminPage() {
                                 <h3 className="font-semibold text-gray-800 mb-2">Summary</h3>
                                 <p className="text-gray-600">Total Deliveries: {filteredDeliveries.length}</p>
                                 <p className="text-gray-600">Total Earnings: ${filteredDeliveries.reduce((sum, d) => sum + d.earnings, 0).toFixed(2)}</p>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Stores Tab */}
+                    {activeTab === 'stores' && (
+                        <>
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-3xl font-bold text-gray-800">Store Management</h2>
+                                <button
+                                    onClick={() => window.location.hash = '#/stores/create'}
+                                    className="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all"
+                                >
+                                    Create Store
+                                </button>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full border-collapse min-w-[600px]">
+                                    <thead>
+                                        <tr className="bg-gray-100">
+                                            <th className="p-3 text-left font-semibold border-b">Name</th>
+                                            <th className="p-3 text-left font-semibold border-b">Description</th>
+                                            <th className="p-3 text-left font-semibold border-b">Created At</th>
+                                            <th className="p-3 text-left font-semibold border-b">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredStores.map(store => (
+                                            <tr key={store.store_id} className="border-b hover:bg-amber-100 transition-colors duration-200">
+                                                <td className="p-3">{store.name}</td>
+                                                <td className="p-3">{store.description}</td>
+                                                <td className="p-3">{new Date(store.created_at).toLocaleDateString()}</td>
+                                                <td className="p-3 flex gap-2">
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.store_id}`; }}
+                                                        className="px-3 py-1 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600 transition-all"
+                                                    >
+                                                        View
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.store_id}/edit`; }}
+                                                        className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition-all"
+                                                    >
+                                                        Update
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); if (confirm('Are you sure you want to delete this store?')) deleteStoreMutation.mutate(store.store_id); }}
+                                                        className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-all"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </>
                     )}

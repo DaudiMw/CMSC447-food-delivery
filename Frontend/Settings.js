@@ -1,74 +1,6 @@
 // Import React Query from CDN
 const { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } = window.ReactQuery;
 
-
-// Mock API functions (replace with real API calls)
-const api = {
-  getAddresses: async () => {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return [
-      { id: 1, label: 'Home', address: '1000 Hilltop Circle, Baltimore, MD 21250' },
-      { id: 2, label: 'Dorm', address: 'Walker Hall Room 302, UMBC Campus' }
-    ];
-  },
-  addAddress: async (address) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { id: Date.now(), ...address };
-  },
-  deleteAddress: async (id) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { id };
-  },
-  getPaymentMethods: async () => {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return [
-      { id: 1, type: 'Visa', last4: '4242', expiry: '12/25' },
-      { id: 2, type: 'Mastercard', last4: '8888', expiry: '06/26' }
-    ];
-  },
-  addPaymentMethod: async (method) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { id: Date.now(), ...method };
-  },
-  deletePaymentMethod: async (id) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { id };
-  },
-  getSettings: async () => {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return {
-      showOnlyOpenStores: true,
-      notifications: true
-    };
-  },
-  updateSettings: async (settings) => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return settings;
-  },
-  applyToDasher: async (application) => {
-    try {
-        console.log('payload:', application);
-        
-        const response = await fetch(`http://localhost:8000/users/${application.user_id}/dasher-application`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            },
-            body: JSON.stringify(application)
-        });
-        
-        return response.json();
-    } catch (error) {
-        console.error('Error:', error);
-        throw error;
-    }
-  }  
-};
-
-
-
-
 // Settings Page Component
 function SettingsPage() {
   const queryClient = useQueryClient();
@@ -91,22 +23,22 @@ function SettingsPage() {
   // Queries
   const { data: addresses = [], isLoading: addressesLoading } = useQuery({
     queryKey: ['addresses'],
-    queryFn: api.getAddresses
+    queryFn: get_user_addresses
   });
 
   const { data: paymentMethods = [], isLoading: paymentsLoading } = useQuery({
     queryKey: ['paymentMethods'],
-    queryFn: api.getPaymentMethods
+    queryFn: get_payment_methods
   });
 
   const { data: settings = {}, isLoading: settingsLoading } = useQuery({
     queryKey: ['settings'],
-    queryFn: api.getSettings
+    queryFn: get_user_settings
   });
 
   // Mutations for addresses
   const addAddressMutation = useMutation({
-    mutationFn: api.addAddress,
+    mutationFn: add_user_address,
     onSuccess: (newAddress) => {
       queryClient.setQueryData(['addresses'], (old = []) => [...old, newAddress]);
       setShowAddAddress(false);
@@ -115,7 +47,7 @@ function SettingsPage() {
   });
 
   const deleteAddressMutation = useMutation({
-    mutationFn: api.deleteAddress,
+    mutationFn: delete_user_address,
     onSuccess: (_, deletedId) => {
       queryClient.setQueryData(['addresses'], (old = []) => 
         old.filter(addr => addr.id !== deletedId)
@@ -125,7 +57,7 @@ function SettingsPage() {
 
   // Mutations for payment methods
   const addPaymentMutation = useMutation({
-    mutationFn: api.addPaymentMethod,
+    mutationFn: add_user_payment,
     onSuccess: (newMethod) => {
       queryClient.setQueryData(['paymentMethods'], (old = []) => [...old, newMethod]);
       setShowAddPayment(false);
@@ -134,7 +66,7 @@ function SettingsPage() {
   });
 
   const deletePaymentMutation = useMutation({
-    mutationFn: api.deletePaymentMethod,
+    mutationFn: delete_payment_method,
     onSuccess: (_, deletedId) => {
       queryClient.setQueryData(['paymentMethods'], (old = []) => 
         old.filter(pm => pm.id !== deletedId)
@@ -144,7 +76,7 @@ function SettingsPage() {
 
   // Mutation for settings
   const updateSettingsMutation = useMutation({
-    mutationFn: api.updateSettings,
+    mutationFn: update_user_settings,
     onSuccess: (updatedSettings) => {
       queryClient.setQueryData(['settings'], updatedSettings);
     }
@@ -191,7 +123,7 @@ function SettingsPage() {
 
   // Add this mutation with your other mutations:
   const applyToDasherMutation = useMutation({
-    mutationFn: api.applyToDasher,
+    mutationFn: apply_to_dasher,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dasherApplications'] });
       alert('Your application has been submitted!');
@@ -210,10 +142,8 @@ function SettingsPage() {
       alert('Please provide your reasoning for wanting to become a Dasher');
       return;
     }
-    
-    // Replace 'user123' with actual user ID from your auth context/state
     applyToDasherMutation.mutate({
-      user_id: String(getUserId()), // TODO: Get from auth context
+      user_id: String(getUserId()),
       content: dasherReasoning
     });
   };

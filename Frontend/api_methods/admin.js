@@ -4,14 +4,8 @@
  */
 async function get_all_users() {
     try {
-        const response = await fetch(`http://localhost:8000/admin/users`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            }
-        })
-        return response.json()
+        const response = await authFetch(`/admin/users`);
+        return response
     } catch (error) {
         console.log(error)
     }
@@ -24,14 +18,8 @@ async function get_all_users() {
  */
 async function get_user_by_id(userId) {
     try {
-        const response = await fetch(`http://localhost:8000/admin/users/${userId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            }
-        })
-        return response.json()
+        const response = await authFetch(`/admin/users/${userId}`);
+        return response
     } catch (error) {
         console.log(error)
     }
@@ -45,15 +33,9 @@ async function get_user_by_id(userId) {
  */
 async function get_dasher_applications() {
     try {
-        const response = await fetch(`http://localhost:8000/admin/dasher-applications`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            }
-        })
+        const response = await authFetch(`/admin/dasher-applications`);
 
-        return response.json()
+        return response
     } catch (error) {
         console.log(error)
     }
@@ -67,16 +49,41 @@ async function get_dasher_applications() {
  */
 async function approve_dasher_application(applicationId) {
     try {
-        const response = await fetch(`http://localhost:8000/admin/dasher_applications/${applicationId}/approve`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            }
+        const response = await authFetch(`/admin/dasher_applications/${applicationId}/approve`, {
+            method: 'POST'
         })
-        return response.json()
+        return response
     } catch (error) {
         console.log(error)
     }
+}
+
+async function get_all_orders() {
+    return authFetch(`/admin/orders`);
+}
+
+async function get_dasher_deliveries() {
+    return authFetch(`/admin/dasher-deliveries`);
+}
+
+async function change_user_role(userId, newRole) {
+    return authFetch(`/admin/users/${userId}/role`, {
+        method: 'PATCH',
+        body: JSON.stringify({ role: newRole })
+    });
+}
+
+async function ban_user(userId, status) {
+    return authFetch(`/admin/users/${userId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status })
+    });
+}
+
+async function handle_dasher_application(appId, action) {
+    return authFetch(`/admin/dasher-applications/${appId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ action })
+    });
 }
 

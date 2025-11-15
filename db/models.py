@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Numeric, Boolean, String, Integer, DateTime, ForeignKey, Time, Enum as SqlEnum, func
+from sqlalchemy import Column, Integer, Numeric, Boolean, BLOB, String, DateTime, ForeignKey, Time, Enum as SqlEnum, func
 from sqlalchemy.orm import relationship
 import uuid
 from database import Base
@@ -51,14 +51,19 @@ class Store(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, index=True)
+    address_id = Column(ForeignKey("addresses.address_id"), nullable=False)
     description = Column(String)
-    picture = Column(String)
+    banner_id = Column(String, ForeignKey("media.media_id"))
+    logo_id = Column(String, ForeignKey("media.media_id"))
     phone = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
     # Relationships
+    logo = relationship("Media", foreign_keys=[logo_id], backref="store_logos")
+    banner = relationship("Media", foreign_keys=[banner_id], backref="store_banners") 
+    hours = relationship("StoreHours", back_populates="store")
     address = relationship("Address", back_populates="store", uselist=False) #1 to 1
-    hours = relationship("StoreHours", back_populates="store", uselist=False) #1 to 1
+    # hours = relationship("StoreHours", back_populates="store", uselist=False) #1 to 1
     items = relationship("Item", back_populates="store") #1 to many
     owners = relationship("User", secondary="store_owners", back_populates="stores") #many to many
     orders = relationship("Order", back_populates="store")
@@ -69,15 +74,18 @@ class Store(Base):
 class StoreHours(Base):
     __tablename__ = "store_hours"
 
+    day = Column(String, nullable=False)
+    start_time = Column(Time, nullable=True)
+    end_time = Column(Time, nullable=True)
     id = Column(Integer, primary_key=True)
-    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
-    monday_hours = Column(Time, nullable=True)
-    tuesday_hours = Column(Time, nullable=True)
-    wednesday_hours = Column(Time, nullable=True)
-    thursday_hours = Column(Time, nullable=True)
-    friday_hours = Column(Time, nullable=True)
-    saturday_hours = Column(Time, nullable=True)
-    sunday_hours = Column(Time, nullable=True)
+    # store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
+    # monday_hours = Column(Time, nullable=True)
+    # tuesday_hours = Column(Time, nullable=True)
+    # wednesday_hours = Column(Time, nullable=True)
+    # thursday_hours = Column(Time, nullable=True)
+    # friday_hours = Column(Time, nullable=True)
+    # saturday_hours = Column(Time, nullable=True)
+    # sunday_hours = Column(Time, nullable=True)
 
     store = relationship("Store", back_populates="hours", uselist=False) #1 to 1
 
@@ -91,7 +99,9 @@ class Item(Base):
     item_type = Column(SqlEnum(ItemType), nullable=False)
     description = Column(String)
     price = Column(Numeric(10,2), nullable=False, index=True)
-    picture = Column(String)
+    picture_id = Column(String, ForeignKey("media.media_id"))
+    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
+    info_id = Column(String, ForeignKey("item_info.item_info_id"))
 
     # Relationships
     item_info = relationship("ItemInfo", back_populates="item", uselist=False) #1 to 1
@@ -196,6 +206,11 @@ class DasherApplications(Base):
     content = Column(String, nullable=False)
     date_applied = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
+class Media(Base):
+    __tablename__ = "media"
+    media_id = Column(String, primary_key=True, default= lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    media_data = Column(BLOB, nullable=False)
+    filename = Column(String, nullable=False)
 
 #Association table
 class OrderItems(Base):

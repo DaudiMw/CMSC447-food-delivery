@@ -1,3 +1,5 @@
+const { HashRouter, Switch, Route, Link } = window.ReactRouterDOM;
+
 function ItemDisplay({
   item_id,
   name,
@@ -185,32 +187,47 @@ function ItemList({ data }) {
   );
 }
 
-function StorePage({ store_id }) {
-  const [store, setStore] = React.useState(null);
-  const [isLoading, setIsLoading] = React.useState(true);
+function getOpenCloseTime(hours){
+    const now = new Date();
+    const currentDay = now.getDay();
 
-  React.useEffect(() => {
-    const fetchStoreData = async () => {
-      try {
-        const response = await fetch(`http://localhost:8000/stores/${store_id}/items-full`);
-        const data = await response.json();
-        setStore(data);
-      } catch (error) {
-        console.error("Failed to fetch store data:", error);
-      } finally {
-        setIsLoading(false);
+    for (const dayObj of hours){
+      if (dayObj.day === currentDay){
+        if (dayObj.start_time && dayObj.end_time){
+          return {'start_time': dayObj.start_time,
+                  'end_time':dayObj.end_time,
+                  'is_open': dayObj.start_time <= now && dayObj.end_time >= now
+          }
+        }
       }
-    };
+    }
 
-    fetchStoreData();
-  }, [store_id]);
+    return null
+}
 
-  if (isLoading) {
+function StorePage() {
+
+  const { store_id } = ReactRouterDOM.useParams();
+
+  const { data: store = {}, isLoading: storeLoading, error: storeError, refetch: storeRefetch } = window.ReactQuery.useQuery({
+    queryKey: ['store', store_id],
+    queryFn: () => get_store_info_with_items(store_id)
+  });
+
+  if (storeLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-xl text-gray-600">Loading store...</div>
       </div>
     );
+  }
+
+  if (storeError){
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="text-xl text-gray-600">Error getting store.</div>
+      </div>
+    )
   }
 
   if (!store) {
@@ -221,30 +238,66 @@ function StorePage({ store_id }) {
     );
   }
 
+  const imageUrl = store.banner_id ? `http://localhost:8000/media/${store.banner_id}` : '/placeholder.jpg';
+
+  // const 
+  
+  // Format the address as a string
+  const addressString = store.address 
+    ? `${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`
+    : 'Address not available';
+
+
+  const hours = getOpenCloseTime(store.hours);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br mt-18 from-amber-50 via-orange-50 to-yellow-50">
       {/* Hero Section - Company Image */}
-      <div className="relative w-full h-60 md:h-80 bg-cover bg-center" style={{ backgroundImage: "url('images/15254678_chick-fil-a-clean-TN-img.jpg')" }}>
+      <div className="relative w-full h-60 md:h-[420px] bg-cover bg-center" style={{ backgroundImage: `url(${imageUrl})` }}>
         <div className="absolute inset-0 bg-black opacity-25"></div>
       </div>
 
       {/* Store Info Section */}
-      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 px-4 md:px-6 py-8">
+      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 px-4 md:px-6 py-8 mb-5">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
             {store.name || 'Store'}
           </h1>
           <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-2 md:gap-4">
-            <p className="text-lg md:text-2xl text-gray-800">Open-Close</p>
+            {hours && (
+              <div>
+                <p className={`text-lg md:text-2xl ${hours.is_open ? 'text-green-600' : 'text-red-600'}`}>
+                  {hours.start_time}-{hours.end_time}
+                </p>
+                <span className={hours.is_open ? 'text-green-600' : 'text-red-600'}>
+                  {hours.is_open ? 'Open' : 'Closed'}
+                </span>
+              </div>
+            )}
             <p className="text-base md:text-xl text-gray-800">
-              {store.address || 'Address'}
+              {addressString}
             </p>
           </div>
+          {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
+            <button className="mt-5 shadow-md border rounded-md text-2xl p-2 bg-[#fdb515] hover:scale-110 transform transition duration-300" onClick ={() => window.location.hash = `#/store/${store.store_id}/edit`}>Edit Store Info</button>
+          )}
         </div>
       </div>
 
       {/* Menu Items Section */}
-      <ItemList data={store.items || []} />
+      <div className="bg-white">
+        {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
+          <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 flex justify-end">
+            <button 
+              className="border shadow-md rounded-md text-2xl text-white p-2 bg-[#007176] hover:scale-110 transform transition duration-300" 
+              onClick={() => window.location.hash = `#/store/${store.store_id}/add-item`}
+            >
+              Add Item
+            </button>
+          </div>
+        )}
+        <ItemList data={store.items || []} />
+      </div>
     </div>
   );
 }

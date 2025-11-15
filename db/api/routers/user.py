@@ -14,6 +14,7 @@ from typing import Annotated
 from api.auth.auth import oauth2_scheme
 from api.schemas.user_schemas import ApplicationCreate, UserCreate, UserAuth
 from api.schemas.base_schema import Address
+from utils.VerifyAddress import verify_address
 
 router = APIRouter(dependencies=[Depends(oauth2_scheme)], prefix="/users", tags=["users"])
 
@@ -161,7 +162,7 @@ async def change_password(user_id: str, user: user_dependency, new_password: str
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{user_id}/address", status_code=201)
+@router.post("/{user_id}/addresses", status_code=201)
 async def add_address(user_id: str, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):
     """Add an address to a user."""
 
@@ -171,13 +172,17 @@ async def add_address(user_id: str, address_info: Address, user: user_dependency
     address_repo = AddressRepository(db)
 
     try:
+        
+        if not verify_address(address_info):
+            raise HTTPException(status_code=400, detail="Address entered is not within UMBC campus.")
+        
         address = address_repo.create(user_id=user_id, **address_info.dict())
         return address
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.put("/{user_id}/address/{address_id}", response_model=Address, status_code=200)
-async def update_address(user_id: str, address_id: int, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):
+@router.put("/{user_id}/addresses/{address_id}", response_model=Address, status_code=200)
+async def update_address(user_id: str, address_id: str, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):
     """Update an address for a user."""
 
     if user.id != user_id:
@@ -186,8 +191,12 @@ async def update_address(user_id: str, address_id: int, address_info: Address, u
     address_repo = AddressRepository(db)
 
     try:
+        if not verify_address(address_info):
+            raise HTTPException(status_code=400, detail="Address entered is not within UMBC campus.")
+        
         address = address_repo.update_by_id(address_id, **address_info.dict())
         return address
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
