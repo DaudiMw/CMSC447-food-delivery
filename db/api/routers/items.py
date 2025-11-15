@@ -25,7 +25,7 @@ async def add_item_to_store(item: ItemSchema,
     items_repo = ItemRepository(db)
     store_repo = StoreRepository(db)
 
-    owners_list = store_repo.check_store_owner(user.user_id, store_id)
+    owners_list = store_repo.check_store_owner(user.id, store_id)
 
     if user.role != UserRole.admin and not owners_list:
         raise HTTPException(status_code=401, detail="User does not own that store")
@@ -47,7 +47,7 @@ async def get_item_by_store_id_and_name(store_id: int,
     items_repo = ItemRepository(db)
     store_repo = StoreRepository(db)
 
-    owners_list = store_repo.check_store_owner(user.user_id, store_id)
+    owners_list = store_repo.check_store_owner(user.id, store_id)
 
     if user.role != UserRole.admin and not owners_list:
         raise HTTPException(status_code=401, detail="User does not own that store")
@@ -84,7 +84,7 @@ async def get_item_by_order_id(order_id: int,
     items_repo = ItemRepository(db)
     order_repo = OrderRepository(db)
     
-    order = order_repo.get_by_user_id_and_order_id(user.user_id, order_id)
+    order = order_repo.get_by_user_id_and_order_id(user.id, order_id)
 
     if user.role != UserRole.admin and not order:
         raise HTTPException(status_code=401, detail="User did not place that order")
@@ -105,21 +105,21 @@ async def update_item(item: ItemSchema,
     found_item = items_repo.get_by_id(item_id)
 
     store_repo = StoreRepository(db)
-    owners = store_repo.check_store_owner(user.user_id, found_item.store_id)
+    owners = store_repo.check_store_owner(user.id, found_item.store_id)
 
 
     if user.role != UserRole.admin and not owners:
         raise HTTPException(status_code=401, detail="User does not own the store of the item")
     
-    found_item.update(Item, 
-                      id=item.item_id, 
-                      name=item.name, 
-                      item_type=item.item_type, 
-                      description=item.description, 
-                      price=item.price, 
-                      picture=item.picture, 
-                      store_id=item.store_id, 
-                      info_id=item.info_id)
+    items_repo.update_by_id(item_id, 
+                            id=item.item_id, 
+                            name=item.name, 
+                            item_type=item.item_type, 
+                            description=item.description, 
+                            price=item.price, 
+                            picture=item.picture, 
+                            store_id=item.store_id, 
+                            info_id=item.info_id)
     
     return found_item
     

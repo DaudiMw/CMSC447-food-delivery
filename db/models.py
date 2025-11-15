@@ -63,14 +63,14 @@ class Store(Base):
     owners = relationship("User", secondary="store_owners", back_populates="stores") #many to many
     orders = relationship("Order", back_populates="store")
     pickups = relationship("Pickups", back_populates="store")
-    reports = relationship("Report", back_populates="store")
+    reports = relationship("Reports", back_populates="store")
 
 
 class StoreHours(Base):
     __tablename__ = "store_hours"
 
     id = Column(Integer, primary_key=True)
-    store_id = Column(Integer, ForeignKey("stores.store_id"), nullable=False)
+    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     monday_hours = Column(Time, nullable=True)
     tuesday_hours = Column(Time, nullable=True)
     wednesday_hours = Column(Time, nullable=True)
@@ -86,7 +86,7 @@ class Item(Base):
     __tablename__ = "items"
 
     id = Column(Integer, primary_key=True)
-    store_id = Column(Integer, ForeignKey("stores.store_id"), nullable=False)
+    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     name = Column(String, nullable=False, index=True)
     item_type = Column(SqlEnum(ItemType), nullable=False)
     description = Column(String)
@@ -103,7 +103,7 @@ class ItemInfo(Base):
     __tablename__ = "item_info"
 
     id = Column(Integer, primary_key=True)
-    item_id = Column(Integer, ForeignKey("items.item_id"), nullable=False)
+    item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
     serving_size = Column(String)
     calories = Column(String)
     total_fat = Column(String)
@@ -124,8 +124,8 @@ class Order(Base):
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
-    store_id = Column(Integer, ForeignKey("stores.store_id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     address = Column(String, nullable=False)
     status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.initialized)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -143,9 +143,9 @@ class Pickups(Base):
     __tablename__ = "pickups"
 
     id = Column(Integer, primary_key=True)
-    order_id = Column(Integer, ForeignKey("orders.order_id"), nullable=False)
-    dasher_id = Column(String, ForeignKey("users.user_id"), nullable=False)
-    store_id = Column(Integer, ForeignKey("stores.store_id"), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
+    dasher_id = Column(String, ForeignKey("users.id"), nullable=False)
+    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     scheduled_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     completed_at = Column(DateTime, default=None)
     
@@ -159,9 +159,9 @@ class Reports(Base):
     __tablename__ = "reports"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
-    order_id = Column(Integer, ForeignKey("orders.order_id"), nullable=False, unique=True)
-    store_id = Column(Integer, ForeignKey("stores.store_id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, unique=True)
+    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     comment = Column(String, nullable=False)
     response = Column(String)
     
@@ -176,8 +176,8 @@ class Address(Base):
     __tablename__ = "addresses"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(String, ForeignKey("users.user_id"))
-    store_id = Column(Integer, ForeignKey("stores.store_id"))
+    user_id = Column(String, ForeignKey("users.id"))
+    store_id = Column(Integer, ForeignKey("stores.id"))
     street = Column(String, nullable=False)
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
@@ -193,7 +193,7 @@ class DasherApplications(Base):
     __tablename__ = "dasher_applications"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(String, ForeignKey("users.user_id"), nullable=False, unique=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, unique=True)
     content = Column(String, nullable=False)
     date_applied = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
@@ -203,8 +203,8 @@ class OrderItems(Base):
     __tablename__ = "user_orders"
 
     id = Column(Integer, primary_key=True)
-    order_id = Column(String, ForeignKey("orders.order_id"), nullable=False)
-    item_id = Column(String, ForeignKey("items.item_id"), nullable=False)
+    order_id = Column(String, ForeignKey("orders.id"), nullable=False)
+    item_id = Column(String, ForeignKey("items.id"), nullable=False)
 
 
 #Association table
@@ -212,5 +212,5 @@ class StoreOwners(Base):
     __tablename__ = "store_owners"
 
     id = Column(Integer, primary_key=True)
-    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
-    owner_id = Column(String, ForeignKey("users.user_id"), nullable=False)
+    store_id = Column(String, ForeignKey("stores.id"), nullable=False)
+    owner_id = Column(String, ForeignKey("users.id"), nullable=False)

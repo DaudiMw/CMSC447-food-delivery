@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from api.schemas.base_schema import BaseSchema
 
 class ItemSchema(BaseSchema):
-    item_id: int
+    id: int
     name: str
     item_type: str
     description: str | None = None
@@ -13,7 +13,7 @@ class ItemSchema(BaseSchema):
     info_id: int | None = None
 
 class ItemInfoSchema(BaseSchema):
-    item_info_id: int
+    id: int
     serving_size: str | None = None
     calories: int
     total_fat: str | None = None

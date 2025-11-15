@@ -55,7 +55,7 @@ async def create_store(store: StoreSchema,
 #     try:
 #         store_repo = StoreRepository(db)
 
-#         owners = store_repo.get_store_owner(user.user_id, store.store_id)
+#         owners = store_repo.check_store_owner(user.id, store.store_id)
 
 #         if user.role != UserRole.admin and not owners:
 #             raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
@@ -70,7 +70,7 @@ async def get_user_stores(user: user_dependency, db: Session = Depends(get_db)):
     try:
         store_repo = StoreRepository(db)
 
-        store = store_repo.get_user_stores(user.user_id)
+        store = store_repo.get_user_stores(user.id)
 
         if not store:
             raise HTTPException(status_code=404, detail="Store not found.")
@@ -141,7 +141,7 @@ async def create_store_item(user: user_dependency, store_id: int, item: ItemSche
     try: 
         store_repo = StoreRepository(db)
         
-        owners = store_repo.get_store_owner(user.user_id, store_id)
+        owners = store_repo.check_store_owner(user.id, store_id)
 
         if user.role != UserRole.admin and user.role != UserRole.store_owner and not owners:
             raise HTTPException(status_code=401, detail="You do not have permissions to access this.")

@@ -69,14 +69,14 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         role: str = payload.get("role")
-        user_id: str = payload.get("user_id")
+        id: str = payload.get("id")
 
-        if username is None or role is None or user_id is None:
+        if username is None or role is None or id is None:
             raise credentials_exception
         
         token_data = TokenData(username=username)
 
-        userData = UserAuth(email=token_data.username, role=UserRole(role), user_id=user_id)
+        userData = UserAuth(email=token_data.username, role=UserRole(role), id=id)
 
         print(userData)
     
@@ -144,7 +144,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
             headers={"WWW-Authenticate": "Bearer"},
             )
     
-    token = create_access_token(data={"sub": user.email, "role": user.role.value, "user_id": user.user_id})
+    token = create_access_token(data={"sub": user.email, "role": user.role.value, "id": user.id})
     # Create an access token for the authenticated user
     return {"access_token": token, "token_type": "bearer"}
 

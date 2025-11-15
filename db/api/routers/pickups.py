@@ -18,7 +18,7 @@ async def get_dashers_pickups(user_id: str,
                               db : Session = Depends(get_db)):
     """Get all of a dashers currently picked up items"""
           
-    if user.role == UserRole.user or user.role == UserRole.store_owner or (user.role == UserRole.dasher and user_id != user.user_id):
+    if user.role == UserRole.user or user.role == UserRole.store_owner or (user.role == UserRole.dasher and user_id != user.id):
         raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
     
     pickup_repo = PickUpsRepository(db)

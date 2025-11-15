@@ -26,7 +26,7 @@ async def create_report_to_order(report: ReportSchema,
     orders_repo = OrderRepository(db)
     order = orders_repo.get_by_id(order_id)
 
-    if user.role != UserRole.admin and order.user_id != user.user_id and order.pickups.dasher_id != user.user_id:
+    if user.role != UserRole.admin and order.user_id != user.id and order.pickups.dasher_id != user.id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     try:
@@ -49,9 +49,9 @@ async def get_report_by_order_id(order_id: int,
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     
-    owners_list = store_repo.get_store_owner(user.user_id, report.store_id)
+    owners_list = store_repo.check_store_owner(user.id, report.store_id)
 
-    if user.role != UserRole.admin and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
+    if user.role != UserRole.admin and not owners_list and report.user_id != user.id and report.dasher_id != user.id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     return report
@@ -69,9 +69,9 @@ async def get_report_by_user_id(user_id: str,
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     
-    owners_list = store_repo.get_store_owner(user.user_id, report.store_id)
+    owners_list = store_repo.check_store_owner(user.id, report.store_id)
 
-    if user.role != UserRole.admin and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
+    if user.role != UserRole.admin and not owners_list and report.user_id != user.id and report.dasher_id != user.id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     return report
@@ -89,9 +89,9 @@ async def get_report_by_store_id(store_id: int,
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     
-    owners_list = store_repo.get_store_owner(user.user_id, store_id)
+    owners_list = store_repo.check_store_owner(user.id, store_id)
 
-    if user.role != UserRole.admin and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
+    if user.role != UserRole.admin and not owners_list and report.user_id != user.id and report.dasher_id != user.id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     return report
@@ -104,14 +104,14 @@ async def get_report_by_store_id_and_user_id(store_id: int,
     """Perms: admin, store owner of order, user who reported, dasher who reported"""
     reports_repo = ReportsRepository(db)
     store_repo = StoreRepository(db)
-    report = reports_repo.get_by_store_id_and_user_id(store_id, user.user_id)
+    report = reports_repo.get_by_store_id_and_user_id(store_id, user.id)
 
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     
-    owners_list = store_repo.get_store_owner(user.user_id, store_id)
+    owners_list = store_repo.check_store_owner(user.id, store_id)
 
-    if user.role != UserRole.admin and not owners_list and report.user_id != user.user_id and report.dasher_id != user.user_id:
+    if user.role != UserRole.admin and not owners_list and report.user_id != user.id and report.dasher_id != user.id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     return report
