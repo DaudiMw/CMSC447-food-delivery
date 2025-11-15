@@ -176,7 +176,6 @@ class Address(Base):
     __tablename__ = "addresses"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(String, ForeignKey("users.id"))
     store_id = Column(Integer, ForeignKey("stores.id"))
     street = Column(String, nullable=False)
     city = Column(String, nullable=False)

@@ -32,8 +32,8 @@ async def create_store(store: StoreSchema,
     """Create a new store"""
     """Perms: admin"""
           
-    # if user.role != UserRole.admin:
-    #     raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
+    if user.role != UserRole.admin:
+        raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
     
     try:
         store_repo = StoreRepository(db)
