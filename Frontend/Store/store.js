@@ -195,13 +195,14 @@ function getOpenCloseTime(hours){
       if (dayObj.day === currentDay){
         if (dayObj.start_time && dayObj.end_time){
           return {'start_time': dayObj.start_time,
-                  'end_time':dayObj.end_time
+                  'end_time':dayObj.end_time,
+                  'is_open': dayObj.start_time <= now && dayObj.end_time >= now
           }
         }
       }
     }
 
-    return None
+    return null
 }
 
 function StorePage() {
@@ -246,30 +247,57 @@ function StorePage() {
     ? `${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`
     : 'Address not available';
 
+
+  const hours = getOpenCloseTime(store.hours);
+
   return (
     <div className="min-h-screen bg-gradient-to-br mt-18 from-amber-50 via-orange-50 to-yellow-50">
       {/* Hero Section - Company Image */}
-      <div className="relative w-full h-60 md:h-80 bg-cover bg-center" style={{ backgroundImage: `url(${imageUrl})` }}>
+      <div className="relative w-full h-60 md:h-[420px] bg-cover bg-center" style={{ backgroundImage: `url(${imageUrl})` }}>
         <div className="absolute inset-0 bg-black opacity-25"></div>
       </div>
 
       {/* Store Info Section */}
-      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 px-4 md:px-6 py-8">
+      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 px-4 md:px-6 py-8 mb-5">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
             {store.name || 'Store'}
           </h1>
           <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-2 md:gap-4">
-            <p className="text-lg md:text-2xl text-gray-800">Open-Close</p>
+            {hours && (
+              <div>
+                <p className={`text-lg md:text-2xl ${hours.is_open ? 'text-green-600' : 'text-red-600'}`}>
+                  {hours.start_time}-{hours.end_time}
+                </p>
+                <span className={hours.is_open ? 'text-green-600' : 'text-red-600'}>
+                  {hours.is_open ? 'Open' : 'Closed'}
+                </span>
+              </div>
+            )}
             <p className="text-base md:text-xl text-gray-800">
               {addressString}
             </p>
           </div>
+          {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
+            <button className="mt-5 shadow-md border rounded-md text-2xl p-2 bg-[#fdb515] hover:scale-110 transform transition duration-300" onClick ={() => window.location.hash = `#/store/${store.store_id}/edit`}>Edit Store Info</button>
+          )}
         </div>
       </div>
 
       {/* Menu Items Section */}
-      <ItemList data={store.items || []} />
+      <div className="bg-white">
+        {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
+          <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 flex justify-end">
+            <button 
+              className="border shadow-md rounded-md text-2xl text-white p-2 bg-[#007176] hover:scale-110 transform transition duration-300" 
+              onClick={() => window.location.hash = `#/store/${store.store_id}/add-item`}
+            >
+              Add Item
+            </button>
+          </div>
+        )}
+        <ItemList data={store.items || []} />
+      </div>
     </div>
   );
 }
