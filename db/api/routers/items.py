@@ -5,6 +5,7 @@ from repositories.orders import OrderRepository
 from repositories.store import StoreRepository
 from sqlalchemy.orm import Session
 from database import get_db
+from models import UserRole, Item
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
 from api.schemas.item_schemas import ItemInfoSchema, ItemSchema
@@ -16,7 +17,7 @@ user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
 @router.post("/{store_id}", status_code=201, response_model=list[ItemSchema])
 async def add_item_to_store(item: ItemSchema,
-                            store_id: str,
+                            store_id: int,
                             user: user_dependency,
                             db: Session = Depends(get_db)):
     """Adds an item to a specified store."""
@@ -24,9 +25,9 @@ async def add_item_to_store(item: ItemSchema,
     items_repo = ItemRepository(db)
     store_repo = StoreRepository(db)
 
-    owners_list = store_repo.get_store_owner(user.user_id, store_id)
+    owners_list = store_repo.check_store_owner(user.id, store_id)
 
-    if user.role != "admin" and not owners_list:
+    if user.role != UserRole.admin and not owners_list:
         raise HTTPException(status_code=401, detail="User does not own that store")
     
     try:
@@ -37,7 +38,7 @@ async def add_item_to_store(item: ItemSchema,
     return new_item
 
 @router.get("/{store_id}/{item_name}", status_code=201, response_model=list[ItemSchema])
-async def get_item_by_store_id_and_name(store_id: str,
+async def get_item_by_store_id_and_name(store_id: int,
                                         item_name: str,
                                         user: user_dependency,
                                         db: Session = Depends(get_db)):
@@ -46,9 +47,9 @@ async def get_item_by_store_id_and_name(store_id: str,
     items_repo = ItemRepository(db)
     store_repo = StoreRepository(db)
 
-    owners_list = store_repo.get_store_owner(user.user_id, store_id)
+    owners_list = store_repo.check_store_owner(user.id, store_id)
 
-    if user.role != "admin" and not owners_list:
+    if user.role != UserRole.admin and not owners_list:
         raise HTTPException(status_code=401, detail="User does not own that store")
     
     try:
@@ -59,7 +60,7 @@ async def get_item_by_store_id_and_name(store_id: str,
     return item
 
 @router.get("/{store_id}/search", status_code=201, response_model=list[ItemSchema])
-async def search_item_by_store_id(store_id: str,
+async def search_item_by_store_id(store_id: int,
                                   query: str,
                                   user: user_dependency,
                                   db: Session = Depends(get_db)):
@@ -75,7 +76,7 @@ async def search_item_by_store_id(store_id: str,
     return item
 
 @router.get("/{order_id}", status_code=201, response_model=list[ItemSchema])
-async def get_item_by_order_id(order_id: str,
+async def get_item_by_order_id(order_id: int,
                                user: user_dependency,
                                db: Session = Depends(get_db)):
     """Gets an item by order ID."""
@@ -83,9 +84,9 @@ async def get_item_by_order_id(order_id: str,
     items_repo = ItemRepository(db)
     order_repo = OrderRepository(db)
     
-    order = order_repo.get_by_user_id_and_order_id(user.user_id, order_id)
+    order = order_repo.get_by_user_id_and_order_id(user.id, order_id)
 
-    if user.role != "admin" and not order:
+    if user.role != UserRole.admin and not order:
         raise HTTPException(status_code=401, detail="User did not place that order")
 
     try:
@@ -95,3 +96,30 @@ async def get_item_by_order_id(order_id: str,
     
     return item
 
+@router.put("/{item_id}", status_code=201, response_model=ItemSchema)
+async def update_item(item: ItemSchema,
+                      item_id: int,
+                      user: user_dependency,
+                      db: Session = Depends(get_db)):
+    items_repo = ItemRepository(db)
+    found_item = items_repo.get_by_id(item_id)
+
+    store_repo = StoreRepository(db)
+    owners = store_repo.check_store_owner(user.id, found_item.store_id)
+
+
+    if user.role != UserRole.admin and not owners:
+        raise HTTPException(status_code=401, detail="User does not own the store of the item")
+    
+    items_repo.update_by_id(item_id, 
+                            id=item.item_id, 
+                            name=item.name, 
+                            item_type=item.item_type, 
+                            description=item.description, 
+                            price=item.price, 
+                            picture=item.picture, 
+                            store_id=item.store_id, 
+                            info_id=item.info_id)
+    
+    return found_item
+    

@@ -10,7 +10,7 @@ class BaseRepository(Generic[ModelType]):
         self.model = model
         self.session = session
 
-    def get_by_id(self, id: str) -> Optional[ModelType]:
+    def get_by_id(self, id) -> Optional[ModelType]:
         """Retrieve a record by its primary key, ensuring it's not soft-deleted."""
         # Get the primary key column name dynamically
         primary_key_column = inspect(self.model).primary_key[0]
@@ -21,7 +21,7 @@ class BaseRepository(Generic[ModelType]):
         ).first()
     
     
-    def update_by_id(self, id: str, **kwargs) -> Optional[ModelType]:
+    def update_by_id(self, id, **kwargs) -> Optional[ModelType]:
         """Update a record by primary key, safely handling soft delete."""
 
         primary_key_column = inspect(self.model).primary_key[0]

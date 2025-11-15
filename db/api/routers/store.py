@@ -6,7 +6,7 @@ from repositories.media import MediaRepository
 from repositories.address import AddressRepository
 from repositories.items import ItemRepository
 from repositories.store import StoreRepository
-from models import StoreHours
+from models import StoreHours, UserRole
 from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile, File
 from api.auth.auth import get_current_user
 from sqlalchemy.orm import Session
@@ -188,7 +188,7 @@ async def get_user_stores(user: user_dependency, db: Session = Depends(get_db)):
     try:
         store_repo = StoreRepository(db)
 
-        store = store_repo.get_user_stores(user.user_id)
+        store = store_repo.get_user_stores(user.id)
 
         if not store:
             raise HTTPException(status_code=404, detail="Store not found.")
@@ -200,8 +200,8 @@ async def get_user_stores(user: user_dependency, db: Session = Depends(get_db)):
 
 
 @router.get("/{store_id}", response_model=StoreSchema)
-async def get_store_by_id(store_id: str, db : Session = Depends(get_db)):
-    """Get store by its ID."""
+async def get_store_by_id(store_id: int, db : Session = Depends(get_db)):
+    """Get store by its ID. We will also return all items in the store."""
     """Perms: none"""
     try: 
         store_repo = StoreRepository(db)
@@ -258,7 +258,7 @@ async def get_store_items_full(store_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.get("/{store_id}/items", response_model=list[ItemSchema])
-async def get_store_items(store_id: str, db : Session = Depends(get_db)):
+async def get_store_items(store_id: int, db : Session = Depends(get_db)):
     """Get all items in a store."""
     """Perms: none"""
 
@@ -277,15 +277,15 @@ async def get_store_items(store_id: str, db : Session = Depends(get_db)):
     
     
 @router.post("/{store_id}/items", response_model=ItemSchema, status_code=201)
-async def create_store_item(user: user_dependency, store_id: str, item: ItemSchema, db : Session = Depends(get_db)):
+async def create_store_item(user: user_dependency, store_id: int, item: ItemSchema, db : Session = Depends(get_db)):
     """Create a new item in a store."""
     """Perms: admin, store owner"""
     try: 
         store_repo = StoreRepository(db)
         
-        owners = store_repo.get_store_owner(user.user_id, store_id)
+        owners = store_repo.check_store_owner(user.id, store_id)
 
-        if user.role != "admin" and user.role != "store_owner" and not owners:
+        if user.role != UserRole.admin and user.role != UserRole.store_owner and not owners:
             raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
         
         

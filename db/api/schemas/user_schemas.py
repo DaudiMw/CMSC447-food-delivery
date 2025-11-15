@@ -5,7 +5,7 @@ from models import UserRole
 
 
 class UserSchema(BaseSchema):
-    user_id: str
+    id: str
     campus_id: str
     email: str
     password: str
@@ -22,7 +22,7 @@ class UserCreate(BaseSchema):
     last_name: Optional[str] = None
 
 class UserResponse(BaseSchema):
-    user_id: str
+    id: str
     campus_id: str
     email: str
     first_name: str
@@ -31,7 +31,7 @@ class UserResponse(BaseSchema):
     is_banned: bool
 
 class UserSummary(BaseSchema):
-    user_id: str
+    id: str
     campus_id: str
     first_name: str
     last_name: Optional[str] = None
@@ -39,11 +39,11 @@ class UserSummary(BaseSchema):
 
 class UserAuth(BaseSchema):
     email: str
-    user_id: str
+    id: str
     role: UserRole
 
 class ApplicationCreate(BaseSchema):
-    user_id: str
+    id: str
     content: str
 
 

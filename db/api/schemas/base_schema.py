@@ -10,6 +10,8 @@ class BaseSchema(BaseModel):
         # orm_mode = True
 
 class Address(BaseModel):
+    id: int | None = None
+    label: str | None = None
     street: str
     city: str
     state: str
@@ -19,6 +21,6 @@ class Address(BaseModel):
         from_attributes = True
 
 class MediaSchema(BaseModel):
-    media_id: str
+    media_id: int
     filename: str
 

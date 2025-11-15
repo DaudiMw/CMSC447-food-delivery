@@ -28,7 +28,9 @@ class StoreResponseSchema(BaseSchema):
     created_at: datetime | None = None
 
 class StoreInfoSchema(BaseSchema):
-    store_id: str
+    store_id: int
+class StoreSchema(BaseSchema):
+    id: int
     name: str
     description: str | None = None
     phone: str
@@ -59,3 +61,5 @@ class StoreWithItemsSchema(BaseSchema):
     # class Config:
     #     from_attributes = True  # This is needed to convert SQLAlchemy models
 
+class StoreHoursSchema(BaseSchema):
+    store_id: int

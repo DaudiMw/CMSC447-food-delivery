@@ -9,7 +9,7 @@ class UserRepository(BaseRepository[User]):
         super().__init__(User, session)
     
 
-    def get_by_campus_id(self, campus_id: str) -> Optional[User]:
+    def get_by_campus_id(self, campus_id: int) -> Optional[User]:
         """Get a student by their campus id."""
         return self.session.query(User).filter(
             self.model.is_deleted == False,

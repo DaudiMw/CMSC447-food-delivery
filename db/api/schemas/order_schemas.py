@@ -5,9 +5,9 @@ from api.schemas.item_schemas import ItemSchema
 
 
 class OrderSchema(BaseSchema):
-    order_id: str
+    id: int
     user_id: str
-    store_id: str
+    store_id: int
     address: str
     status: str
     created_at: str
