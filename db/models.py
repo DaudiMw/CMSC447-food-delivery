@@ -61,7 +61,7 @@ class Store(Base):
     # Relationships
     logo = relationship("Media", foreign_keys=[logo_id], backref="store_logos")
     banner = relationship("Media", foreign_keys=[banner_id], backref="store_banners") 
-    hours = relationship("StoreHours", secondary="stores_hours", back_populates="store") #1 to many
+    hours = relationship("StoreHours", back_populates="store") #1 to many
     address = relationship("Address", back_populates="store", uselist=False) #1 to 1
     items = relationship("Item", back_populates="store") #1 to many
     owners = relationship("User", secondary="store_owners", back_populates="stores") #many to many
@@ -162,6 +162,7 @@ class Reports(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
     comment = Column(String, nullable=False)
     response = Column(String)
     
@@ -177,12 +178,10 @@ class Address(Base):
 
     id = Column(Integer, primary_key=True)
     store_id = Column(Integer, ForeignKey("stores.id"))
-    order_id = Column(Integer, ForeignKey("orders.id"))
     street = Column(String, nullable=False)
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
     zip = Column(String, nullable=False)
-    label = Column(String)
     
     # Relationships
     users = relationship("User", secondary="user_addresses", back_populates="addresses") #many to many
@@ -222,14 +221,6 @@ class OrderItems(Base):
     id = Column(Integer, primary_key=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
     item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
-
-#Association Table
-class UserAddresses(Base):
-    __tablename__ = "user_addresses"
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False)
-    address_id = Column(Integer, ForeignKey("addresses.id"), nullable=False)
 
 #Association table
 class StoreOwners(Base):
