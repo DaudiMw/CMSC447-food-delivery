@@ -466,25 +466,25 @@ function AdminPage() {
                                     </thead>
                                     <tbody>
                                         {filteredStores.map(store => (
-                                            <tr key={store.store_id} className="border-b hover:bg-amber-100 transition-colors duration-200">
+                                            <tr key={store.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
                                                 <td className="p-3">{store.name}</td>
                                                 <td className="p-3">{store.description}</td>
                                                 <td className="p-3">{new Date(store.created_at).toLocaleDateString()}</td>
                                                 <td className="p-3 flex gap-2">
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.store_id}`; }}
+                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.id}`; }}
                                                         className="px-3 py-1 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600 transition-all"
                                                     >
                                                         View
                                                     </button>
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.store_id}/edit`; }}
+                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.id}/edit`; }}
                                                         className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition-all"
                                                     >
                                                         Update
                                                     </button>
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); if (confirm('Are you sure you want to delete this store?')) deleteStoreMutation.mutate(store.store_id); }}
+                                                        onClick={(e) => { e.stopPropagation(); if (confirm('Are you sure you want to delete this store?')) deleteStoreMutation.mutate(store.id); }}
                                                         className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-all"
                                                     >
                                                         Delete

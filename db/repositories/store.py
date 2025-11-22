@@ -41,7 +41,7 @@ class StoreRepository(BaseRepository[Store]):
     def get_user_stores(self, user_id: str) -> list[Store]:
         """Get all stores that a user owns."""
         return self.session.query(Store).filter(
-            self.model.owners.has(id = user_id),
+            self.model.owners.any(User.id == user_id),
             self.model.is_deleted == False
         ).all()
     
@@ -49,7 +49,7 @@ class StoreRepository(BaseRepository[Store]):
         """Get a store's owners."""
         return self.session.query(Store).filter(
             self.model.id == store_id,
-            self.model.owners.has(id = user_id),
+            self.model.owners.any(User.id == user_id),
             self.model.is_deleted == False,
         ).all()
     
@@ -57,14 +57,12 @@ class StoreRepository(BaseRepository[Store]):
         """Get a single store and all its related items."""
         
         store = self.session.query(Store).options(
-            joinedload(Store.items).joinedload(Item.nutrition_info),
+            joinedload(Store.items).joinedload(Item.item_info),
             joinedload(Store.address),  # Add this line
             joinedload(Store.hours)
         ).filter(
             Store.id == store_id,
-            Store.is_deleted == False,
-            Store.items.is_deleted == False,
-            Store.items.nutrition_info.is_deleted == False
+            Store.is_deleted == False
         ).first()
         
         if not store:
@@ -73,7 +71,7 @@ class StoreRepository(BaseRepository[Store]):
         # Filter items in Python
         store.items = [
             item for item in store.items 
-            if not item.is_deleted and (not item.nutrition_info or not item.nutrition_info.is_deleted)
+            if not item.is_deleted and (not item.item_info or not item.item_info.is_deleted)
         ]
         
         return store

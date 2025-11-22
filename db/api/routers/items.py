@@ -1,41 +1,86 @@
-from fastapi import APIRouter, Depends, HTTPException
+import json
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from pydantic import ValidationError
 from api.auth.auth import get_current_user
+from repositories.media import MediaRepository
 from repositories.items import ItemRepository
 from repositories.orders import OrderRepository
 from repositories.store import StoreRepository
 from sqlalchemy.orm import Session
 from database import get_db
-from models import UserRole, Item
+from models import UserRole
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
-from api.schemas.item_schemas import ItemInfoSchema, ItemSchema
+from api.schemas.item_schemas import ItemSchema, ItemWithInfoCreateSchema
 from api.schemas.user_schemas import UserAuth
 
 router = APIRouter(dependencies=[Depends(oauth2_scheme)], prefix="/items", tags=["items"])
 
 user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
-@router.post("/{store_id}", status_code=201, response_model=list[ItemSchema])
-async def add_item_to_store(item: ItemSchema,
-                            store_id: int,
+@router.post("/{store_id}", status_code=201, response_model=ItemSchema)
+async def add_item_to_store(store_id: int,
                             user: user_dependency,
+                            item: str = Form(...),
+                            picture: UploadFile = File(None),
                             db: Session = Depends(get_db)):
     """Adds an item to a specified store."""
     """Perms: admin, store owner"""
     items_repo = ItemRepository(db)
     store_repo = StoreRepository(db)
+    media_repo = MediaRepository(db)
 
+    # Check permissions
     owners_list = store_repo.check_store_owner(user.id, store_id)
-
     if user.role != UserRole.admin and not owners_list:
         raise HTTPException(status_code=401, detail="User does not own that store")
     
     try:
-        new_item = items_repo.create(**item.dict(), store_id=store_id)
+        # Parse the JSON item data
+        item_data = json.loads(item)
+        item_schema = ItemWithInfoCreateSchema(**item_data)
+        
+        # Prepare item data for creation
+        item_dict = {
+            "name": item_schema.name,
+            "item_type": item_schema.item_type,
+            "description": item_schema.description,
+            "price": item_schema.price,
+            "store_id": store_id
+        }
+        
+        # Prepare nutritional info if provided
+        info_dict = None
+        if item_schema.nutrition_info:
+            info_dict = item_schema.nutrition_info.model_dump(exclude_none=True)
+        
+        # Handle picture upload first if provided
+        if picture and picture.filename:
+            content = await picture.read()
+            media_record = media_repo.create_no_commit(
+                media_data=content,
+                filename=picture.filename
+            )
+            item_dict["picture_id"] = media_record.id
+        
+        # Create item with nutritional info
+        new_item = items_repo.create_with_info_no_commit(item_dict, info_dict)
+        
+        # Commit the transaction
+        db.commit()
+        db.refresh(new_item)
+        
+        return new_item
+        
+    except json.JSONDecodeError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Invalid JSON format for item data")
+    except ValidationError as e:
+        db.rollback()
+        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-    return new_item
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create item: {str(e)}")
 
 @router.get("/{store_id}/{item_name}", status_code=201, response_model=list[ItemSchema])
 async def get_item_by_store_id_and_name(store_id: int,

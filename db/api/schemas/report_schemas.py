@@ -1,4 +1,3 @@
-from pydantic import BaseModel
 from api.schemas.base_schema import BaseSchema
 
 class ReportSchema(BaseSchema):

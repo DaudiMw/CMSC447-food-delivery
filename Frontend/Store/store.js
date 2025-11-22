@@ -8,7 +8,6 @@ function ItemDisplay({
   price,
   picture,
   store_id,
-  info_id,
   nutrition_info,
 }) {
   const [showNutrition, setShowNutrition] = React.useState(false);
@@ -18,7 +17,11 @@ function ItemDisplay({
     <div className="flex flex-col sm:flex-row overflow-hidden rounded-xl bg-white shadow-md hover:shadow-lg transition-shadow">
         {/* Image */}
         <div className="flex h-48 sm:h-auto w-full sm:w-40 flex-shrink-0 items-center justify-center bg-gray-200 text-gray-500">
-          <p className="text-sm font-medium">Image</p>
+          {picture ? ( // Assuming 'picture' prop is actually 'picture_id'
+            <img src={`http://localhost:8000/media/${picture}`} alt={name} className="h-full w-full object-cover rounded-xl" />
+          ) : (
+            <p className="text-sm font-medium">No Image</p>
+          )}
         </div>
         
         {/* Content section */}
@@ -166,15 +169,14 @@ function ItemList({ data }) {
               <div className="space-y-4">
                 {items.map(item => (
                   <ItemDisplay
-                    key={item.item_id}
-                    item_id={item.item_id}
+                    key={item.id}
+                    item_id={item.id}
                     name={item.name}
                     item_type={item.item_type}
                     description={item.description}
                     price={item.price}
-                    picture={item.picture}
+                    picture={item.picture_id}
                     store_id={item.store_id}
-                    info_id={item.info_id}
                     nutrition_info={item.nutrition_info}
                   />
                 ))}
@@ -279,7 +281,7 @@ function StorePage() {
             </p>
           </div>
           {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
-            <button className="mt-5 shadow-md border rounded-md text-2xl p-2 bg-[#fdb515] hover:scale-110 transform transition duration-300" onClick ={() => window.location.hash = `#/store/${store.store_id}/edit`}>Edit Store Info</button>
+            <button className="mt-5 shadow-md border rounded-md text-2xl p-2 bg-[#fdb515] hover:scale-110 transform transition duration-300" onClick ={() => window.location.hash = `#/store/${store_id}/edit`}>Edit Store Info</button>
           )}
         </div>
       </div>
@@ -290,7 +292,7 @@ function StorePage() {
           <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 flex justify-end">
             <button 
               className="border shadow-md rounded-md text-2xl text-white p-2 bg-[#007176] hover:scale-110 transform transition duration-300" 
-              onClick={() => window.location.hash = `#/store/${store.store_id}/add-item`}
+              onClick={() => window.location.hash = `#/store/${store_id}/add-item`}
             >
               Add Item
             </button>

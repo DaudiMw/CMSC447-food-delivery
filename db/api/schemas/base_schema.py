@@ -5,10 +5,6 @@ class BaseSchema(BaseModel):
     class Config:
         from_attributes = True
 
-
-
-        # orm_mode = True
-
 class Address(BaseModel):
     id: int | None = None
     label: str | None = None

@@ -29,7 +29,7 @@ class ItemType(enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False, unique=True, index=True)
     campus_id = Column(String, nullable=False, unique=True, index=True)
     email = Column(String, nullable=False, unique=True, index=True)
     password = Column(String, nullable=False)
@@ -40,7 +40,7 @@ class User(Base):
     
     # Relationships
     orders = relationship("Order", back_populates="user") #1 to many
-    addresses = relationship("Address", back_populates="users") #1 to many
+    addresses = relationship("Address", secondary="user_addresses", back_populates="user") #1 to many
     pickups = relationship("Pickups", back_populates="dasher") #1 to many
     reports = relationship("Reports", back_populates="user") #1 to many
     stores = relationship("Store", secondary="store_owners", back_populates="owners") #many to many
@@ -51,10 +51,10 @@ class Store(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, index=True)
-    address_id = Column(ForeignKey("addresses.address_id"), nullable=False)
+    # address_id = Column(ForeignKey("addresses.id"), nullable=False)
     description = Column(String)
-    banner_id = Column(String, ForeignKey("media.media_id"))
-    logo_id = Column(String, ForeignKey("media.media_id"))
+    banner_id = Column(Integer, ForeignKey("media.id"))
+    logo_id = Column(Integer, ForeignKey("media.id"))
     phone = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
@@ -63,7 +63,6 @@ class Store(Base):
     banner = relationship("Media", foreign_keys=[banner_id], backref="store_banners") 
     hours = relationship("StoreHours", back_populates="store")
     address = relationship("Address", back_populates="store", uselist=False) #1 to 1
-    # hours = relationship("StoreHours", back_populates="store", uselist=False) #1 to 1
     items = relationship("Item", back_populates="store") #1 to many
     owners = relationship("User", secondary="store_owners", back_populates="stores") #many to many
     orders = relationship("Order", back_populates="store")
@@ -74,20 +73,13 @@ class Store(Base):
 class StoreHours(Base):
     __tablename__ = "store_hours"
 
+    id = Column(Integer, primary_key=True)
     day = Column(String, nullable=False)
     start_time = Column(Time, nullable=True)
     end_time = Column(Time, nullable=True)
-    id = Column(Integer, primary_key=True)
-    # store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
-    # monday_hours = Column(Time, nullable=True)
-    # tuesday_hours = Column(Time, nullable=True)
-    # wednesday_hours = Column(Time, nullable=True)
-    # thursday_hours = Column(Time, nullable=True)
-    # friday_hours = Column(Time, nullable=True)
-    # saturday_hours = Column(Time, nullable=True)
-    # sunday_hours = Column(Time, nullable=True)
+    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
 
-    store = relationship("Store", back_populates="hours", uselist=False) #1 to 1
+    store = relationship("Store", back_populates="hours")
 
 
 class Item(Base):
@@ -99,9 +91,7 @@ class Item(Base):
     item_type = Column(SqlEnum(ItemType), nullable=False)
     description = Column(String)
     price = Column(Numeric(10,2), nullable=False, index=True)
-    picture_id = Column(String, ForeignKey("media.media_id"))
-    store_id = Column(String, ForeignKey("stores.store_id"), nullable=False)
-    info_id = Column(String, ForeignKey("item_info.item_info_id"))
+    picture_id = Column(Integer, ForeignKey("media.id"))
 
     # Relationships
     item_info = relationship("ItemInfo", back_populates="item", uselist=False) #1 to 1
@@ -115,15 +105,15 @@ class ItemInfo(Base):
     id = Column(Integer, primary_key=True)
     item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
     serving_size = Column(String)
-    calories = Column(String)
-    total_fat = Column(String)
-    cholesterol = Column(String)
-    sodium = Column(String)
+    calories = Column(Numeric)
+    total_fat = Column(Numeric)
+    cholesterol = Column(Numeric)
+    sodium = Column(Numeric)
     carbs = Column(String)
     dietary_fiber = Column(String)
-    total_sugars = Column(String)
+    total_sugars = Column(Numeric)
     added_sugars = Column(String)
-    protein = Column(String)
+    protein = Column(Numeric)
     ingredients = Column(String)
     
     # Relationships
@@ -194,7 +184,7 @@ class Address(Base):
     label = Column(String)
     
     # Relationships
-    users = relationship("User", back_populates="addresses") #many to 1
+    user = relationship("User", secondary="user_addresses", back_populates="addresses") #many to 1
     store = relationship("Store", back_populates="address", uselist=False) #1 to 1
 
 
@@ -208,23 +198,34 @@ class DasherApplications(Base):
 
 class Media(Base):
     __tablename__ = "media"
-    media_id = Column(String, primary_key=True, default= lambda: str(uuid.uuid4()), nullable=False, unique=True, server_default=func.uuid_generate_v4(), index=True)
+
+    id = Column(Integer, primary_key=True, index=True)
     media_data = Column(BLOB, nullable=False)
     filename = Column(String, nullable=False)
+
+    __table_args__ = {'sqlite_autoincrement': True}
+
 
 #Association table
 class OrderItems(Base):
     __tablename__ = "user_orders"
 
     id = Column(Integer, primary_key=True)
-    order_id = Column(String, ForeignKey("orders.id"), nullable=False)
-    item_id = Column(String, ForeignKey("items.id"), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
+    item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
 
+#Association Table
+class UserAddresses(Base):
+    __tablename__ = "user_addresses"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    address_id = Column(Integer, ForeignKey("addresses.id"), nullable=False)
 
 #Association table
 class StoreOwners(Base):
     __tablename__ = "store_owners"
 
     id = Column(Integer, primary_key=True)
-    store_id = Column(String, ForeignKey("stores.id"), nullable=False)
+    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     owner_id = Column(String, ForeignKey("users.id"), nullable=False)
