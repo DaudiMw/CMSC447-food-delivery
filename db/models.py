@@ -182,6 +182,8 @@ class Address(Base):
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
     zip = Column(String, nullable=False)
+    building_name = Column(String)
+    room_number = Column(String)
     
     # Relationships
     users = relationship("User", secondary="user_addresses", back_populates="addresses") #many to many
