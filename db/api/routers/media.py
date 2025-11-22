@@ -23,7 +23,7 @@ async def upload_media(file: UploadFile = File(...), db: Session = Depends(get_d
 
         new_media = media_repo.create(**media)
 
-        return {"media_id": new_media.media_id}
+        return {"media_id": new_media.id}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error uploading file: {e}")

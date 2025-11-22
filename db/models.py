@@ -53,15 +53,15 @@ class Store(Base):
     name = Column(String, nullable=False, index=True)
     # address_id = Column(ForeignKey("addresses.id"), nullable=False)
     description = Column(String)
-    banner_id = Column(String, ForeignKey("media.id"))
-    logo_id = Column(String, ForeignKey("media.id"))
+    banner_id = Column(Integer, ForeignKey("media.id"))
+    logo_id = Column(Integer, ForeignKey("media.id"))
     phone = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
     # Relationships
     logo = relationship("Media", foreign_keys=[logo_id], backref="store_logos")
     banner = relationship("Media", foreign_keys=[banner_id], backref="store_banners") 
-    hours = relationship("StoreHours", secondary="stores_hours", back_populates="store")
+    hours = relationship("StoreHours", secondary="stores_hours", back_populates="store") #1 to many
     address = relationship("Address", back_populates="store", uselist=False) #1 to 1
     # hours = relationship("StoreHours", back_populates="store", uselist=False) #1 to 1
     items = relationship("Item", back_populates="store") #1 to many
@@ -87,7 +87,7 @@ class StoreHours(Base):
     # saturday_hours = Column(Time, nullable=True)
     # sunday_hours = Column(Time, nullable=True)
 
-    store = relationship("Store", secondary="stores_hours", back_populates="hours") #many to many
+    store = relationship("Store", secondary="stores_hours", back_populates="hours") #many to 1
 
 
 class Item(Base):
@@ -100,7 +100,6 @@ class Item(Base):
     description = Column(String)
     price = Column(Numeric(10,2), nullable=False, index=True)
     picture_id = Column(Integer, ForeignKey("media.id"))
-    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     # info_id = Column(Integer, ForeignKey("item_info.id"))
 
     # Relationships
@@ -136,12 +135,13 @@ class Order(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
-    address = Column(String, nullable=False)
+    address_id = Column(Integer, ForeignKey("addresses.id"), nullable=False)
     status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.initialized)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # Relationships
+    address = relationship("Address", back_populates="order") #many to 1
     user = relationship("User", back_populates="orders")
     items = relationship("Item", secondary="user_orders", back_populates="orders")
     pickups = relationship("Pickups", back_populates="order") #1 to many
@@ -170,7 +170,6 @@ class Reports(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
-    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, unique=True)
     store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     comment = Column(String, nullable=False)
     response = Column(String)
@@ -187,6 +186,7 @@ class Address(Base):
 
     id = Column(Integer, primary_key=True)
     store_id = Column(Integer, ForeignKey("stores.id"))
+    order_id = Column(Integer, ForeignKey("orders.id"))
     street = Column(String, nullable=False)
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
@@ -196,6 +196,7 @@ class Address(Base):
     # Relationships
     users = relationship("User", secondary="user_addresses", back_populates="addresses") #many to many
     store = relationship("Store", back_populates="address", uselist=False) #1 to 1
+    order = relationship("Order", back_populates="address") #1 to many
 
 
 class DasherApplications(Base):

@@ -112,7 +112,7 @@ async def update_item(item: ItemSchema,
         raise HTTPException(status_code=401, detail="User does not own the store of the item")
     
     items_repo.update_by_id(item_id, 
-                            id=item.item_id, 
+                            id=item.id, 
                             name=item.name, 
                             item_type=item.item_type, 
                             description=item.description, 
