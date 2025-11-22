@@ -66,6 +66,14 @@ class BaseRepository(Generic[ModelType]):
         self.session.refresh(obj)
         return obj
 
+    def create_no_commit(self, **kwargs) -> ModelType:
+        """Create a new record without committing."""
+        obj = self.model(**kwargs)
+        self.session.add(obj)
+        self.session.flush()
+        self.session.refresh(obj)
+        return obj
+
     def update(self, obj: ModelType, **kwargs) -> ModelType:
         """Update an existing record."""
         for key, value in kwargs.items():

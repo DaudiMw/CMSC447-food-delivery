@@ -1,12 +1,54 @@
 from typing import Optional, List
 from sqlalchemy.orm import Session
-from models import Item, ItemType
+from models import Item, ItemType, ItemInfo
 from repositories.base import BaseRepository
 
 
 class ItemRepository(BaseRepository[Item]):
     def __init__(self, session: Session):
         super().__init__(Item, session)
+
+    def create_with_info(self, item_data: dict, info_data: dict = None) -> Item:
+        """Create an item and its nutritional info."""
+        new_item = Item(**item_data)
+        if info_data:
+            new_item_info = ItemInfo(**info_data)
+            new_item.item_info = new_item_info
+        
+        self.session.add(new_item)
+        self.commit()
+        self.session.refresh(new_item)
+        return new_item
+
+    def create_with_info_no_commit(self, item_data: dict, info_data: dict = None) -> Item:
+        """Create an item and its nutritional info without committing."""
+        new_item = Item(**item_data)
+        if info_data:
+            new_item_info = ItemInfo(**info_data)
+            new_item.item_info = new_item_info
+        
+        self.session.add(new_item)
+        self.session.flush()
+        self.session.refresh(new_item)
+        return new_item
+
+    def update_with_info(self, item: Item, item_data: dict, info_data: dict = None) -> Item:
+        """Update an item and its nutritional info without committing."""
+        for key, value in item_data.items():
+            if hasattr(item, key):
+                setattr(item, key, value)
+
+        if info_data:
+            if item.item_info:
+                for key, value in info_data.items():
+                    if hasattr(item.item_info, key):
+                        setattr(item.item_info, key, value)
+            else:
+                item.item_info = ItemInfo(**info_data)
+        
+        self.session.flush()
+        return item
+
 
     def get_by_name(self, name: str) -> Optional[Item]:
         """Get an item by its name."""
