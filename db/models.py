@@ -181,7 +181,8 @@ class Address(Base):
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
     zip = Column(String, nullable=False)
-    label = Column(String)
+    # building_name = Column(String)
+    # room_number = Column(String)
     
     # Relationships
     user = relationship("User", secondary="user_addresses", back_populates="addresses") #many to 1

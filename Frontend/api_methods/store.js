@@ -38,7 +38,7 @@ async function get_stores(){
  */
 async function get_store(store_id){
     try{
-        const response = await authFetch(`/stores/${store_id}`)
+        const response = await authFetch(`/stores/${store_id}/info`)
         return response;
     } catch (error){
         console.error('Error fetching store', error);
@@ -51,11 +51,11 @@ async function get_store(store_id){
  * @param {*} store 
  * @param {*} store_id 
  */
-async function edit_store(store, store_id){
+async function edit_store(storeFormData, store_id){
     try{
         const response = await authFetch(`/stores/${store_id}`, {
             method: 'PUT',
-            body: JSON.stringify(store)
+            body: storeFormData
         });
 
         return response;

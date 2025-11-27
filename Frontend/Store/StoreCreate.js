@@ -1,229 +1,217 @@
-const { useState } = React;
+const { useState, useEffect } = React;
+const { useForm, useFieldArray } = ReactHookForm;
+const { useParams, useHistory } = ReactRouterDOM;
 
-function StoreCreatePage() {
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [selectedBanner, setSelectedBanner] = useState(null);
-    const [selectedLogo, setSelectedLogo] = useState(null);
-    const [logoPreview, setLogoPreview] = useState(null);
-    const [bannerPreview, setBannerPreview] = useState(null);
-    const [phone, setPhone] = useState('');
-    const [street, setStreet] = useState('');
-    const [city, setCity] = useState('');
-    const [state, setState] = useState('');
-    const [zip, setZip] = useState('');
-    const [error, setError] = useState(null);
-    const [hours, setHours] = useState([
-        { day: 'Monday', start_time: '', end_time: '' },
-        { day: 'Tuesday', start_time: '', end_time: '' },
-        { day: 'Wednesday', start_time: '', end_time: '' },
-        { day: 'Thursday', start_time: '', end_time: '' },
-        { day: 'Friday', start_time: '', end_time: '' },
-        { day: 'Saturday', start_time: '', end_time: '' },
-        { day: 'Sunday', start_time: '', end_time: '' },
-    ]);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+function StoreForm({ store: existingStore }) {
+    const history = useHistory();
+    const defaultValues = {
+        name: existingStore?.name || '',
+        description: existingStore?.description || '',
+        phone: existingStore?.phone || '',
+        street: existingStore?.address?.street || '',
+        city: existingStore?.address?.city || '',
+        state: existingStore?.address?.state || '',
+        zip: existingStore?.address?.zip || '',
+        hours: existingStore?.hours?.length ? existingStore.hours.map(h => ({...h})) : [
+            { day: 'Monday', start_time: '', end_time: '' },
+            { day: 'Tuesday', start_time: '', end_time: '' },
+            { day: 'Wednesday', start_time: '', end_time: '' },
+            { day: 'Thursday', start_time: '', end_time: '' },
+            { day: 'Friday', start_time: '', end_time: '' },
+            { day: 'Saturday', start_time: '', end_time: '' },
+            { day: 'Sunday', start_time: '', end_time: '' },
+        ]
+    };
 
-    // Cleanup preview URLs on unmount
-    React.useEffect(() => {
-        return () => {
-            if (logoPreview) URL.revokeObjectURL(logoPreview);
-            if (bannerPreview) URL.revokeObjectURL(bannerPreview);
-        };
-    }, [logoPreview, bannerPreview]);
+    const { register, handleSubmit, control, formState: { errors, isSubmitting }, watch, reset } = useForm({ defaultValues });
 
-    const handleBannerFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            // Revoke old preview URL if exists
-            if (bannerPreview) {
-                URL.revokeObjectURL(bannerPreview);
-            }
-            console.log('Selected banner:', file.name);
-            const previewURL = URL.createObjectURL(file);
-            setBannerPreview(previewURL);
-            setSelectedBanner(file);
+    useEffect(() => {
+        if (existingStore) {
+            reset(defaultValues);
         }
-    };
+    }, [existingStore, reset]);
 
-    const handleLogoFileChange = (e) => { 
-        const file = e.target.files[0];
-        if (file) {
-            // Revoke old preview URL if exists
-            if (logoPreview) {
-                URL.revokeObjectURL(logoPreview);
-            }
-            console.log('Selected logo:', file.name);
-            const previewURL = URL.createObjectURL(file);
-            setLogoPreview(previewURL);
-            setSelectedLogo(file);
+    const { fields } = useFieldArray({ control, name: 'hours' });
+
+    const [logoPreview, setLogoPreview] = useState(existingStore?.logo_id ? `http://localhost:8000/media/${existingStore.logo_id}` : null);
+    const [bannerPreview, setBannerPreview] = useState(existingStore?.banner_id ? `http://localhost:8000/media/${existingStore.banner_id}` : null);
+    const [serverError, setServerError] = useState(null);
+
+    const logoFile = watch('logo');
+    const bannerFile = watch('banner');
+
+    useEffect(() => {
+        if (logoFile && logoFile[0]) {
+            const newPreview = URL.createObjectURL(logoFile[0]);
+            setLogoPreview(newPreview);
+            return () => URL.revokeObjectURL(newPreview);
         }
-    };
+    }, [logoFile]);
 
-    const handleHoursChange = (index, field, value) => {
-        const newHours = [...hours];
-        newHours[index][field] = value;
-        setHours(newHours);
-    };
+    useEffect(() => {
+        if (bannerFile && bannerFile[0]) {
+            const newPreview = URL.createObjectURL(bannerFile[0]);
+            setBannerPreview(newPreview);
+            return () => URL.revokeObjectURL(newPreview);
+        }
+    }, [bannerFile]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        setError(null);
-        
+    const onSubmit = async (data) => {
+        setServerError(null);
         try {
             const formData = new FormData();
-            
             const storeData = {
-                name,
-                description,
-                phone,
-                hours
+                name: data.name,
+                description: data.description,
+                phone: data.phone,
+                hours: data.hours,
             };
-            
             const addressData = {
-                street,
-                city,
-                state,
-                zip
+                street: data.street,
+                city: data.city,
+                state: data.state,
+                zip: data.zip,
             };
-            
+
             formData.append('store', JSON.stringify(storeData));
             formData.append('address', JSON.stringify(addressData));
-            
-            if (selectedLogo) {
-                formData.append('logo', selectedLogo);
-            }
 
-            if (selectedBanner){
-                formData.append('banner', selectedBanner);
-            }
-            
-            const response = await create_store(formData);
-            
-            if (response) {
-                console.log('Store created successfully:', response);
-                window.location.hash = '#/admin';
-            }
-            
-        } catch (error) {
-            console.error('Failed to create store', error);
-            if (error.response && error.response.data && error.response.data.detail) {
-                setError(error.response.data.detail);
+            if (data.logo && data.logo[0]) formData.append('logo', data.logo[0]);
+            if (data.banner && data.banner[0]) formData.append('banner', data.banner[0]);
+
+            if (existingStore) {
+                await edit_store(formData, existingStore.id);
+                alert('Store updated successfully!');
             } else {
-                setError(error.message || 'An unexpected error occurred.');
+                await create_store(formData);
+                alert('Store created successfully!');
             }
-        } finally {
-            setIsSubmitting(false);
+            history.push('/admin');
+        } catch (error) {
+            console.error('Failed to save store', error);
+            setServerError(error.message || 'An unexpected error occurred.');
         }
     };
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center pt-24 px-4 md:px-10 bg-gray-50">
             <div className="w-full max-w-2xl p-8 space-y-6 bg-white rounded-lg shadow-md">
-                <h1 className="text-3xl font-bold text-center text-gray-800">Create a New Store</h1>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <h1 className="text-3xl font-bold text-center text-gray-800">{existingStore ? 'Edit Store' : 'Create a New Store'}</h1>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700">Store Name *</label>
-                        <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} required maxLength="100"
-                               className="w-full px-4 py-2 mt-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515]" />
+                        <input type="text" id="name" {...register('name', { required: 'Store name is required' })}
+                               className={`w-full px-4 py-2 mt-2 border-2 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] ${errors.name ? 'border-red-500' : 'border-gray-300'}`} />
+                        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
                     </div>
                     <div>
                         <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} maxLength="300"
+                        <textarea id="description" {...register('description')} maxLength="300"
                                   className="w-full px-4 py-2 mt-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515]"></textarea>
                     </div>
                     
-                    {/* Banner Upload */}
                     <div>
                         <label htmlFor="bannerUpload" className="block text-sm font-medium text-gray-700">Upload Banner</label>
-                        <input type="file" id="bannerUpload" accept="image/*" onChange={handleBannerFileChange}
+                        <input type="file" id="bannerUpload" accept="image/*" {...register('banner')}
                                className="w-full px-4 py-2 mt-2 border-2 border-gray-300 rounded-lg"/>
-                        {bannerPreview && (
+                        {bannerPreview ? (
                             <div className="mt-4">
-                                <p className="text-sm font-medium mb-2">Preview:</p>
-                                <img 
-                                    src={bannerPreview} 
-                                    alt="Banner preview" 
-                                    className="w-full h-48 object-cover rounded-lg border"
-                                />
+                                <p className="text-sm font-medium mb-2">{watch('banner')?.[0] ? "New Preview:" : "Current Banner:"}</p>
+                                <img src={bannerPreview} alt="Banner" className="w-full h-48 object-cover rounded-lg border"/>
                             </div>
-                        )}
+                        ) : null}
                     </div>
                     
-                    {/* Logo Upload */}
                     <div>
                         <label htmlFor="logoUpload" className="block text-sm font-medium text-gray-700">Upload Logo</label>
-                        <input type="file" id="logoUpload" accept="image/*" onChange={handleLogoFileChange}
+                        <input type="file" id="logoUpload" accept="image/*" {...register('logo')}
                                className="w-full px-4 py-2 mt-2 border-2 border-gray-300 rounded-lg"/>
-                        {logoPreview && (
+                        {logoPreview ? (
                             <div className="mt-4">
-                                <p className="text-sm font-medium mb-2">Preview:</p>
-                                <img 
-                                    src={logoPreview} 
-                                    alt="Logo preview" 
-                                    className="w-32 h-32 object-cover rounded-lg border"
-                                />
+                                <p className="text-sm font-medium mb-2">{watch('logo')?.[0] ? "New Preview:" : "Current Logo:"}</p>
+                                <img src={logoPreview} alt="Logo" className="w-32 h-32 object-cover rounded-lg border"/>
                             </div>
-                        )}
+                        ) : null}
                     </div>
                     
                     <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
-                        <input type="text" id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} 
-                               className="w-full px-4 py-2 mt-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515]" />
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number *</label>
+                        <input type="text" id="phone" {...register('phone', { required: 'Phone number is required' })}
+                               className={`w-full px-4 py-2 mt-2 border-2 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] ${errors.phone ? 'border-red-500' : 'border-gray-300'}`} />
+                        {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
                     </div>
                     <fieldset className="border p-4 rounded-lg">
                         <legend className="text-lg font-medium text-gray-800">Address *</legend>
                         <div className="space-y-4">
                             <div>
                                 <label htmlFor="street" className="block text-sm font-medium text-gray-700">Street</label>
-                                <input type="text" id="street" value={street} onChange={(e) => setStreet(e.target.value)} required
-                                       className="w-full px-4 py-2 mt-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515]" />
+                                <input type="text" id="street" {...register('street', { required: 'Street is required' })}
+                                       className={`w-full px-4 py-2 mt-2 border-2 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] ${errors.street ? 'border-red-500' : 'border-gray-300'}`} />
+                                {errors.street && <p className="text-red-500 text-sm mt-1">{errors.street.message}</p>}
                             </div>
                             <div>
                                 <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
-                                <input type="text" id="city" value={city} onChange={(e) => setCity(e.target.value)} required
-                                       className="w-full px-4 py-2 mt-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515]" />
+                                <input type="text" id="city" {...register('city', { required: 'City is required' })}
+                                       className={`w-full px-4 py-2 mt-2 border-2 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] ${errors.city ? 'border-red-500' : 'border-gray-300'}`} />
+                                {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city.message}</p>}
                             </div>
                             <div>
                                 <label htmlFor="state" className="block text-sm font-medium text-gray-700">State</label>
-                                <input type="text" id="state" value={state} onChange={(e) => setState(e.target.value)} required
-                                       className="w-full px-4 py-2 mt-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515]" />
+                                <input type="text" id="state" {...register('state', { required: 'State is required' })}
+                                       className={`w-full px-4 py-2 mt-2 border-2 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] ${errors.state ? 'border-red-500' : 'border-gray-300'}`} />
+                                {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state.message}</p>}
                             </div>
                             <div>
                                 <label htmlFor="zip" className="block text-sm font-medium text-gray-700">Zip Code</label>
-                                <input type="text" id="zip" value={zip} onChange={(e) => setZip(e.target.value)} required
-                                       className="w-full px-4 py-2 mt-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515]" />
+                                <input type="text" id="zip" {...register('zip', { required: 'Zip code is required' })}
+                                       className={`w-full px-4 py-2 mt-2 border-2 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] ${errors.zip ? 'border-red-500' : 'border-gray-300'}`} />
+                                {errors.zip && <p className="text-red-500 text-sm mt-1">{errors.zip.message}</p>}
                             </div>
                         </div>
                     </fieldset>
                     <fieldset className="border p-4 rounded-lg">
                         <legend className="text-lg font-medium text-gray-800">Store Hours *</legend>
-                        {hours.map((hour, index) => (
-                            <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center mb-4">
-                                <label className="block text-sm font-medium text-gray-700">{hour.day}</label>
+                        {fields.map((field, index) => (
+                            <div key={field.id} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center mb-4">
+                                <label className="block text-sm font-medium text-gray-700">{field.day}</label>
                                 <div>
-                                    <label htmlFor={`startTime-${index}`} className="block text-sm font-medium text-gray-700">Start Time</label>
-                                    <input type="time" id={`startTime-${index}`} value={hour.start_time} onChange={(e) => handleHoursChange(index, 'start_time', e.target.value)}
-                                           className="w-full px-4 py-2 mt-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515]" />
+                                    <label htmlFor={`hours[${index}].start_time`} className="block text-sm font-medium text-gray-700">Start Time</label>
+                                    <input type="time" id={`hours[${index}].start_time`} {...register(`hours.${index}.start_time`, { required: 'Start time is required' })}
+                                           className={`w-full px-4 py-2 mt-2 border-2 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] ${errors.hours?.[index]?.start_time ? 'border-red-500' : 'border-gray-300'}`} />
+                                    {errors.hours?.[index]?.start_time && <p className="text-red-500 text-sm mt-1">{errors.hours?.[index]?.start_time.message}</p>}
                                 </div>
                                 <div>
-                                    <label htmlFor={`endTime-${index}`} className="block text-sm font-medium text-gray-700">End Time</label>
-                                    <input type="time" id={`endTime-${index}`} value={hour.end_time} onChange={(e) => handleHoursChange(index, 'end_time', e.target.value)}
-                                           className="w-full px-4 py-2 mt-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515]" />
+                                    <label htmlFor={`hours[${index}].end_time`} className="block text-sm font-medium text-gray-700">End Time</label>
+                                    <input type="time" id={`hours[${index}].end_time`} {...register(`hours.${index}.end_time`, { required: 'End time is required' })}
+                                           className={`w-full px-4 py-2 mt-2 border-2 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] ${errors.hours?.[index]?.end_time ? 'border-red-500' : 'border-gray-300'}`} />
+                                    {errors.hours?.[index]?.end_time && <p className="text-red-500 text-sm mt-1">{errors.hours?.[index]?.end_time.message}</p>}
                                 </div>
                             </div>
                         ))}
                     </fieldset>
-                    {error && <div className="text-red-500 text-center">{error}</div>}
-                    <button type="submit" 
+                    {serverError && <div className="text-red-500 text-center">{serverError}</div>}
+
+                    <button type="submit"
                             disabled={isSubmitting}
                             className="w-full px-4 py-3 font-semibold text-white bg-gray-800 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">
-                        {isSubmitting ? 'Creating Store...' : 'Create Store'}
+                        {isSubmitting ? 'Saving...' : 'Save Store'}
                     </button>
                 </form>
             </div>
         </div>
     );
+}
+
+function StoreCreatePage() {
+    return <StoreForm />;
+}
+
+function StoreEditPage() {
+    const { store_id } = useParams();
+    const { data: store, isLoading, error } = useQuery(['store', store_id], () => get_store(store_id));
+
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error.message}</div>;
+
+    return <StoreForm store={store} />;
 }

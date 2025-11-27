@@ -17,8 +17,8 @@ function ItemDisplay({
     <div className="flex flex-col sm:flex-row overflow-hidden rounded-xl bg-white shadow-md hover:shadow-lg transition-shadow">
         {/* Image */}
         <div className="flex h-48 sm:h-auto w-full sm:w-40 flex-shrink-0 items-center justify-center bg-gray-200 text-gray-500">
-          {picture ? ( // Assuming 'picture' prop is actually 'picture_id'
-            <img src={`http://localhost:8000/media/${picture}`} alt={name} className="h-full w-full object-cover rounded-xl" />
+          {picture ? ( // 'picture' prop is actually 'picture_id'
+            <img src={`http://localhost:8000/media/${picture}`} alt={name} className="h-full w-full object-cover rounded-xl" style={{ imageRendering: 'auto' }} />
           ) : (
             <p className="text-sm font-medium">No Image</p>
           )}
@@ -45,6 +45,14 @@ function ItemDisplay({
             >
               Details
             </button>
+            {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
+                <button
+                    onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store_id}/item/${item_id}/edit`; }}
+                    className="flex-1 sm:flex-none rounded-lg border border-blue-700 bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:shadow-md active:scale-95"
+                >
+                    Edit
+                </button>
+            )}
           </div>
         </div>
       </div>
