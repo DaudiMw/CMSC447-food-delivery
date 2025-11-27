@@ -96,8 +96,7 @@ function LoginForm(props) {
             
             <button 
                 type="submit" 
-                className="btn btn-lg w-100" 
-                style={{backgroundColor: "orange", color: "black"}}
+                className="btn btn-lg w-100 btn-action"
                 disabled={loading}
             >
                 {loading ? 'Logging in...' : 'Login'}

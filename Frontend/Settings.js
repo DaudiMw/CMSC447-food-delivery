@@ -209,7 +209,7 @@ function SettingsPage() {
                       placeholder="Current password"
                       className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
-                    <button className="px-4 py-2 bg-[#fdb515] text-black font-semibold rounded-lg hover:bg-[#e5a313] transition-all">
+                    <button className="btn btn-action">
                       Update Email
                     </button>
                   </div>
@@ -246,7 +246,7 @@ function SettingsPage() {
                       placeholder="Confirm new password"
                       className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
-                    <button className="px-4 py-2 bg-[#fdb515] text-black font-semibold rounded-lg hover:bg-[#e5a313] transition-all">
+                    <button className="btn btn-action">
                       Update Password
                     </button>
                   </div>
@@ -261,7 +261,7 @@ function SettingsPage() {
                   <h3 className="font-semibold text-gray-800">Delivery Addresses</h3>
                   <button 
                     onClick={() => setShowAddAddress(!showAddAddress)}
-                    className="px-3 py-1 bg-[#fdb515] text-black text-sm font-semibold rounded-lg hover:bg-[#e5a313] transition-all"
+                    className="btn btn-action"
                   >
                     {showAddAddress ? 'Cancel' : '+ Add Address'}
                   </button>
@@ -311,7 +311,7 @@ function SettingsPage() {
                     <button 
                       onClick={handleAddAddress}
                       disabled={addAddressMutation.isPending}
-                      className="w-full px-3 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all disabled:opacity-50"
+                      className="btn btn-success w-full"
                     >
                       {addAddressMutation.isPending ? 'Saving...' : 'Save Address'}
                     </button>
@@ -331,7 +331,7 @@ function SettingsPage() {
                         <button 
                           onClick={() => deleteAddress(addr.id)}
                           disabled={deleteAddressMutation.isPending}
-                          className="px-3 py-1 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600 transition-all disabled:opacity-50"
+                          className="btn btn-delete"
                         >
                           {deleteAddressMutation.isPending ? 'Deleting...' : 'Delete'}
                         </button>
@@ -347,7 +347,7 @@ function SettingsPage() {
                   <h3 className="font-semibold text-gray-800">Payment Methods</h3>
                   <button 
                     onClick={() => setShowAddPayment(!showAddPayment)}
-                    className="px-3 py-1 bg-[#fdb515] text-black text-sm font-semibold rounded-lg hover:bg-[#e5a313] transition-all"
+                    className="btn btn-action"
                   >
                     {showAddPayment ? 'Cancel' : '+ Add Payment'}
                   </button>
@@ -384,7 +384,7 @@ function SettingsPage() {
                     <button 
                       onClick={handleAddPayment}
                       disabled={addPaymentMutation.isPending}
-                      className="px-3 py-1 bg-green-500 text-white text-sm font-semibold rounded-lg hover:bg-green-600 transition-all disabled:opacity-50"
+                      className="btn btn-success"
                     >
                       {addPaymentMutation.isPending ? 'Saving...' : 'Save Card'}
                     </button>
@@ -404,7 +404,7 @@ function SettingsPage() {
                         <button 
                           onClick={() => deletePayment(pm.id)}
                           disabled={deletePaymentMutation.isPending}
-                          className="px-3 py-1 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600 transition-all disabled:opacity-50"
+                          className="btn btn-delete"
                         >
                           {deletePaymentMutation.isPending ? 'Deleting...' : 'Delete'}
                         </button>
@@ -424,7 +424,7 @@ function SettingsPage() {
                     </div>
                     <button 
                       onClick={() => setShowDasherForm(!showDasherForm)}
-                      className="px-4 py-2 bg-[#fdb515] text-black font-semibold rounded-lg hover:bg-[#e5a313] transition-all"
+                      className="btn btn-action"
                     >
                       {showDasherForm ? 'Cancel' : 'Apply Now'}
                     </button>
@@ -448,7 +448,7 @@ function SettingsPage() {
                       <button 
                         onClick={handleDasherApplication}
                         disabled={applyToDasherMutation.isPending || !dasherReasoning.trim()}
-                        className="w-full px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="btn btn-success w-full"
                       >
                         {applyToDasherMutation.isPending ? 'Submitting...' : 'Submit Application'}
                       </button>
@@ -466,7 +466,7 @@ function SettingsPage() {
                   </div>
                   <button 
                     onClick={deleteAccount}
-                    className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-all"
+                    className="btn btn-delete"
                   >
                     Delete Account
                   </button>

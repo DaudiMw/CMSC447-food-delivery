@@ -25,6 +25,12 @@
 .banner .logo {
     height: 48px;
     object-fit: contain;
+    transition: transform 0.3s ease-in-out; /* Add transition for smoothness */
+    cursor: pointer; /* Indicate it's interactive */
+}
+
+.banner .logo:hover {
+    transform: scale(1.1); /* Scale up on hover */
 }
 
 .banner-controls {
@@ -267,4 +273,75 @@
     margin-left: 5%;
     margin-right: 5%;
     border-radius: 30px;
+}
+/* === BASE BUTTON STYLE === */
+.btn {
+    padding: 10px 20px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease-in-out !important;
+    text-align: center !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
+    color: white !important; /* Default text color */
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+
+.btn.btn-action {
+    background: linear-gradient(145deg, #fdb515, #f0a500) !important;
+    box-shadow: 0 2px 4px rgba(240, 165, 0, 0.4);
+}
+
+.btn.btn-action:hover {
+    background: linear-gradient(145deg, #ffc535, #fdb515) !important;
+}
+
+
+.btn.btn-delete {
+    background-color: #da2128 !important;
+    box-shadow: 0 2px 4px rgba(218, 33, 40, 0.3); /* Adjusted shadow color */
+}
+
+.btn.btn-delete:hover {
+    background-color: #b31a20 !important; /* Slightly darker red for hover */
+}
+
+
+.btn.btn-edit {
+    background-color: #007176 !important;
+    box-shadow: 0 2px 4px rgba(0, 113, 118, 0.3); /* Adjusted shadow color */
+}
+
+.btn.btn-edit:hover {
+    background-color: #005a5e !important; /* Slightly darker teal for hover */
+}
+
+
+.btn.btn-secondary {
+    color: #334155 !important; /* tailwind slate-700 */
+    background-color: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.btn.btn-secondary:hover {
+    background-color: #f8fafc !important; /* tailwind slate-50 */
+}
+
+.btn.btn-success {
+    background-color: #16a34a !important; /* tailwind green-600 */
+    box-shadow: 0 2px 4px rgba(22, 163, 74, 0.3);
+}
+
+.btn.btn-success:hover {
+    background-color: #15803d !important; /* tailwind green-700 */
 }
