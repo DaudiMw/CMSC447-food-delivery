@@ -28,7 +28,7 @@ class OrderRepository(BaseRepository[Order]):
         return self.session.query(Order).filter(
             self.model.is_deleted == False,
             self.model.status == state
-        ).all()
+        ).order_by(Order.created_at).all()
     
     def order_by_date(self) -> list[Order]:
         """Get all orders ordered by date."""

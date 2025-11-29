@@ -1,6 +1,5 @@
-const { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } = window.ReactQuery;
-const { Suspense } = React;
-const { useSuspenseQuery } = window.ReactQuery;
+const { useQuery } = window.ReactQuery;
+
 
 
 function AdminPage() {
@@ -256,7 +255,6 @@ function AdminPage() {
                                             <th className="p-3 text-left font-semibold border-b">Email</th>
                                             <th className="p-3 text-left font-semibold border-b">Role</th>
                                             <th className="p-3 text-left font-semibold border-b">Status</th>
-                                            <th className="p-3 text-left font-semibold border-b">Orders</th>
                                             <th className="p-3 text-left font-semibold border-b">Actions</th>
                                         </tr>
                                     </thead>
@@ -285,7 +283,6 @@ function AdminPage() {
                                                         {user.is_banned ? 'Banned' : 'Active'}
                                                     </span>
                                                 </td>
-                                                <td className="p-3">{user.orders}</td>
                                                 <td className="p-3 flex gap-2">
                                                     <button 
                                                         onClick={() => viewUserDetails(user)}
@@ -293,7 +290,7 @@ function AdminPage() {
                                                     >
                                                         View
                                                     </button>
-                                                    <button 
+                                                    {user.id === getUserId() && <button 
                                                         onClick={() => banUser(user.id)}
                                                         className={`btn ${
                                                             user.is_banned 
@@ -302,7 +299,7 @@ function AdminPage() {
                                                         }`}
                                                     >
                                                         {user.is_banned ? 'Unban' : 'Ban'}
-                                                    </button>
+                                                    </button>}
                                                 </td>
                                             </tr>
                                         ))}

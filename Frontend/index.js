@@ -27,6 +27,7 @@ function MyApp() {
                     <ProtectedRoute path="/stores" component={StoresPage} />
                     <ProtectedRoute path="/store/:store_id" component={StorePage} />
                     <ProtectedRoute path="/admin" component={AdminPage} allowed_roles={['admin']} />
+                    <ProtectedRoute path="/dasher" component={DasherPage} allowed_roles={['dasher', 'admin']} />
 
                 </Switch>
             </HashRouter>
@@ -217,6 +218,21 @@ function Banner() {
                     </svg>
 
                     <span>Admin</span>
+                </button>
+            )}
+
+            {(getUserRole() === 'dasher' || getUserRole() === 'admin') && (
+                <button 
+                    className="bannerButton" 
+                    onClick={() => {
+                        window.location.hash = '#/dasher';
+                        setIsMenuOpen(false);
+                    }}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15m0 0l6.75 6.75M4.5 12l6.75-6.75" />
+                    </svg>
+                    <span>Dasher</span>
                 </button>
             )}
 

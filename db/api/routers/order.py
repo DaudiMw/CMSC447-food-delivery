@@ -16,7 +16,7 @@ user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
 
 @router.get("/{order_id}")
-async def get_order(order_id: int, token : str = Depends(oauth2_scheme), db : Session = Depends(get_db)):
+async def get_order(order_id: int, user: user_dependency, db : Session = Depends(get_db)):
     """Get an order by its ID."""
 
     # First make sure that order belongs to the user or they are an admin
@@ -28,12 +28,28 @@ async def get_order(order_id: int, token : str = Depends(oauth2_scheme), db : Se
     if not order or order.is_deleted: 
         raise HTTPException(status_code=404, detail="Order not found")
     
-    user = await get_current_user(token)
 
-    if user.id != order.user_id and not admin_required(user):
+    if user.id != order.user_id and user.role != UserRole.admin:
         raise HTTPException(status_code=403, detail="You do not have permission to view this order")
     
     return order
+
+@router.get("/pending")
+async def get_pending_orders(order_id: int, user: user_dependency, db : Session = Depends(get_db)):
+    """Get all currently paid for orders that have not been picked up"""
+
+    try:
+        order_repo = OrderRepository(db)
+
+        if user.role != UserRole.admin and user.role != UserRole.dasher:
+            raise HTTPException(status_code=403, detail="You do not have permissions to access this resource.")
+
+        orders = order_repo.get_by_order_state(OrderStatus.pending)
+
+        return orders
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{order_id}")
 async def get_store_orders(store_id: int, db: Session = Depends(get_db)):
@@ -48,8 +64,7 @@ async def get_store_orders(store_id: int, db: Session = Depends(get_db)):
 @router.post("", status_code=201, response_model=OrderSchema)
 async def create_order(order: OrderSchema, user: user_dependency, db : Session = Depends(get_db)):
     """Create a new order."""
-
-
+    
     order_repo = OrderRepository(db)
 
     order.user_id = user.id

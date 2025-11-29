@@ -13,7 +13,8 @@ class UserRole(enum.Enum):
 class OrderStatus(enum.Enum):
     initialized = "initialized" # Order just created in cart but not paid for
     pending = "pending" # Order has been paid for and waiting to be picked by a dasher
-    accepted = "accepted" # Order has been picked by a dasher
+    accepted = "accepted" # Order has been picked by a dasher but item has not been picked
+    incoming = "incoming" # Dasher has picked the item and is headed to your destination
     completed = "completed" # Delivery was completed.
     dropped = "dropped" # Order was picked up but delivery was not completed.
 
