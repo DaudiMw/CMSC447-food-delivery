@@ -66,7 +66,7 @@ class OrdersPage extends React.Component {
  */
 async function get_user_orders_by_id(userId) {
     try {
-        const response = await authFetch(`/${userId}/orders`, { method: 'GET' });
+        const response = await authFetch(`/users/${userId}/orders`, { method: 'GET' });
         return response;
     } catch (error) {
         console.log(error)
