@@ -52,7 +52,7 @@ function LoginForm(props) {
             
             // Store role and user_id
             localStorage.setItem('userRole', payload.role);
-            localStorage.setItem('userId', payload.user_id);
+            localStorage.setItem('userId', payload.id);
 
             history.push('/home');
             

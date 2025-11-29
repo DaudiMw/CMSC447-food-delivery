@@ -11,3 +11,12 @@ class PickUpSchema(BaseSchema):
     store_id: int
     scheduled_at: str
     completed_at: str
+
+class PickUpCreateSchema(BaseSchema):
+    order_id: int
+    dasher_id: str
+    store_id: int
+    scheduled_at: str
+
+class PickUpCompleteSchema(BaseSchema):
+    completed_at: str

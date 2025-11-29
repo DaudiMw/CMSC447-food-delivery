@@ -190,7 +190,7 @@ async def update_store(store_id: int,
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{user_id}", response_model=StoreSchema)
-async def get_user_stores(user: user_dependency, db: Session = Depends(get_db)):
+async def get_user_stores(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
     """Gets all stores that a user owns."""
     try:
         store_repo = StoreRepository(db)

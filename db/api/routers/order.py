@@ -35,6 +35,29 @@ async def get_order(order_id: int, token : str = Depends(oauth2_scheme), db : Se
     
     return order
 
+@router.get("/{status}")
+async def get_order(status: str, user: user_dependency, db : Session = Depends(get_db)):
+    """Get an order by its status."""
+
+    # First make sure that order belongs to the user or they are an admin
+
+    order_repo = OrderRepository(db)
+    state
+    order
+
+    for stat in OrderStatus:
+        if (str(stat.value) == status):
+            state = stat.value
+            order = order_repo.get_by_order_state(state)
+
+    if not order or order.is_deleted: 
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if user.role == UserRole.user:
+        raise HTTPException(status_code=403, detail="You do not have permission to access this")
+    
+    return order
+
 @router.get("/{order_id}")
 async def get_store_orders(store_id: int, db: Session = Depends(get_db)):
 

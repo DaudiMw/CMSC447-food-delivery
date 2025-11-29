@@ -1,12 +1,12 @@
-from datetime import datetime
+from datetime import datetime, time
 from typing import List, Optional
 from api.schemas.base_schema import BaseSchema, MediaSchema, Address
 from api.schemas.item_schemas import ItemSchema, ItemSchemaWithInfo
 
 class StoreHoursSchema(BaseSchema):
     day: str
-    start_time: Optional[str] = None
-    end_time: Optional[str] = None
+    start_time: Optional[time] = str
+    end_time: Optional[time] = str
 
 class StoreInfoSchema(BaseSchema):
     id: int

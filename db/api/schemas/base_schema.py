@@ -7,7 +7,6 @@ class BaseSchema(BaseModel):
 
 class Address(BaseModel):
     id: int | None = None
-    label: str | None = None
     street: str
     city: str
     state: str

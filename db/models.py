@@ -51,7 +51,6 @@ class Store(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, index=True)
-    # address_id = Column(ForeignKey("addresses.id"), nullable=False)
     description = Column(String)
     banner_id = Column(Integer, ForeignKey("media.id"))
     logo_id = Column(Integer, ForeignKey("media.id"))
@@ -182,7 +181,7 @@ class Address(Base):
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
     zip = Column(String, nullable=False)
-    building_name = Column(String)
+    building = Column(String)
     room_number = Column(String)
     
     # Relationships

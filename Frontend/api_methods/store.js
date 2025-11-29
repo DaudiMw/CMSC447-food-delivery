@@ -48,6 +48,21 @@ async function get_store(store_id){
 
 /**
  * 
+ * @param {*} user_id 
+ * @returns 
+ */
+async function get_user_stores(user_id) {
+    try{
+        const response = await authFetch(`/stores/${user_id}`)
+        return response;
+    } catch (error){
+        console.error('Error fetching store', error);
+        throw error;
+    }
+}
+
+/**
+ * 
  * @param {*} store 
  * @param {*} store_id 
  */

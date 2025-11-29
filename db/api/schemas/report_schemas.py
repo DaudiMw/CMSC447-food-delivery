@@ -6,3 +6,12 @@ class ReportSchema(BaseSchema):
     order_id: int
     store_id: int
     comment: str
+
+class ReportCreateSchema(BaseSchema):
+    user_id: str
+    order_id: int
+    store_id: int
+    comment: str
+
+class ReportResponseSchema(BaseSchema):
+    response: str

@@ -14,13 +14,13 @@ function StoreCreatePage() {
     const [zip, setZip] = useState('');
     const [error, setError] = useState(null);
     const [hours, setHours] = useState([
-        { day: 'Monday', start_time: '', end_time: '' },
-        { day: 'Tuesday', start_time: '', end_time: '' },
-        { day: 'Wednesday', start_time: '', end_time: '' },
-        { day: 'Thursday', start_time: '', end_time: '' },
-        { day: 'Friday', start_time: '', end_time: '' },
-        { day: 'Saturday', start_time: '', end_time: '' },
-        { day: 'Sunday', start_time: '', end_time: '' },
+        { day: 'Monday', start_time: '', end_time: ''},
+        { day: 'Tuesday', start_time: '', end_time: ''},
+        { day: 'Wednesday', start_time: '', end_time: ''},
+        { day: 'Thursday', start_time: '', end_time: ''},
+        { day: 'Friday', start_time: '', end_time: ''},
+        { day: 'Saturday', start_time: '', end_time: ''},
+        { day: 'Sunday', start_time: '', end_time: ''},
     ]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -62,7 +62,7 @@ function StoreCreatePage() {
 
     const handleHoursChange = (index, field, value) => {
         const newHours = [...hours];
-        newHours[index][field] = value;
+        newHours[index][field] = value.toString();
         setHours(newHours);
     };
 
