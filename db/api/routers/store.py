@@ -195,7 +195,10 @@ async def get_user_stores(user_id: str, user: user_dependency, db: Session = Dep
     try:
         store_repo = StoreRepository(db)
 
-        store = store_repo.get_user_stores(user.id)
+        store = store_repo.get_user_stores(user_id)
+
+        if user_id != user.id and user.role != UserRole.admin:
+            raise HTTPException(status_code=403, detail="You do not have permission to access this")
 
         if not store:
             raise HTTPException(status_code=404, detail="Store not found.")

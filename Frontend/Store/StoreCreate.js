@@ -176,13 +176,13 @@ function StoreForm({ store: existingStore }) {
                                 <label className="block text-sm font-medium text-gray-700">{field.day}</label>
                                 <div>
                                     <label htmlFor={`hours[${index}].start_time`} className="block text-sm font-medium text-gray-700">Start Time</label>
-                                    <input type="time" id={`hours[${index}].start_time`} {...register(`hours.${index}.start_time`, { required: 'Start time is required' })}
+                                    <input type="time" id={`hours[${index}].start_time`} {...register(`hours.${index}.start_time`)}
                                            className={`w-full px-4 py-2 mt-2 border-2 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] ${errors.hours?.[index]?.start_time ? 'border-red-500' : 'border-gray-300'}`} />
                                     {errors.hours?.[index]?.start_time && <p className="text-red-500 text-sm mt-1">{errors.hours?.[index]?.start_time.message}</p>}
                                 </div>
                                 <div>
                                     <label htmlFor={`hours[${index}].end_time`} className="block text-sm font-medium text-gray-700">End Time</label>
-                                    <input type="time" id={`hours[${index}].end_time`} {...register(`hours.${index}.end_time`, { required: 'End time is required' })}
+                                    <input type="time" id={`hours[${index}].end_time`} {...register(`hours.${index}.end_time`)}
                                            className={`w-full px-4 py-2 mt-2 border-2 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] ${errors.hours?.[index]?.end_time ? 'border-red-500' : 'border-gray-300'}`} />
                                     {errors.hours?.[index]?.end_time && <p className="text-red-500 text-sm mt-1">{errors.hours?.[index]?.end_time.message}</p>}
                                 </div>
