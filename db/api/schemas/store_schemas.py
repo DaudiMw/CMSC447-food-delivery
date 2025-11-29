@@ -5,21 +5,21 @@ from api.schemas.item_schemas import ItemSchema, ItemSchemaWithInfo
 
 class StoreHoursSchema(BaseSchema):
     day: str
-    start_time: Optional[time] = str
-    end_time: Optional[time] = str
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
 
 class StoreInfoSchema(BaseSchema):
     id: int
     name: str
     description: Optional[str] = None
     phone: Optional[str] = None
+    created_at: datetime
     address: Address
     logo_id: Optional[int] = None
     banner_id: Optional[int] = None
     hours: List[StoreHoursSchema] = []
 
 class StoreSchema(StoreInfoSchema):
-    created_at: datetime
     items: List[ItemSchema] = []
     
 class StoreCreateSchema(BaseSchema):

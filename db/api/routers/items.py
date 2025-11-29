@@ -11,8 +11,10 @@ from database import get_db
 from models import UserRole
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
-from api.schemas.item_schemas import ItemSchema, ItemWithInfoCreateSchema
+from api.schemas.item_schemas import ItemSchema, ItemWithInfoCreateSchema, ItemSchemaWithInfo
 from api.schemas.user_schemas import UserAuth
+import logging
+logger = logging.getLogger(__name__)
 
 router = APIRouter(dependencies=[Depends(oauth2_scheme)], prefix="/items", tags=["items"])
 
@@ -25,22 +27,19 @@ async def add_item_to_store(store_id: int,
                             picture: UploadFile = File(None),
                             db: Session = Depends(get_db)):
     """Adds an item to a specified store."""
-    """Perms: admin, store owner"""
     items_repo = ItemRepository(db)
     store_repo = StoreRepository(db)
     media_repo = MediaRepository(db)
 
-    # Check permissions
     owners_list = store_repo.check_store_owner(user.id, store_id)
+    logger.error(f"User role: {user.role}, type: {type(user.role)}")
     if user.role != UserRole.admin and not owners_list:
         raise HTTPException(status_code=401, detail="User does not own that store")
     
     try:
-        # Parse the JSON item data
         item_data = json.loads(item)
         item_schema = ItemWithInfoCreateSchema(**item_data)
         
-        # Prepare item data for creation
         item_dict = {
             "name": item_schema.name,
             "item_type": item_schema.item_type,
@@ -49,122 +48,114 @@ async def add_item_to_store(store_id: int,
             "store_id": store_id
         }
         
-        # Prepare nutritional info if provided
-        info_dict = None
-        if item_schema.nutrition_info:
-            info_dict = item_schema.nutrition_info.model_dump(exclude_none=True)
+        info_dict = item_schema.nutrition_info.model_dump(exclude_none=True) if item_schema.nutrition_info else None
         
-        # Handle picture upload first if provided
         if picture and picture.filename:
             content = await picture.read()
-            media_record = media_repo.create_no_commit(
-                media_data=content,
-                filename=picture.filename
-            )
+            media_record = media_repo.create_no_commit(media_data=content, filename=picture.filename)
             item_dict["picture_id"] = media_record.id
         
-        # Create item with nutritional info
         new_item = items_repo.create_with_info_no_commit(item_dict, info_dict)
         
-        # Commit the transaction
         db.commit()
         db.refresh(new_item)
         
         return new_item
         
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, ValidationError) as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail="Invalid JSON format for item data")
-    except ValidationError as e:
-        db.rollback()
-        raise HTTPException(status_code=422, detail=str(e))
+        raise HTTPException(status_code=422, detail=f"Invalid item data: {e}")
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create item: {str(e)}")
 
-@router.get("/{store_id}/{item_name}", status_code=201, response_model=list[ItemSchema])
-async def get_item_by_store_id_and_name(store_id: int,
-                                        item_name: str,
-                                        user: user_dependency,
-                                        db: Session = Depends(get_db)):
-    """Gets an item by name and store ID (both must match exactly)."""
-    """Perms: admin, store owner"""
+@router.get("/{item_id}", response_model=ItemSchemaWithInfo)
+async def get_item_by_id(item_id: int, db: Session = Depends(get_db)):
+    """Gets an item by its ID."""
     items_repo = ItemRepository(db)
-    store_repo = StoreRepository(db)
-
-    owners_list = store_repo.check_store_owner(user.id, store_id)
-
-    if user.role != UserRole.admin and not owners_list:
-        raise HTTPException(status_code=401, detail="User does not own that store")
-    
-    try:
-        item = items_repo.get_by_store_id_and_name(store_id, item_name)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
+    item = items_repo.get_by_id(item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
     return item
 
-@router.get("/{store_id}/search", status_code=201, response_model=list[ItemSchema])
-async def search_item_by_store_id(store_id: int,
-                                  query: str,
-                                  user: user_dependency,
-                                  db: Session = Depends(get_db)):
-    """Searches an item by name and description within a store."""
-    """Perms: none"""
-    items_repo = ItemRepository(db)
-    
-    try:
-        item = items_repo.search_items_by_store(store_id, query)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-    return item
-
-@router.get("/{order_id}", status_code=201, response_model=list[ItemSchema])
-async def get_item_by_order_id(order_id: int,
-                               user: user_dependency,
-                               db: Session = Depends(get_db)):
-    """Gets an item by order ID."""
-    """Perms: admin, user who placed the order"""
-    items_repo = ItemRepository(db)
-    order_repo = OrderRepository(db)
-    
-    order = order_repo.get_by_user_id_and_order_id(user.id, order_id)
-
-    if user.role != UserRole.admin and not order:
-        raise HTTPException(status_code=401, detail="User did not place that order")
-
-    try:
-        item = items_repo.get_by_user_id_and_ord(order_id)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-    return item
-
-@router.put("/{item_id}", status_code=201, response_model=ItemSchema)
-async def update_item(item: ItemSchema,
+@router.put("/{store_id}/{item_id}", response_model=ItemSchema)
+async def update_item(store_id: int,
                       item_id: int,
                       user: user_dependency,
+                      item: str = Form(...),
+                      picture: UploadFile = File(None),
                       db: Session = Depends(get_db)):
+    """Updates an item in a specified store."""
     items_repo = ItemRepository(db)
-    found_item = items_repo.get_by_id(item_id)
-
     store_repo = StoreRepository(db)
-    owners = store_repo.check_store_owner(user.id, found_item.store_id)
+    media_repo = MediaRepository(db)
 
+    owners_list = store_repo.check_store_owner(user.id, store_id)
+    if user.role != UserRole.admin and not owners_list:
+        raise HTTPException(status_code=401, detail="User does not own that store")
+        
+    existing_item = items_repo.get_by_id(item_id)
+    if not existing_item or existing_item.store_id != store_id:
+        raise HTTPException(status_code=404, detail="Item not found in this store")
 
-    if user.role != UserRole.admin and not owners:
-        raise HTTPException(status_code=401, detail="User does not own the store of the item")
-    
-    items_repo.update_by_id(item_id, 
-                            id=item.id, 
-                            name=item.name, 
-                            item_type=item.item_type, 
-                            description=item.description, 
-                            price=item.price, 
-                            picture=item.picture, 
-                            store_id=item.store_id, 
-                            info_id=item.info_id)
-    
-    return found_item
-    
+    try:
+        item_data = json.loads(item)
+        item_schema = ItemWithInfoCreateSchema(**item_data)
+        
+        item_dict = {
+            "name": item_schema.name,
+            "item_type": item_schema.item_type,
+            "description": item_schema.description,
+            "price": item_schema.price,
+        }
+        
+        info_dict = item_schema.nutrition_info.model_dump(exclude_none=True) if item_schema.nutrition_info else None
+        
+        if picture and picture.filename:
+            content = await picture.read()
+            if existing_item.picture_id:
+                media_repo.update_no_commit(existing_item.picture, media_data=content, filename=picture.filename)
+            else:
+                media_record = media_repo.create_no_commit(media_data=content, filename=picture.filename)
+                item_dict["picture_id"] = media_record.id
+        
+        updated_item = items_repo.update_with_info(existing_item, item_dict, info_dict)
+        
+        db.commit()
+        db.refresh(updated_item)
+        
+        return updated_item
+        
+    except (json.JSONDecodeError, ValidationError) as e:
+        db.rollback()
+        raise HTTPException(status_code=422, detail=f"Invalid item data: {e}")
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to update item: {str(e)}")
+
+@router.get("/{store_id}/search", response_model=list[ItemSchema])
+async def search_item_by_store_id(store_id: int,
+                                  query: str,
+                                  db: Session = Depends(get_db)):
+    """Searches an item by name and description within a store."""
+    items_repo = ItemRepository(db)
+    items = items_repo.search_items_by_store(store_id, query)
+    return items
+
+@router.get("/order/{order_id}", response_model=list[ItemSchema])
+async def get_items_by_order_id(order_id: int,
+                               user: user_dependency,
+                               db: Session = Depends(get_db)):
+    """Gets all items for a given order ID."""
+    order_repo = OrderRepository(db)
+    order = order_repo.get_by_id(order_id)
+
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+        
+    if user.role != UserRole.admin and order.user_id != user.id:
+        raise HTTPException(status_code=401, detail="User did not place that order")
+
+    items_repo = ItemRepository(db)
+    items = items_repo.get_by_order_id(order_id)
+    return items

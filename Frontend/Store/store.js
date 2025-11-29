@@ -17,8 +17,8 @@ function ItemDisplay({
     <div className="flex flex-col sm:flex-row overflow-hidden rounded-xl bg-white shadow-md hover:shadow-lg transition-shadow">
         {/* Image */}
         <div className="flex h-48 sm:h-auto w-full sm:w-40 flex-shrink-0 items-center justify-center bg-gray-200 text-gray-500">
-          {picture ? ( // Assuming 'picture' prop is actually 'picture_id'
-            <img src={`http://localhost:8000/media/${picture}`} alt={name} className="h-full w-full object-cover rounded-xl" />
+          {picture ? ( // 'picture' prop is actually 'picture_id'
+            <img src={`http://localhost:8000/media/${picture}`} alt={name} className="h-full w-full object-cover rounded-xl" style={{ imageRendering: 'auto' }} />
           ) : (
             <p className="text-sm font-medium">No Image</p>
           )}
@@ -35,16 +35,24 @@ function ItemDisplay({
 
           {/* Buttons - stack on mobile, vertical on desktop */}
           <div className="flex sm:flex-col justify-stretch sm:justify-center gap-2 p-4 sm:w-32 flex-shrink-0">
-            <button className="flex-1 sm:flex-none rounded-lg border border-green-700 bg-gradient-to-r from-amber-400 to-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:shadow-md active:scale-95">
+            <button className="btn btn-action">
               Add to Cart
             </button>
             
             <button
               onClick={() => setShowNutrition(true)}
-              className="flex-1 sm:flex-none rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 active:scale-95"
+              className="btn btn-secondary"
             >
               Details
             </button>
+            {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
+                <button
+                    onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store_id}/item/${item_id}/edit`; }}
+                    className="btn btn-edit"
+                >
+                    Edit
+                </button>
+            )}
           </div>
         </div>
       </div>
@@ -281,7 +289,7 @@ function StorePage() {
             </p>
           </div>
           {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
-            <button className="mt-5 shadow-md border rounded-md text-2xl p-2 bg-[#fdb515] hover:scale-110 transform transition duration-300" onClick ={() => window.location.hash = `#/store/${store_id}/edit`}>Edit Store Info</button>
+            <button className="btn btn-edit mt-5" onClick ={() => window.location.hash = `#/store/${store_id}/edit`}>Edit Store Info</button>
           )}
         </div>
       </div>
@@ -291,7 +299,7 @@ function StorePage() {
         {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
           <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 flex justify-end">
             <button 
-              className="border shadow-md rounded-md text-2xl text-white p-2 bg-[#007176] hover:scale-110 transform transition duration-300" 
+              className="btn btn-action" 
               onClick={() => window.location.hash = `#/store/${store_id}/add-item`}
             >
               Add Item
