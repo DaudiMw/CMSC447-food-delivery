@@ -23,7 +23,7 @@ function MyApp() {
                     <ProtectedRoute path="/store/:store_id/edit" component={StoreEditPage} allowed_roles={['admin', 'store_owner']} />
                     <ProtectedRoute path="/store/:store_id/add-item" component={AddItemPage} allowed_roles={['admin', 'store_owner']} />
                     <ProtectedRoute path="/store/:store_id/item/:item_id/edit" component={EditItemPage} allowed_roles={['admin', 'store_owner']} />
-                    <ProtectedRoute path="/reports" component={ReportsPage} />
+                    <ProtectedRoute path="/reports" component={ReportsPage} allowed_roles={['admin', 'store_owner']}/>
                     <ProtectedRoute path="/stores" component={StoresPage} />
                     <ProtectedRoute path="/store/:store_id" component={StorePage} />
                     <ProtectedRoute path="/admin" component={AdminPage} allowed_roles={['admin']} />

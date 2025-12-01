@@ -114,21 +114,13 @@ function ReportList(store_id) {
 
 function ReportsPage() {
   const user_id = localStorage.getItem('userId');
-  const user_role = localStorage.getItem('userRole');
-  const history = window.ReactRouterDOM.useHistory();
 
-  if (user_role != 'store_owner' && user_role != 'admin') {
-    history.push('/home');
-  }
-
-  console.log("user_id = " + user_id);
-
-  const { data: stores = {}, isLoading: storeLoading, error: storeError, refetch: storeRefetch } = window.ReactQuery.useQuery({
+  const { data: stores = {}, isLoading: storesLoading, error: storesError, refetch: storeRefetch } = window.ReactQuery.useQuery({
     queryKey: ['user_id', user_id],
     queryFn: () => get_user_stores(user_id)
   });
 
-  if (storeLoading) {
+  if (storesLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-xl text-gray-600">Loading stores...</div>
@@ -136,7 +128,7 @@ function ReportsPage() {
     );
   }
 
-  if (storeError) {
+  if (storesError) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-xl text-gray-600">Error getting store.</div>
@@ -144,11 +136,12 @@ function ReportsPage() {
     );
   }
 
-    if (!store) {
+  if (stores == []) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="text-xl text-gray-600">Store not found.</div>
-      </div>
+    <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
+      <h1 className="text-4xl font-bold text-gray-800 mb-2">Reports</h1>
+      No reports.
+    </div>
     );
   }
 

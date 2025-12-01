@@ -80,7 +80,7 @@ function ItemForm({ store_id, item: existingItem }) {
                 await create_item(formData, store_id);
                 alert('Item created successfully!');
             }
-            history.push(`/store/${store_id}/edit`);
+            history.push(`/store/${store_id}`);
         } catch (error) {
             console.error('Failed to save item', error);
             setServerError(error.message || 'An unexpected error occurred.');

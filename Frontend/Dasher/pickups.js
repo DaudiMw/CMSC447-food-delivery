@@ -12,10 +12,7 @@ function Pickup(
   var handleSubmit = async () => {
 
     const pickupData = {
-      order_id: order_id,
       dasher_id: dasher_id,
-      store_id: store_id,
-      scheduled_at: new Date().toISOString()
     }
 
     try {
@@ -46,11 +43,10 @@ function Pickup(
   return (
     <div>
       Order ID: {order_id}
-      User ID: {user_id}
       Store ID: {store_id}
       Address ID: {address_id}
       Order Placed: {updated_at}
-      Items:{items.map(item => {item.name + '\n'})}
+      Items:{items.map(item => {item.name + ", "})}
       <form onSubmit={handleSubmit}>
         <button type="submit">
           Pickup Order
@@ -62,19 +58,13 @@ function Pickup(
 
 function PickupsPage() {
   const user_id = localStorage.getItem('userId');
-  const user_role = localStorage.getItem('userRole');
-  const history = window.ReactRouterDOM.useHistory();
 
-  if (user_role != 'dasher') {
-    history.push('/home');
-  }
-
-  const { data: orders = {}, isLoading: storeLoading, error: storeError, refetch: storeRefetch } = window.ReactQuery.useQuery({
+  const { data: orders = {}, isLoading: ordersLoading, error: ordersError, refetch: ordersRefetch } = window.ReactQuery.useQuery({
     queryKey: ['status', 'pending'],
     queryFn: () => get_pickups_by_status('pending')
   });
 
-  if (storeLoading) {
+  if (ordersLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-xl text-gray-600">Loading pickups...</div>
@@ -82,7 +72,7 @@ function PickupsPage() {
     );
   }
 
-  if (storeError) {
+  if (ordersError) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-xl text-gray-600">Error getting pickups.</div>
@@ -90,11 +80,12 @@ function PickupsPage() {
     );
   }
 
-  if (!store) {
+  if (orders == []) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="text-xl text-gray-600">Pickups not found.</div>
-      </div>
+    <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
+      <h1 className="text-4xl font-bold text-gray-800 mb-2">Pickups</h1>
+      No pickups.
+    </div>
     );
   }
 
