@@ -7,6 +7,12 @@ class OrdersPage extends React.Component {
         console.log(data)
         const orderList = document.getElementsByClassName("ordersList")[0];
         if (data.length == 0) {
+            const noOrders = document.createElement('div');
+            noOrders.textContent = "You have no orders";
+            noOrders.style.textAlign = "center";
+            noOrders.style.alignContent = "center";
+            noOrders.style.fontSize = "xx-large"
+            orderList.append(noOrders);
             return;
         }
         data.forEach(element => {
@@ -55,7 +61,14 @@ class OrdersPage extends React.Component {
                     </header>
                     <div className="ordersList">
                     </div>
-                    <div className="orderButtons"></div>
+                    <div className="orderButtons">
+                        <button className="cancelOrder">
+                            Cancel Orders
+                        </button>
+                        <button className="cancelOrder">
+                            Report Order
+                        </button>
+                    </div>
                 </div>
             </div>
         )
