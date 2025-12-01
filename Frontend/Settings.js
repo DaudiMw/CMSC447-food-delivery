@@ -143,7 +143,7 @@ function SettingsPage() {
       return;
     }
     applyToDasherMutation.mutate({
-      user_id: String(getUserId()),
+      id: String(getUserId()),
       content: dasherReasoning
     });
   };

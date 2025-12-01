@@ -36,3 +36,5 @@ class StoreUpdateSchema(BaseSchema):
 
 class StoreWithItemsSchema(StoreInfoSchema):
     items: List[ItemSchemaWithInfo] = []
+
+

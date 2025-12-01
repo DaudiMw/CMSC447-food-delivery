@@ -68,7 +68,7 @@ async def delete_user(user_id: str,
 
 
 @router.get("/{user_id}/cart", response_model=list[OrderShow])
-async def get_user_cart(user_id: str, user: user_dependency, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def get_user_cart(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
     """Get a user's cart."""
     """Perms: admin, user"""
 
@@ -79,9 +79,8 @@ async def get_user_cart(user_id: str, user: user_dependency, token: str = Depend
     
 
     try:
-        orders = order_repo.get_by_user_id_ordered_by_date(user_id)
-        orders = [order.status == "initialized" for order in orders]
-        return orders
+        order = order_repo.get_by_user_id_and_status(user_id, "initialized")
+        return order
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
