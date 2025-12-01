@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 import uuid
 from database import Base
 import enum
+from datetime import datetime
 
 class UserRole(enum.Enum):
     admin = "admin"
@@ -41,6 +42,7 @@ class User(Base):
     addresses = relationship("Address", secondary="user_addresses", back_populates="users") #many to many
     reports = relationship("Reports", back_populates="user") #1 to many
     stores = relationship("Store", secondary="store_owners", back_populates="owners") #many to many
+    cart = relationship("Cart", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 
 class Store(Base):
@@ -180,6 +182,26 @@ class DasherApplications(Base):
     user_id = Column(String, ForeignKey("users.id"), nullable=False, unique=True)
     content = Column(String, nullable=False)
     date_applied = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+class Cart(Base):
+    __tablename__ = "carts"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, unique=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User", back_populates="cart")
+    items = relationship("CartItem", back_populates="cart", cascade="all, delete-orphan")
+
+class CartItem(Base):
+    __tablename__ = "cart_items"
+    id = Column(Integer, primary_key=True, index=True)
+    cart_id = Column(Integer, ForeignKey("carts.id"), nullable=False)
+    item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
+    quantity = Column(Integer, nullable=False, default=1)
+
+    cart = relationship("Cart", back_populates="items")
+    item = relationship("Item")
 
 class Media(Base):
     __tablename__ = "media"

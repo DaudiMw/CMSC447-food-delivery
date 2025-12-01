@@ -26,6 +26,7 @@ function MyApp() {
                     <ProtectedRoute path="/reports" component={ReportsPage} allowed_roles={['admin', 'store_owner']}/>
                     <ProtectedRoute path="/stores" component={StoresPage} />
                     <ProtectedRoute path="/store/:store_id" component={StorePage} />
+                    <ProtectedRoute path="/cart" component={CartPage} />
                     <ProtectedRoute path="/admin" component={AdminPage} allowed_roles={['admin']} />
 
                 </Switch>
@@ -172,6 +173,15 @@ class OrdersPage extends React.Component {
 function Banner() {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
+    const { data: cart } = window.ReactQuery.useQuery({
+        queryKey: ['cart'],
+        queryFn: get_cart,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        refetchOnWindowFocus: false,
+    });
+
+    const itemCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+
     const menuItems = (
         <>
             <button 
@@ -219,6 +229,19 @@ function Banner() {
                     <span>Admin</span>
                 </button>
             )}
+
+            <button 
+                className="bannerButton" 
+                onClick={() => {
+                    window.location.hash = '#/cart';
+                    setIsMenuOpen(false);
+                }}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c.51 0 .962-.343 1.087-.835l1.823-6.44a1.125 1.125 0 0 0-.142-1.295A1.125 1.125 0 0 0 16.5 3H5.25" />
+                </svg>
+                <span>Cart {itemCount > 0 && `(${itemCount})`}</span>
+            </button>
 
             <button 
                 className="bannerButton" 

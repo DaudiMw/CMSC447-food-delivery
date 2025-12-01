@@ -2,7 +2,7 @@
 from pydantic import BaseModel
 from datetime import datetime, time
 from typing import List, Optional
-from api.schemas.base_schema import BaseSchema
+from api.schemas.base_schema import BaseSchema, Address
 from api.schemas.item_schemas import ItemSchema
 
 
@@ -21,7 +21,7 @@ class OrderSchema(BaseSchema):
 
 
 class OrderShow(BaseSchema):
-    address: str
+    address: Address
     status: str
     created_at: str
     accepted_at: str

@@ -92,15 +92,15 @@ async function get_cart(user_id){
 
 /**
  * 
- * @param {*} user_id 
+ * @param {*} id 
  * @param {*} content 
  * @returns 
  */
-async function apply_to_dasher(user_id, content) {
+async function apply_to_dasher({id, content}) {
     try {
-        const data = await authFetch(`/users/${user_id}/dasher_application`, {
+        const data = await authFetch(`/users/${id}/dasher-application`, {
             method: 'POST',
-            body: JSON.stringify({user_id, content})
+            body: JSON.stringify({id, content})
         })
         return data;
     } catch (error) {

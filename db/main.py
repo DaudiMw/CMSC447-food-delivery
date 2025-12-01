@@ -8,6 +8,7 @@ from api.routers import items
 from api.routers import order
 from api.routers import store
 from api.routers import media
+from api.routers import cart
 from utils import BaseFactory
 
 
@@ -42,6 +43,8 @@ app.include_router(store.router, tags=["stores"])
 app.include_router(media.router, tags=["media"])
 
 app.include_router(items.router, tags=["items"])
+
+app.include_router(cart.router, tags=["cart"])
 
 
 
