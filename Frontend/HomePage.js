@@ -23,6 +23,7 @@ class HomePage extends React.Component {
             restaurantDiv.style.backgroundSize = "cover";
             restaurantDiv.style.backgroundPosition = "center";
             restaurantDiv.style.backgroundRepeat = "no-repeat";
+            restaurantDiv.onclick = () => window.location.hash = '#/store/'+ element.id;
             
             const restaurantTitle = document.createElement('div');
             restaurantTitle.className = "restaurantTitle";
