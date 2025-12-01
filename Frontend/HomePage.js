@@ -19,7 +19,7 @@ class HomePage extends React.Component {
             const restaurantDiv = document.createElement('div');
             // Give it a className, which home.css has parameters to modify.
             restaurantDiv.className = "restaurant hover:scale-105 transition duration:2s";
-            restaurantDiv.style.backgroundImage = `url('${"http://localhost:8000/media/" + element.banner_id}')`;
+            restaurantDiv.style.backgroundImage = `linear-gradient(to top, rgba(255, 255, 255, 0.75), rgba(0, 0, 0, 0)), url('${"http://localhost:8000/media/" + element.banner_id}')`;
             restaurantDiv.style.backgroundSize = "cover";
             restaurantDiv.style.backgroundPosition = "center";
             restaurantDiv.style.backgroundRepeat = "no-repeat";
