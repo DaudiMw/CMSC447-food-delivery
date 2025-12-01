@@ -18,6 +18,7 @@ function MyApp() {
                     <ProtectedRoute exact path="/" component={HomePage} />
                     <ProtectedRoute path="/home" component={HomePage} />
                     <ProtectedRoute path="/settings" component={SettingsPage} />
+                    <ProtectedRoute path="/user/:user_id" component={UserPage} />
                     <ProtectedRoute path="/:user_id/orders" component={OrdersPage} />
                     <ProtectedRoute path="/stores/create" component={StoreCreatePage} allowed_roles={['admin']} />
                     <ProtectedRoute path="/store/:store_id/edit" component={StoreEditPage} allowed_roles={['admin', 'store_owner']} />
@@ -357,8 +358,8 @@ function Banner() {
 //             return (
 //                 <SignupPage setPage={this.setPage}></SignupPage>
 //             );
-//         }
-//     }
+        }
+    }
 
 //     // These are defined here so that they're easy to find and change, and so they can be given to multiple
 //     // pages and not have to be copied.

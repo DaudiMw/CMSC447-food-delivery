@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
-from api.auth.auth import admin_required
+from api.auth.auth import admin_required, get_current_user
 from models import UserRole
 from repositories.user import UserRepository
 from repositories.dasherapplication import ApplicationRepository
 from sqlalchemy.orm import Session
 from database import get_db
-from api.schemas.user_schemas import UserSchema, UserCreate
+from api.schemas.user_schemas import UserSchema, UserCreate, UserAuth
 
 
 
@@ -45,11 +45,24 @@ async def get_user_by_id(user_id: str,
 @router.patch("/users/{user_id}/role")
 async def update_user_role(user_id: str, 
                            new_role: UserRole,
-                           db: Session = Depends(get_db)):
+                           db: Session = Depends(get_db),
+                           current_user: UserAuth = Depends(get_current_user)):
     """Update a user's role."""
+
+    if user_id == current_user.id:
+        raise HTTPException(status_code=400, detail="Admins cannot change their own role.")
 
     try:
         user_repo = UserRepository(db)
+        
+        user_to_update = user_repo.get_by_id(user_id)
+        if not user_to_update:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        if user_to_update.role == UserRole.admin and new_role != UserRole.admin:
+            if user_repo.count_admins() <= 1:
+                raise HTTPException(status_code=400, detail="Cannot remove the last admin.")
+
         updated_user = user_repo.update_role(user_id, new_role)
         return updated_user
     

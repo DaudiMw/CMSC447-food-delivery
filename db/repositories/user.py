@@ -38,7 +38,7 @@ class UserRepository(BaseRepository[User]):
         ).all()
     
     def query_by_name_or_campus_id_and_role(self, query: str, role: UserRole) -> List[User]:
-        """Use a query to find a user by name or campus id and role."""
+        """Use a query to find a a user by name or campus id and role."""
         return self.session.query(User).filter(
             self.model.is_deleted == False,
             (self.model.name.ilike(f"%{query}%") | self.model.campus_id.ilike(f"%{query}%")) &
@@ -61,6 +61,13 @@ class UserRepository(BaseRepository[User]):
         self.session.refresh(user)
         return user
     
+    def count_admins(self) -> int:
+        """Count the number of admin users."""
+        return self.session.query(User).filter(
+            User.role == UserRole.admin,
+            User.is_deleted == False
+        ).count()
+
     def change_ban_status(self, user_id: str, new_status: bool) -> User:
         """Change a user's ban status."""
         user = self.get_by_id(user_id)

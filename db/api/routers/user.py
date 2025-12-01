@@ -7,6 +7,9 @@ from repositories.address import AddressRepository
 from repositories.orders import OrderRepository
 from repositories.items import ItemRepository
 from repositories.user import UserRepository
+from repositories.pickups import PickupRepository
+from repositories.reports import ReportRepository
+from repositories.store import StoreRepository
 from sqlalchemy.orm import Session
 from database import get_db
 from models import UserRole
@@ -141,7 +144,37 @@ async def get_user_order_history(user_id: str, token: str = Depends(oauth2_schem
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/{user_id}/deliveries")
+async def get_user_deliveries(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
+    """Get a user's deliveries."""
+    if user.role != UserRole.admin and user.id != user_id:
+        raise HTTPException(status_code=403, detail="You do not have permission to view this user's deliveries")
     
+    pickup_repo = PickupRepository(db)
+    deliveries = pickup_repo.get_by_dasher_id(user_id)
+    return deliveries
+
+@router.get("/{user_id}/reports")
+async def get_user_reports(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
+    """Get a user's reports."""
+    if user.role != UserRole.admin and user.id != user_id:
+        raise HTTPException(status_code=403, detail="You do not have permission to view this user's reports")
+    
+    report_repo = ReportRepository(db)
+    reports = report_repo.get_by_reporter_id(user_id)
+    return reports
+
+@router.get("/{user_id}/stores")
+async def get_user_stores(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
+    """Get a user's owned stores."""
+    if user.role != UserRole.admin and user.id != user_id:
+        raise HTTPException(status_code=403, detail="You do not have permission to view this user's stores")
+    
+    store_repo = StoreRepository(db)
+    stores = store_repo.get_by_owner_id(user_id)
+    return stores
+
 
 @router.post("/{user_id}/password")
 async def change_password(user_id: str, user: user_dependency, new_password: str, db: Session = Depends(get_db)):

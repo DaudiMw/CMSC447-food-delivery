@@ -1,5 +1,50 @@
 const { useQuery, useMutation, QueryClient, QueryClientProvider } = window.ReactQuery;
 
+async function get_user_profile(user_id) {
+    try {
+        const data = await authFetch(`/users/${user_id}/profile`);
+        return data;
+    } catch (error) {
+        console.error('Error fetching user profile: ', error);
+    }
+}
+
+async function get_user_orders(user_id) {
+    try {
+        const data = await authFetch(`/users/${user_id}/orders`);
+        return data;
+    } catch (error) {
+        console.error('Error fetching user orders: ', error);
+    }
+}
+
+async function get_user_deliveries(user_id) {
+    try {
+        const data = await authFetch(`/users/${user_id}/deliveries`);
+        return data;
+    } catch (error) {
+        console.error('Error fetching user deliveries: ', error);
+    }
+}
+
+async function get_user_reports(user_id) {
+    try {
+        const data = await authFetch(`/users/${user_id}/reports`);
+        return data;
+    } catch (error) {
+        console.error('Error fetching user reports: ', error);
+    }
+}
+
+async function get_user_stores(user_id) {
+    try {
+        const data = await authFetch(`/users/${user_id}/stores`);
+        return data;
+    } catch (error) {
+        console.error('Error fetching user stores: ', error);
+    }
+}
+
 /**
  * 
  * @param {*} user_id 
