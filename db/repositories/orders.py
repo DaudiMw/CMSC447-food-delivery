@@ -23,6 +23,13 @@ class OrderRepository(BaseRepository[Order]):
             self.model.id == order_id
         ).all()
     
+    def get_by_dasher_id(self, dasher_id: str) -> list[Order]:
+        """Get all orders for a given dasher ID."""
+        return self.session.query(Order).filter(
+            self.model.is_deleted == False,
+            self.model.dasher_id == dasher_id
+        ).all()
+    
     def get_by_order_state(self, state: OrderStatus) -> list[Order]:
         """Get all orders for a given order state."""
         return self.session.query(Order).filter(

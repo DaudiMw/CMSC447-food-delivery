@@ -36,19 +36,15 @@ async def get_order(order_id: int, token : str = Depends(oauth2_scheme), db : Se
     return order
 
 @router.get("/{status}")
-async def get_order(status: str, user: user_dependency, db : Session = Depends(get_db)):
+async def get_order_by_status(status: str, user: user_dependency, db : Session = Depends(get_db)):
     """Get an order by its status."""
 
-    # First make sure that order belongs to the user or they are an admin
-
     order_repo = OrderRepository(db)
-    state
-    order
+    order = None
 
-    for stat in OrderStatus:
-        if (str(stat.value) == status):
-            state = stat.value
-            order = order_repo.get_by_order_state(state)
+    for state in OrderStatus:
+        if (str(state.value) == status):
+            order = order_repo.get_by_order_state(state.value)
 
     if not order or order.is_deleted: 
         raise HTTPException(status_code=404, detail="Order not found")
@@ -58,15 +54,41 @@ async def get_order(status: str, user: user_dependency, db : Session = Depends(g
     
     return order
 
+@router.get("/{user_id}")
+async def get_order_by_user_id(user_id: str, user: user_dependency, db : Session = Depends(get_db)):
+    """Get an order by user ID."""
+    
+    order_repo = OrderRepository(db)
+    order = order_repo.get_by_user_id(user_id)
+
+    if user.role != UserRole.admin and user_id != user.id:
+        raise HTTPException(status_code=403, detail="You do not have permission to access this")
+    
+    return order
+
+@router.get("/{dasher_id}")
+async def get_order_by_dasher_id(dasher_id: str, user: user_dependency, db : Session = Depends(get_db)):
+    """Get an order by dasher ID."""
+    
+    order_repo = OrderRepository(db)
+    order = order_repo.get_by_dasher_id(dasher_id)
+
+    if user.role != UserRole.admin and dasher_id != user.id:
+        raise HTTPException(status_code=403, detail="You do not have permission to access this")
+    
+    return order
+
 @router.get("/{order_id}")
 async def get_store_orders(store_id: int, db: Session = Depends(get_db)):
 
     order_repo = OrderRepository(db)
 
-    order = order_repo.get_by_store(store_id)
+    order = order_repo.get_by_store_id(store_id)
 
     if not order or order.is_deleted:
         raise HTTPException(status_code=404, detail="Order not found")
+    
+    return order
 
 @router.post("", status_code=201, response_model=OrderSchema)
 async def create_order(order: OrderSchema, user: user_dependency, db : Session = Depends(get_db)):

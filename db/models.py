@@ -12,7 +12,6 @@ class UserRole(enum.Enum):
     user = "user"
 
 class OrderStatus(enum.Enum):
-    initialized = "initialized" # Order just created in cart but not paid for
     pending = "pending" # Order has been paid for and waiting to be picked by a dasher
     accepted = "accepted" # Order has been picked by a dasher
     completed = "completed" # Delivery was completed.
@@ -40,9 +39,7 @@ class User(Base):
     is_banned = Column(Boolean, nullable=False, default=False)
     
     # Relationships
-    orders = relationship("Order", back_populates="user") #1 to many
     addresses = relationship("Address", secondary="user_addresses", back_populates="users") #many to many
-    pickups = relationship("Pickups", back_populates="dasher") #1 to many
     reports = relationship("Reports", back_populates="user") #1 to many
     stores = relationship("Store", secondary="store_owners", back_populates="owners") #many to many
     cart = relationship("Cart", back_populates="user", uselist=False, cascade="all, delete-orphan")
@@ -67,7 +64,6 @@ class Store(Base):
     items = relationship("Item", back_populates="store") #1 to many
     owners = relationship("User", secondary="store_owners", back_populates="stores") #many to many
     orders = relationship("Order", back_populates="store")
-    pickups = relationship("Pickups", back_populates="store")
     reports = relationship("Reports", back_populates="store")
 
 
@@ -126,35 +122,22 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    dasher_id = Column(String, ForeignKey("users.id"))
     store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     address_id = Column(Integer, ForeignKey("addresses.id"), nullable=False)
-    status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.initialized)
+    status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.pending)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    accepted_at = Column(DateTime(timezone=True), default=None)
+    completed_at = Column(DateTime(timezone=True), default=None)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # Relationships
     address = relationship("Address", back_populates="order") #many to 1
-    user = relationship("User", back_populates="orders")
+    user = relationship("User", foreign_keys=[user_id], backref="orders")
+    dasher = relationship("User", foreign_keys=[dasher_id], backref="deliveries")
     items = relationship("Item", secondary="user_orders", back_populates="orders")
-    pickups = relationship("Pickups", back_populates="order") #1 to many
     reports = relationship("Reports", back_populates="order") #1 to many
     store = relationship("Store", back_populates="orders") #many to 1
-
-
-class Pickups(Base):
-    __tablename__ = "pickups"
-
-    id = Column(Integer, primary_key=True)
-    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
-    dasher_id = Column(String, ForeignKey("users.id"), nullable=False)
-    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
-    scheduled_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    completed_at = Column(DateTime, default=None)
-    
-    # Relationships
-    order = relationship("Order", back_populates="pickups") #many to 1
-    dasher = relationship("User", back_populates="pickups") #many to 1
-    store = relationship("Store", back_populates="pickups") #many to 1
 
 
 class Reports(Base):
