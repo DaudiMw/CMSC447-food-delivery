@@ -13,5 +13,5 @@ class ReportCreateSchema(BaseSchema):
     store_id: int
     comment: str
 
-class ReportResponseSchema(BaseSchema):
+class ReportReplySchema(BaseSchema):
     response: str

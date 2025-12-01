@@ -9,17 +9,17 @@ from database import get_db
 from models import UserRole
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
-from api.schemas.report_schemas import ReportSchema, ReportCreateSchema, ReportResponseSchema
+from api.schemas.report_schemas import ReportSchema, ReportCreateSchema, ReportReplySchema
 from api.schemas.user_schemas import UserAuth
 
 router = APIRouter(dependencies=[Depends(oauth2_scheme)], prefix="/reports", tags=["reports"])
 
 user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
-@router.post("/{order_id}", status_code=201, response_model=list[ReportSchema])
-async def create_report_to_order(report: ReportCreateSchema,
-                                 user: user_dependency,
-                                 db: Session = Depends(get_db)):
+@router.post("", status_code=201, response_model=ReportSchema)
+async def create_report(report: ReportCreateSchema,
+                        user: user_dependency,
+                        db: Session = Depends(get_db)):
     """Creates a report for an order."""
     """Perms: admin, user of order, dasher of order"""
     reports_repo = ReportsRepository(db)
@@ -30,7 +30,7 @@ async def create_report_to_order(report: ReportCreateSchema,
     order = orders_repo.get_by_id(report.order_id)
     user = users_repo.get_by_id(report.user_id)
 
-    if user.role != UserRole.admin and order.user_id != user.id and order.pickups.dasher_id != user.id:
+    if user.role != UserRole.admin and order.user_id != user.id and order.dasher_id != user.id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     if not store:
@@ -47,7 +47,7 @@ async def create_report_to_order(report: ReportCreateSchema,
     return new_report
 
 @router.put("/{report_id}", status_code=201, response_model=ReportSchema)
-async def post_response(report: ReportResponseSchema,
+async def post_reply(report: ReportReplySchema,
                         report_id: int,
                         user: user_dependency,
                         db: Session = Depends(get_db)):
@@ -60,11 +60,14 @@ async def post_response(report: ReportResponseSchema,
     if user.role != UserRole.admin and not owners:
         raise HTTPException(status_code=401, detail="User does not own the store of the item")
     
-    reports_repo.update_by_id(report_id, response=report.response)
+    try:
+        reports_repo.update_by_id(report_id, response=report.response)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     
     return found_report
 
-@router.get("/{order_id}", status_code=201, response_model=list[ReportSchema])
+@router.get("/orders/{order_id}", status_code=201, response_model=list[ReportSchema])
 async def get_report_by_order_id(order_id: int,
                                  user: user_dependency,
                                  db: Session = Depends(get_db)):
@@ -84,7 +87,7 @@ async def get_report_by_order_id(order_id: int,
     
     return report
 
-@router.get("/{user_id}", status_code=201, response_model=list[ReportSchema])
+@router.get("/users/{user_id}", status_code=201, response_model=list[ReportSchema])
 async def get_report_by_user_id(user_id: str,
                                 user: user_dependency,
                                 db: Session = Depends(get_db)):
@@ -104,7 +107,7 @@ async def get_report_by_user_id(user_id: str,
     
     return report
 
-@router.get("/{store_id}", status_code=201, response_model=list[ReportSchema])
+@router.get("/stores/{store_id}", status_code=201, response_model=list[ReportSchema])
 async def get_report_by_store_id(store_id: int,
                                  user: user_dependency,
                                  db: Session = Depends(get_db)):
@@ -124,7 +127,7 @@ async def get_report_by_store_id(store_id: int,
     
     return report
 
-@router.get("/{store_id}/users", status_code=201, response_model=list[ReportSchema])
+@router.get("/stores/{store_id}/users", status_code=201, response_model=list[ReportSchema])
 async def get_report_by_store_id_and_user_id(store_id: int,
                                              user: user_dependency,
                                              db: Session = Depends(get_db)):

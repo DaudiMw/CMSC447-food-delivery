@@ -13,10 +13,10 @@ class OrderSchema(BaseSchema):
     store_id: int
     address: str
     status: str
-    created_at: time
-    accepted_at: Optional[time] = None
-    completed_at: Optional[time] = None
-    updated_at: time
+    created_at: datetime
+    accepted_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    updated_at: datetime
     items: list["ItemSchema"]
 
 
@@ -28,6 +28,12 @@ class OrderShow(BaseSchema):
     completed_at: str
     updated_at: str
     items: list["ItemSchema"]
+
+class OrderUpdateSchema(BaseSchema):
+    status: str
+    dasher_id: str
+    accepted_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
 
 
 
