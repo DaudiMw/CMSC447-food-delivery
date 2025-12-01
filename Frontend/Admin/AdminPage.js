@@ -192,7 +192,7 @@ function AdminPage() {
                 </div>
                 <button 
                     onClick={() => { setSearchQuery(''); setStartDate(''); setEndDate(''); }}
-                    className="w-full md:w-auto px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-all"
+                    className="btn btn-secondary"
                 >
                     Clear
                 </button>
@@ -289,19 +289,19 @@ function AdminPage() {
                                                 <td className="p-3 flex gap-2">
                                                     <button 
                                                         onClick={() => viewUserDetails(user)}
-                                                        className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                                                        className="btn btn-secondary"
                                                     >
                                                         View
                                                     </button>
                                                     <button 
                                                         onClick={() => banUser(user.id)}
-                                                        className={`px-3 py-1 text-white text-sm rounded ${
-                                                            user.status !== 'is_banned' 
-                                                                ? 'bg-red-500 hover:bg-red-600' 
-                                                                : 'bg-green-500 hover:bg-green-600'
+                                                        className={`btn ${
+                                                            user.is_banned 
+                                                                ? 'btn-success' 
+                                                                : 'btn-delete'
                                                         }`}
                                                     >
-                                                        {user.status === 'is_banned' ? 'Ban' : 'Unban'}
+                                                        {user.is_banned ? 'Unban' : 'Ban'}
                                                     </button>
                                                 </td>
                                             </tr>
@@ -386,13 +386,13 @@ function AdminPage() {
                                             <div className="flex gap-2 ml-0 md:ml-4 mt-4 md:mt-0">
                                                 <button 
                                                     onClick={() => handleDasherApplication(app.id, 'approve')}
-                                                    className="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all"
+                                                    className="btn btn-success"
                                                 >
                                                     Approve
                                                 </button>
                                                 <button 
                                                     onClick={() => handleDasherApplication(app.id, 'reject')}
-                                                    className="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-all"
+                                                    className="btn btn-delete"
                                                 >
                                                     Reject
                                                 </button>
@@ -449,7 +449,7 @@ function AdminPage() {
                                 <h2 className="text-3xl font-bold text-gray-800">Store Management</h2>
                                 <button
                                     onClick={() => window.location.hash = '#/stores/create'}
-                                    className="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all"
+                                    className="btn btn-success"
                                 >
                                     Create Store
                                 </button>
@@ -466,26 +466,26 @@ function AdminPage() {
                                     </thead>
                                     <tbody>
                                         {filteredStores.map(store => (
-                                            <tr key={store.store_id} className="border-b hover:bg-amber-100 transition-colors duration-200">
+                                            <tr key={store.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
                                                 <td className="p-3">{store.name}</td>
                                                 <td className="p-3">{store.description}</td>
                                                 <td className="p-3">{new Date(store.created_at).toLocaleDateString()}</td>
                                                 <td className="p-3 flex gap-2">
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.store_id}`; }}
-                                                        className="px-3 py-1 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600 transition-all"
+                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.id}`; }}
+                                                        className="btn btn-action"
                                                     >
                                                         View
                                                     </button>
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.store_id}/edit`; }}
-                                                        className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition-all"
+                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.id}/edit`; }}
+                                                        className="btn btn-edit"
                                                     >
                                                         Update
                                                     </button>
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); if (confirm('Are you sure you want to delete this store?')) deleteStoreMutation.mutate(store.store_id); }}
-                                                        className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-all"
+                                                        onClick={(e) => { e.stopPropagation(); if (confirm('Are you sure you want to delete this store?')) deleteStoreMutation.mutate(store.id); }}
+                                                        className="btn btn-delete"
                                                     >
                                                         Delete
                                                     </button>

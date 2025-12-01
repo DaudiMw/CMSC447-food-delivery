@@ -1,5 +1,5 @@
 from repositories.base import BaseRepository
-from models import Address
+from models import Address, UserRole
 from sqlalchemy.orm import Session
 
 class AddressRepository(BaseRepository[Address]):

@@ -52,7 +52,7 @@ function LoginForm(props) {
             
             // Store role and user_id
             localStorage.setItem('userRole', payload.role);
-            localStorage.setItem('userId', payload.user_id);
+            localStorage.setItem('userId', payload.id);
 
             history.push('/home');
             
@@ -96,8 +96,7 @@ function LoginForm(props) {
             
             <button 
                 type="submit" 
-                className="btn btn-lg w-100" 
-                style={{backgroundColor: "orange", color: "black"}}
+                className="btn btn-lg w-100 btn-action"
                 disabled={loading}
             >
                 {loading ? 'Logging in...' : 'Login'}

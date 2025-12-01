@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlalchemy.orm import Session
-from models import Item, Store, StoreOwners
+from models import Item, Store, User
 from repositories.base import BaseRepository
 from api.schemas.store_schemas import StoreWithItemsSchema
 from sqlalchemy.orm import joinedload
@@ -39,29 +39,29 @@ class StoreRepository(BaseRepository[Store]):
         ).order_by(self.model.created_at).all()
     
     def get_user_stores(self, user_id: str) -> list[Store]:
-        """Get all stores that user owns."""
+        """Get all stores that a user owns."""
         return self.session.query(Store).filter(
-            self.model.owners.owner_id == user_id,
+            self.model.owners.any(User.id == user_id),
             self.model.is_deleted == False
         ).all()
     
-    def get_store_owner(self, user_id: str, store_id: str) -> list[StoreOwners]:
-        """Get store by its owner."""
-        return self.session.query(StoreOwners).filter(
-            StoreOwners.is_deleted == False,
-            StoreOwners.owner_id == user_id,
-            StoreOwners.store_id == store_id
+    def check_store_owner(self, user_id: str, store_id: int) -> list[Store]:
+        """Get a store's owners."""
+        return self.session.query(Store).filter(
+            self.model.id == store_id,
+            self.model.owners.any(User.id == user_id),
+            self.model.is_deleted == False,
         ).all()
     
-    def get_store_with_items(self, store_id: str):
+    def get_store_with_items(self, store_id: int):
         """Get a single store and all its related items."""
         
         store = self.session.query(Store).options(
-            joinedload(Store.items).joinedload(Item.nutrition_info),
+            joinedload(Store.items).joinedload(Item.item_info),
             joinedload(Store.address),  # Add this line
             joinedload(Store.hours)
         ).filter(
-            Store.store_id == store_id,
+            Store.id == store_id,
             Store.is_deleted == False
         ).first()
         
@@ -71,7 +71,7 @@ class StoreRepository(BaseRepository[Store]):
         # Filter items in Python
         store.items = [
             item for item in store.items 
-            if not item.is_deleted and (not item.nutrition_info or not item.nutrition_info.is_deleted)
+            if not item.is_deleted and (not item.item_info or not item.item_info.is_deleted)
         ]
         
         return store

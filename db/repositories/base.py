@@ -10,7 +10,7 @@ class BaseRepository(Generic[ModelType]):
         self.model = model
         self.session = session
 
-    def get_by_id(self, id: str) -> Optional[ModelType]:
+    def get_by_id(self, id: str | int) -> Optional[ModelType]:
         """Retrieve a record by its primary key, ensuring it's not soft-deleted."""
         # Get the primary key column name dynamically
         primary_key_column = inspect(self.model).primary_key[0]
@@ -21,7 +21,7 @@ class BaseRepository(Generic[ModelType]):
         ).first()
     
     
-    def update_by_id(self, id: str, **kwargs) -> Optional[ModelType]:
+    def update_by_id(self, id: str | int, **kwargs) -> Optional[ModelType]:
         """Update a record by primary key, safely handling soft delete."""
 
         primary_key_column = inspect(self.model).primary_key[0]
@@ -46,7 +46,7 @@ class BaseRepository(Generic[ModelType]):
         return obj
     
 
-    def get_by_multiple_ids(self, ids: List[str]) -> List[ModelType]:
+    def get_by_multiple_ids(self, ids: List[str] | List[int]) -> List[ModelType]:
         """Retrieve multiple records by their primary keys, ensuring they're not soft-deleted."""
         primary_key_column = inspect(self.model).primary_key[0]
         return self.session.query(self.model).filter(
@@ -66,6 +66,14 @@ class BaseRepository(Generic[ModelType]):
         self.session.refresh(obj)
         return obj
 
+    def create_no_commit(self, **kwargs) -> ModelType:
+        """Create a new record without committing."""
+        obj = self.model(**kwargs)
+        self.session.add(obj)
+        self.session.flush()
+        self.session.refresh(obj)
+        return obj
+
     def update(self, obj: ModelType, **kwargs) -> ModelType:
         """Update an existing record."""
         for key, value in kwargs.items():
@@ -74,14 +82,21 @@ class BaseRepository(Generic[ModelType]):
         self.session.flush()
         return obj
 
-    def delete(self, primary_key: str) -> None:
+    def update_no_commit(self, obj: ModelType, **kwargs) -> ModelType:
+        """Update an existing record without committing."""
+        for key, value in kwargs.items():
+            setattr(obj, key, value)
+        self.session.flush()
+        return obj
+
+    def delete(self, primary_key: str | int) -> None:
         """Soft-delete an existing record."""
         primary_key_column = inspect(self.model).primary_key[0]
         self.session.query(self.model).filter(primary_key_column == primary_key).update({"is_deleted": True})
         self.commit()
 
 
-    def hard_delete(self, primary_key: str) -> None:
+    def hard_delete(self, primary_key: str | int) -> None:
         """Hard-delete an existing record."""
         primary_key_column = inspect(self.model).primary_key[0]
         self.session.query(self.model).filter(primary_key_column == primary_key).delete()

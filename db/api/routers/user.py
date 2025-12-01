@@ -3,12 +3,13 @@ from pydantic import BaseModel
 from api.auth.auth import admin_required, get_current_user
 from api.schemas.order_schemas import OrderShow
 from repositories.dasherapplication import ApplicationRepository
-from repositories.orderitems import OrderItemsRepository
 from repositories.address import AddressRepository
 from repositories.orders import OrderRepository
+from repositories.items import ItemRepository
 from repositories.user import UserRepository
 from sqlalchemy.orm import Session
 from database import get_db
+from models import UserRole
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
 from api.schemas.user_schemas import ApplicationCreate, UserCreate, UserAuth
@@ -30,7 +31,7 @@ async def update_user(user_id: str,
     """Update a user by their ID."""
     """Perms: admin, user"""
 
-    if user.role != "admin" and user.user_id != user_id:
+    if user.role != UserRole.admin and user.id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to update this user")
     
     user_repo = UserRepository(db)
@@ -52,7 +53,7 @@ async def delete_user(user_id: str,
         duplicate emails if a user tries to create a new account using an email from a deleted account."""
     """Perms: admin, user"""
     
-    if not (admin_required(user) or user.user_id == user_id):
+    if not (admin_required(user) or user.id == user_id):
         raise HTTPException(status_code=403, detail="You do not have permission to delete this user")
     
     user_repo = UserRepository(db)
@@ -73,7 +74,7 @@ async def get_user_cart(user_id: str, user: user_dependency, token: str = Depend
 
     order_repo = OrderRepository(db)
 
-    if user.role != "admin" and user.user_id != user_id:
+    if user.role != UserRole.admin and user.id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to view this user's cart")
     
 
@@ -86,21 +87,23 @@ async def get_user_cart(user_id: str, user: user_dependency, token: str = Depend
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/{user_id}/cart", status_code=200)
-async def add_to_cart(user_id: str, item_id: str, user: user_dependency, db: Session = Depends(get_db)):
+async def add_to_cart(user_id: str, item_id: int, user: user_dependency, db: Session = Depends(get_db)):
     """Add an item to a user's cart."""
     order_repo = OrderRepository(db)
-    orderitems_repo = OrderItemsRepository(db)
+    item_repo = ItemRepository(db)
 
-    if user.user_id != user_id:
+    if user.id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to add to this user's cart")
     
     try:
         # First check if there is an already initialized order to add to.
         order = order_repo.get_by_user_id_and_status(user_id, "initialized")
+        item = item_repo.get_by_id(item_id)
         if not order:
             order = order_repo.create(user_id=user_id, status="initialized")
         
-        orderitems_repo.create(order_id=order.order_id, item_id=item_id)
+        if item:
+            order.items.append(item)
 
         return {"message": "Item added to cart successfully"}
     
@@ -146,7 +149,7 @@ async def change_password(user_id: str, user: user_dependency, new_password: str
     """Change a user's password."""
     """Perms: admin, user"""
 
-    if user.role != "admin" and user.user_id != user_id:
+    if user.role != UserRole.admin and user.id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to update this user")
     
     user_repo = UserRepository(db)
@@ -163,7 +166,7 @@ async def change_password(user_id: str, user: user_dependency, new_password: str
 async def add_address(user_id: str, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):
     """Add an address to a user."""
 
-    if user.user_id != user_id:
+    if user.id != user_id:
         raise HTTPException(status_code=401, detail="You do not have permission to update this user")
     
     address_repo = AddressRepository(db)
@@ -182,7 +185,7 @@ async def add_address(user_id: str, address_info: Address, user: user_dependency
 async def update_address(user_id: str, address_id: str, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):
     """Update an address for a user."""
 
-    if user.user_id != user_id:
+    if user.id != user_id:
         raise HTTPException(status_code=401, detail="You do not have permission to update this user")
     
     address_repo = AddressRepository(db)
@@ -204,7 +207,7 @@ async def get_user_addresses(user_id: str, user: user_dependency, db: Session = 
 
     user_repo = UserRepository(db)
 
-    if user.user_id != user_id:
+    if user.id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to view this user's addresses")
     
     try:
@@ -218,11 +221,11 @@ async def get_user_addresses(user_id: str, user: user_dependency, db: Session = 
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.delete("/{user_id}/address/{address_id}", status_code=204)
-async def delete_user_address(user_id: str, address_id: str, user: user_dependency, db: Session = Depends(get_db)):
+async def delete_user_address(user_id: str, address_id: int, user: user_dependency, db: Session = Depends(get_db)):
     """Delete a user's address."""
     user_repo = UserRepository(db)
 
-    if user.user_id != user_id:
+    if user.id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to delete this user's address")
     
     try:
@@ -239,7 +242,7 @@ async def delete_user_address(user_id: str, address_id: str, user: user_dependen
 async def create_dasher_application(user_id: str, application_data: ApplicationCreate, user: user_dependency, db: Session = Depends(get_db)):
     """Create a dasher application for a user."""
 
-    if user.user_id != user_id:
+    if user.id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to create this dasher application")
     
     application_repo = ApplicationRepository(db)

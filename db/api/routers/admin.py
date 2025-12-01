@@ -119,7 +119,7 @@ async def get_orders(db: Session = Depends(get_db)):
     return []
 
 @router.post("/dasher-applications/{application_id}/approve")
-async def approve_dasher_application(application_id: str, db: Session = Depends(get_db)):
+async def approve_dasher_application(application_id: int, db: Session = Depends(get_db)):
     """Approve a dasher application."""
 
     app_repo = ApplicationRepository(db)

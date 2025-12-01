@@ -1,19 +1,20 @@
 from api.schemas.user_schemas import UserAuth
-from api.schemas.item_schemas import ItemSchema
-from api.schemas.base_schema import Address
+from api.schemas.item_schemas import ItemSchema, ItemCreateSchema, ItemWithInfoCreateSchema
+from api.schemas.base_schema import Address as AddressSchema
+from models import Address as AddressModel
 from models import UserRole
 from repositories.media import MediaRepository
 from repositories.address import AddressRepository
 from repositories.items import ItemRepository
 from repositories.store import StoreRepository
-from models import StoreHours
+from models import StoreHours, UserRole
 from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile, File
 from api.auth.auth import get_current_user
 from sqlalchemy.orm import Session
 from database import get_db
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
-from api.schemas.store_schemas import StoreSchema, StoreWithItemsSchema, StoreCreateSchema, StoreInfoSchema
+from api.schemas.store_schemas import StoreSchema, StoreWithItemsSchema, StoreCreateSchema, StoreInfoSchema, StoreUpdateSchema
 from utils.VerifyAddress import verify_address
 from datetime import time
 import json
@@ -53,41 +54,40 @@ async def create_store(user: user_dependency,
         address_data = json.loads(address)
 
         store_schema = StoreCreateSchema(**store_data)
-        address_schema = Address(**address_data)
+        address_schema = AddressSchema(**address_data)
 
         if not verify_address(address_schema):
             raise HTTPException(status_code=400, detail="That address is not valid, it must be within UMBC")
 
-        address_repo = AddressRepository(db)
-        new_address = address_repo.create(**address_schema.dict())
+        new_address = AddressModel(**address_schema.dict(exclude={'id', 'label'}))
 
         media_repo = MediaRepository(db)
         
         new_store_data = store_schema.dict(exclude={'hours'})
-        new_store_data['address_id'] = new_address.address_id
+        new_store_data['address'] = new_address
 
         if logo:
             media_data = await logo.read()
             new_logo_media = media_repo.create(media_data=media_data, filename=logo.filename)
-            new_store_data['logo_id'] = new_logo_media.media_id
+            new_store_data['logo_id'] = new_logo_media.id
 
         if banner:
             media_data = await banner.read()
             new_banner_media = media_repo.create(media_data=media_data, filename=banner.filename)
-            new_store_data['banner_id'] = new_banner_media.media_id
+            new_store_data['banner_id'] = new_banner_media.id
 
         store_repo = StoreRepository(db)
         
         new_store_hours = []
         for hour in store_schema.hours:
-            try:
-                start_time = time.fromisoformat(hour.start_time) if hour.start_time else None
-                end_time = time.fromisoformat(hour.end_time) if hour.end_time else None
-            except ValueError as ve:
-                logger.error(f"Time parsing error: {ve}, start_time={hour.start_time}, end_time={hour.end_time}")
-                raise HTTPException(status_code=400, detail=f"Invalid time format: {str(ve)}")
+            # try:
+            #     start_time = time.fromisoformat(hour.start_time) if hour.start_time else None
+            #     end_time = time.fromisoformat(hour.end_time) if hour.end_time else None
+            # except ValueError as ve:
+            #     logger.error(f"Time parsing error: {ve}, start_time={hour.start_time}, end_time={hour.end_time}")
+            #     raise HTTPException(status_code=400, detail=f"Invalid time format: {str(ve)}")
             
-            new_store_hours.append(StoreHours(day=hour.day, start_time=start_time, end_time=end_time))
+            new_store_hours.append(StoreHours(day=hour.day, start_time=hour.start_time, end_time=hour.end_time))
 
         created_store = store_repo.create(**new_store_data, hours=new_store_hours)
 
@@ -100,108 +100,114 @@ async def create_store(user: user_dependency,
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.put("/{store_id}", response_model=StoreSchema)
-async def update_store(store_id: str,
+async def update_store(store_id: int,
                        user: user_dependency,
                        db : Session = Depends(get_db),
-                       store: str = Form(...),
-                       address: str = Form(...),
-                       picture: UploadFile = File(None)):
+                       store: str = Form(None),
+                       address: str = Form(None),
+                       logo: UploadFile = File(None),
+                       banner: UploadFile = File(None)):
     """Update a store"""
+    """Perms: admin, store owner"""
+
+    store_repo = StoreRepository(db)
+    
+    # Check permissions
+    owners = store_repo.check_store_owner(user.id, store_id)
+    if user.role != UserRole.admin and not owners:
+        raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
+    
+    existing_store = store_repo.get_by_id(store_id)
+    if not existing_store:
+        raise HTTPException(status_code=404, detail="Store not found.")
 
     try:
-        store_repo = StoreRepository(db)
-
-        owners = store_repo.get_store_owner(user.user_id, store_id)
-
-        if user.role != UserRole.admin and not owners:
-            raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
-        
-        existing_store = store_repo.get_by_id(store_id)
-        if not existing_store:
-            raise HTTPException(status_code=404, detail="Store not found.")
-
-        store_data = json.loads(store)
-        address_data = json.loads(address)
-
-        store_schema = StoreSchema(**store_data)
-        address_schema = Address(**address_data)
-
-        if not verify_address(address_schema):
-            raise HTTPException(status_code=400, detail="That address is not valid, it must be within UMBC")
-
         db.begin()
-        try:
-            # Update address
+
+        # Update Address
+        if address:
+            address_data = json.loads(address)
+            address_schema = AddressSchema(**address_data)
+            if not verify_address(address_schema):
+                raise HTTPException(status_code=400, detail="That address is not valid, it must be within UMBC")
+            
             address_repo = AddressRepository(db)
-            updated_address = address_repo.update(existing_store.address, **address_schema.dict())
+            if existing_store.address:
+                address_repo.update(existing_store.address, **address_schema.dict(exclude={'id', 'label'}))
+            else:
+                new_address = address_repo.create(**address_schema.dict(exclude={'id', 'label'}))
+                existing_store.address = new_address
 
-            # Update media
-            media_repo = MediaRepository(db)
-            if picture:
-                media_data = await picture.read()
-                if existing_store.picture:
-                    updated_media = media_repo.update(existing_store.picture, media_data=media_data, filename=picture.filename)
-                else:
-                    new_media = media_repo.create(media_data=media_data, filename=picture.filename)
-                    existing_store.picture_id = new_media.media_id
-            elif existing_store.picture and not store_schema.picture: # If picture was removed
-                media_repo.delete(existing_store.picture.media_id)
-                existing_store.picture_id = None
+        # Update Store Details
+        if store:
+            store_data = json.loads(store)
+            store_schema = StoreUpdateSchema(**store_data)
+            update_data = store_schema.dict(exclude_unset=True, exclude={'hours'})
+            store_repo.update(existing_store, **update_data)
 
-            # Update store attributes
-            update_data = store_schema.dict(exclude={'hours', 'address', 'picture'})
-            updated_store = store_repo.update(existing_store, **update_data)
+            # Update Hours
+            if store_schema.hours is not None:
+                # Delete existing hours
+                for hour in existing_store.hours:
+                    db.delete(hour)
+                db.flush()
+                # Create new hours
+                new_hours = []
+                for hour_data in store_schema.hours:
+                    # start_time = time.fromisoformat(hour_data.start_time) if hour_data.start_time else None
+                    # end_time = time.fromisoformat(hour_data.end_time) if hour_data.end_time else None
+                    new_hours.append(StoreHours(store_id=store_id, day=hour_data.day, start_time=hour_data.start_time, end_time=hour_data.end_time))
+                existing_store.hours = new_hours
 
-            # Update store hours
-            # Delete existing hours
-            for hour in existing_store.hours:
-                db.delete(hour)
-            db.flush() # Flush to ensure deletions are processed before new insertions
+        # Update Media (Logo and Banner)
+        media_repo = MediaRepository(db)
+        if logo:
+            media_data = await logo.read()
+            if existing_store.logo:
+                media_repo.update(existing_store.logo, media_data=media_data, filename=logo.filename)
+            else:
+                new_logo = media_repo.create(media_data=media_data, filename=logo.filename)
+                existing_store.logo_id = new_logo.id
+        
+        if banner:
+            media_data = await banner.read()
+            if existing_store.banner:
+                media_repo.update(existing_store.banner, media_data=media_data, filename=banner.filename)
+            else:
+                new_banner = media_repo.create(media_data=media_data, filename=banner.filename)
+                existing_store.banner_id = new_banner.id
 
-            # Create new hours
-            new_store_hours = []
-            for hour_data in store_schema.hours:
-                start_time = time.fromisoformat(hour_data.start_time) if hour_data.start_time else None
-                end_time = time.fromisoformat(hour_data.end_time) if hour_data.end_time else None
-                new_store_hours.append(StoreHours(store_id=store_id, day=hour_data.day, start_time=start_time, end_time=end_time))
-            
-            existing_store.hours = new_store_hours
-            db.add_all(new_store_hours)
-            db.commit()
-            db.refresh(updated_store)
-            
-            return updated_store
-        except Exception as e:
-            db.rollback()
-            logger.error(f"Store update error: {str(e)}", exc_info=True)
-            raise HTTPException(status_code=500, detail=str(e))
-    
+        db.commit()
+        db.refresh(existing_store)
+        return existing_store
+
     except HTTPException:
+        db.rollback()
         raise
     except Exception as e:
+        db.rollback()
         logger.error(f"Store update error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{user_id}", response_model=StoreSchema)
-async def get_user_stores(user: user_dependency, db: Session = Depends(get_db)):
+async def get_users_stores(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
     """Gets all stores that a user owns."""
-    try:
-        store_repo = StoreRepository(db)
+    store_repo = StoreRepository(db)
 
-        store = store_repo.get_user_stores(user.user_id)
+    store = store_repo.get_user_stores(user_id)
 
-        if not store:
-            raise HTTPException(status_code=404, detail="Store not found.")
-        
-        return store
+    if user_id != user.id and user.role != UserRole.admin:
+        raise HTTPException(status_code=403, detail="You do not have permission to access this")
+
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found.")
     
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return store
 
 
-@router.get("/{store_id}", response_model=StoreSchema)
-async def get_store_by_id(store_id: str, db : Session = Depends(get_db)):
-    """Get store by its ID."""
+@router.get("/{store_id}/info", response_model=StoreSchema)
+async def get_store_by_id(store_id: int, db : Session = Depends(get_db)):
+    """Get store by its ID. We will also return all items in the store."""
     """Perms: none"""
     try: 
         store_repo = StoreRepository(db)
@@ -217,7 +223,7 @@ async def get_store_by_id(store_id: str, db : Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.get("/{store_id}/items-full", response_model=StoreWithItemsSchema)
-async def get_store_items_full(store_id: str, db: Session = Depends(get_db)):
+async def get_store_items_full(store_id: int, db: Session = Depends(get_db)):
     """Get all items in a store with their info."""
     """Perms: none"""
     try: 
@@ -227,30 +233,7 @@ async def get_store_items_full(store_id: str, db: Session = Depends(get_db)):
         if not store:
             raise HTTPException(status_code=404, detail="Store not found.")
         
-        # Convert store to dict and serialize times
-        store_dict = {
-            "store_id": store.store_id,
-            "name": store.name,
-            "description": store.description,
-            "phone": store.phone,
-            "address_id": store.address_id,
-            "address": store.address,
-            "logo_id": store.logo_id,
-            "banner_id":store.banner_id,
-            "hours": [
-                {
-                    "day": h.day,
-                    "start_time": h.start_time.isoformat() if h.start_time else None,
-                    "end_time": h.end_time.isoformat() if h.end_time else None
-                }
-                for h in store.hours
-            ],
-            "items": store.items  # Pydantic will handle this
-        }
-
-        print(store_dict)
-        
-        return store_dict
+        return store
     
     except HTTPException:
         raise
@@ -258,7 +241,7 @@ async def get_store_items_full(store_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.get("/{store_id}/items", response_model=list[ItemSchema])
-async def get_store_items(store_id: str, db : Session = Depends(get_db)):
+async def get_store_items(store_id: int, db : Session = Depends(get_db)):
     """Get all items in a store."""
     """Perms: none"""
 
@@ -276,30 +259,8 @@ async def get_store_items(store_id: str, db : Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
     
     
-@router.post("/{store_id}/items", response_model=ItemSchema, status_code=201)
-async def create_store_item(user: user_dependency, store_id: str, item: ItemSchema, db : Session = Depends(get_db)):
-    """Create a new item in a store."""
-    """Perms: admin, store owner"""
-    try: 
-        store_repo = StoreRepository(db)
-        
-        owners = store_repo.get_store_owner(user.user_id, store_id)
-
-        if user.role != "admin" and user.role != "store_owner" and not owners:
-            raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
-        
-        
-        item_repo = ItemRepository(db)
-
-        new_item = item_repo.create(**item.dict(), store_id=store_id)
-
-        return new_item
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
 @router.post("/address", status_code=201)
-async def create_store_address(address: Address, db : Session = Depends(get_db)):
+async def create_store_address(address: AddressSchema, db : Session = Depends(get_db)):
     """Add an address"""
 
     try:
@@ -309,10 +270,48 @@ async def create_store_address(address: Address, db : Session = Depends(get_db))
         
         address_repo = AddressRepository(db)
 
-        address = address_repo.create(**address.dict())
+        address = address_repo.create(**address.dict(exclude={'id', 'label'}))
 
         return {"address_id": address.address_id}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.delete("/{store_id}", status_code=204)
+async def delete_store(store_id: int, user: user_dependency, db: Session = Depends(get_db)):
+    """Delete a store"""
+
+    store_repo = StoreRepository(db)
+    
+    # Check permissions
+    owners = store_repo.check_store_owner(user.id, store_id)
+    if user.role != UserRole.admin and not owners:
+        raise HTTPException(status_code=401, detail="You do not have permissions to access this.")
+    
+    try:
+        store = store_repo.get_by_id(store_id)
+
+        if not store:
+            raise HTTPException(status_code=404, detail="Store that was requested for deletion was not found.")
+        
+        item_repo = ItemRepository(db)
+
+        items = item_repo.get_by_store_id(store_id)
+
+        media_repo = MediaRepository(db)
+
+        for media_id in [store.banner_id, store.logo_id]: # type: ignore
+            if media_id:
+                media_repo.delete(media_id)
+                
+        store_repo.delete(store_id)
+
+        for item in items:
+            item_repo.delete(item.id)
+
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        
     

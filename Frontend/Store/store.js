@@ -8,7 +8,6 @@ function ItemDisplay({
   price,
   picture,
   store_id,
-  info_id,
   nutrition_info,
 }) {
   const [showNutrition, setShowNutrition] = React.useState(false);
@@ -18,7 +17,11 @@ function ItemDisplay({
     <div className="flex flex-col sm:flex-row overflow-hidden rounded-xl bg-white shadow-md hover:shadow-lg transition-shadow">
         {/* Image */}
         <div className="flex h-48 sm:h-auto w-full sm:w-40 flex-shrink-0 items-center justify-center bg-gray-200 text-gray-500">
-          <p className="text-sm font-medium">Image</p>
+          {picture ? ( // 'picture' prop is actually 'picture_id'
+            <img src={`http://localhost:8000/media/${picture}`} alt={name} className="h-full w-full object-cover rounded-xl" style={{ imageRendering: 'auto' }} />
+          ) : (
+            <p className="text-sm font-medium">No Image</p>
+          )}
         </div>
         
         {/* Content section */}
@@ -32,16 +35,24 @@ function ItemDisplay({
 
           {/* Buttons - stack on mobile, vertical on desktop */}
           <div className="flex sm:flex-col justify-stretch sm:justify-center gap-2 p-4 sm:w-32 flex-shrink-0">
-            <button className="flex-1 sm:flex-none rounded-lg border border-green-700 bg-gradient-to-r from-amber-400 to-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:shadow-md active:scale-95">
+            <button className="btn btn-action">
               Add to Cart
             </button>
             
             <button
               onClick={() => setShowNutrition(true)}
-              className="flex-1 sm:flex-none rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 active:scale-95"
+              className="btn btn-secondary"
             >
               Details
             </button>
+            {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
+                <button
+                    onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store_id}/item/${item_id}/edit`; }}
+                    className="btn btn-edit"
+                >
+                    Edit
+                </button>
+            )}
           </div>
         </div>
       </div>
@@ -166,15 +177,14 @@ function ItemList({ data }) {
               <div className="space-y-4">
                 {items.map(item => (
                   <ItemDisplay
-                    key={item.item_id}
-                    item_id={item.item_id}
+                    key={item.id}
+                    item_id={item.id}
                     name={item.name}
                     item_type={item.item_type}
                     description={item.description}
                     price={item.price}
-                    picture={item.picture}
+                    picture={item.picture_id}
                     store_id={item.store_id}
-                    info_id={item.info_id}
                     nutrition_info={item.nutrition_info}
                   />
                 ))}
@@ -195,13 +205,14 @@ function getOpenCloseTime(hours){
       if (dayObj.day === currentDay){
         if (dayObj.start_time && dayObj.end_time){
           return {'start_time': dayObj.start_time,
-                  'end_time':dayObj.end_time
+                  'end_time':dayObj.end_time,
+                  'is_open': dayObj.start_time <= now && dayObj.end_time >= now
           }
         }
       }
     }
 
-    return None
+    return null
 }
 
 function StorePage() {
@@ -246,30 +257,57 @@ function StorePage() {
     ? `${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`
     : 'Address not available';
 
+
+  const hours = getOpenCloseTime(store.hours);
+
   return (
     <div className="min-h-screen bg-gradient-to-br mt-18 from-amber-50 via-orange-50 to-yellow-50">
       {/* Hero Section - Company Image */}
-      <div className="relative w-full h-60 md:h-80 bg-cover bg-center" style={{ backgroundImage: `url(${imageUrl})` }}>
+      <div className="relative w-full h-60 md:h-[420px] bg-cover bg-center" style={{ backgroundImage: `url(${imageUrl})` }}>
         <div className="absolute inset-0 bg-black opacity-25"></div>
       </div>
 
       {/* Store Info Section */}
-      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 px-4 md:px-6 py-8">
+      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 px-4 md:px-6 py-8 mb-5">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
             {store.name || 'Store'}
           </h1>
           <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-2 md:gap-4">
-            <p className="text-lg md:text-2xl text-gray-800">Open-Close</p>
+            {hours && (
+              <div>
+                <p className={`text-lg md:text-2xl ${hours.is_open ? 'text-green-600' : 'text-red-600'}`}>
+                  {hours.start_time}-{hours.end_time}
+                </p>
+                <span className={hours.is_open ? 'text-green-600' : 'text-red-600'}>
+                  {hours.is_open ? 'Open' : 'Closed'}
+                </span>
+              </div>
+            )}
             <p className="text-base md:text-xl text-gray-800">
               {addressString}
             </p>
           </div>
+          {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
+            <button className="btn btn-edit mt-5" onClick ={() => window.location.hash = `#/store/${store_id}/edit`}>Edit Store Info</button>
+          )}
         </div>
       </div>
 
       {/* Menu Items Section */}
-      <ItemList data={store.items || []} />
+      <div className="bg-white">
+        {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
+          <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 flex justify-end">
+            <button 
+              className="btn btn-action" 
+              onClick={() => window.location.hash = `#/store/${store_id}/add-item`}
+            >
+              Add Item
+            </button>
+          </div>
+        )}
+        <ItemList data={store.items || []} />
+      </div>
     </div>
   );
 }

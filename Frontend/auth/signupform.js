@@ -156,8 +156,7 @@ function SignupForm(props) {
             
             <button 
                 type="button" 
-                className="btn btn-lg w-100" 
-                style={{backgroundColor: "orange", color: "black"}}
+                className="btn btn-lg w-100 btn-action"
                 disabled={loading}
                 onClick={handleSubmit}
             >

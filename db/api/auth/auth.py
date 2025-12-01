@@ -59,7 +59,10 @@ def authenticate_user(username: str, password: str, Depend) -> UserSchema | bool
     
     return user
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserAuth:
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Session = Depends(get_db)  # Add database dependency
+) -> UserAuth:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -68,22 +71,41 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        role: str = payload.get("role")
-        user_id: str = payload.get("user_id")
+        user_id: str = payload.get("id")
 
-        if username is None or role is None or user_id is None:
+        if username is None or user_id is None:
             raise credentials_exception
         
-        token_data = TokenData(username=username)
+        # Verify user exists in database
+        user_repo = UserRepository(db)
+        user = user_repo.get_by_id(user_id)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User no longer exists",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Check if user is banned
+        if user.is_banned:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account is banned"
+            )
+        
+        # Return fresh data from database, not from token
+        userData = UserAuth(
+            email=user.email,
+            role=user.role,  # Fresh role from DB
+            id=user.id
+        )
 
-        userData = UserAuth(email=token_data.username, role=UserRole(role), user_id=user_id)
-
-        print(userData)
-    
         return userData
     
     except InvalidTokenError:
         raise credentials_exception
+    
 
 def admin_required(current_user: UserAuth = Depends(get_current_user)):
     if current_user.role != UserRole.admin:
@@ -144,7 +166,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
             headers={"WWW-Authenticate": "Bearer"},
             )
     
-    token = create_access_token(data={"sub": user.email, "role": user.role.value, "user_id": user.user_id})
+    token = create_access_token(data={"sub": user.email, "role": user.role.value, "id": user.id})
     # Create an access token for the authenticated user
     return {"access_token": token, "token_type": "bearer"}
 
