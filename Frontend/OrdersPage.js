@@ -1,7 +1,14 @@
 class OrdersPage extends React.Component {
-    componentDidMount() {
-        let data = this.props.GetOrders();
+    async componentDidMount() {
+        const user_id = this.props.match.params.user_id
+        console.log(user_id);
+        
+        let data = await get_user_orders_by_id(user_id);
+        console.log(data)
         const orderList = document.getElementsByClassName("ordersList")[0];
+        if (data.length == 0) {
+            return;
+        }
         data.forEach(element => {
             const orderDiv = document.createElement('div');
             orderDiv.className = "order";
@@ -52,5 +59,19 @@ class OrdersPage extends React.Component {
                 </div>
             </div>
         )
+    }
+}
+
+/**
+ * Function to get user's orders by user ID
+ * @param {*} userId 
+ * @returns 
+ */
+async function get_user_orders_by_id(userId) {
+    try {
+        const response = await authFetch(`/users/${userId}/orders`, { method: 'GET' });
+        return response;
+    } catch (error) {
+        console.log(error)
     }
 }

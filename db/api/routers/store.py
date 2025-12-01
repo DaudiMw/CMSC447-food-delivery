@@ -190,23 +190,19 @@ async def update_store(store_id: int,
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{user_id}", response_model=StoreSchema)
-async def get_user_stores(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
+async def get_users_stores(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
     """Gets all stores that a user owns."""
-    try:
-        store_repo = StoreRepository(db)
+    store_repo = StoreRepository(db)
 
-        store = store_repo.get_user_stores(user_id)
+    store = store_repo.get_user_stores(user_id)
 
-        if user_id != user.id and user.role != UserRole.admin:
-            raise HTTPException(status_code=403, detail="You do not have permission to access this")
+    if user_id != user.id and user.role != UserRole.admin:
+        raise HTTPException(status_code=403, detail="You do not have permission to access this")
 
-        if not store:
-            raise HTTPException(status_code=404, detail="Store not found.")
-        
-        return store
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found.")
     
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return store
 
 
 @router.get("/{store_id}/info", response_model=StoreSchema)
