@@ -1,6 +1,6 @@
 
 from pydantic import BaseModel
-from api.schemas.base_schema import BaseSchema
+from api.schemas.base_schema import BaseSchema, Address
 from api.schemas.item_schemas import ItemSchema
 
 
@@ -16,7 +16,7 @@ class OrderSchema(BaseSchema):
 
 
 class OrderShow(BaseSchema):
-    address: str
+    address: Address
     status: str
     created_at: str
     updated_at: str

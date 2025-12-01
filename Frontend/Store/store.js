@@ -11,6 +11,21 @@ function ItemDisplay({
   nutrition_info,
 }) {
   const [showNutrition, setShowNutrition] = React.useState(false);
+  const { useMutation, useQueryClient } = window.ReactQuery;
+  const queryClient = useQueryClient();
+
+  const addToCartMutation = useMutation({
+    mutationFn: () => add_to_cart(item_id, 1), // Add 1 item by default
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      // Consider a more subtle notification than an alert
+      console.log('Item added to cart!');
+    },
+    onError: (error) => {
+      console.error(`Error adding item to cart: ${error.message}`);
+      alert(`Error adding item to cart: ${error.message}`);
+    }
+  });
 
   return (
     <>
@@ -35,8 +50,12 @@ function ItemDisplay({
 
           {/* Buttons - stack on mobile, vertical on desktop */}
           <div className="flex sm:flex-col justify-stretch sm:justify-center gap-2 p-4 sm:w-32 flex-shrink-0">
-            <button className="btn btn-action">
-              Add to Cart
+            <button 
+              className="btn btn-action"
+              onClick={() => addToCartMutation.mutate()}
+              disabled={addToCartMutation.isLoading}
+            >
+              {addToCartMutation.isLoading ? 'Adding...' : 'Add to Cart'}
             </button>
             
             <button

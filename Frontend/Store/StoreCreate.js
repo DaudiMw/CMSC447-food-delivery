@@ -13,13 +13,13 @@ function StoreForm({ store: existingStore }) {
         state: existingStore?.address?.state || '',
         zip: existingStore?.address?.zip || '',
         hours: existingStore?.hours?.length ? existingStore.hours.map(h => ({...h})) : [
-            { day: 'Monday', start_time: '', end_time: '' },
-            { day: 'Tuesday', start_time: '', end_time: '' },
-            { day: 'Wednesday', start_time: '', end_time: '' },
-            { day: 'Thursday', start_time: '', end_time: '' },
-            { day: 'Friday', start_time: '', end_time: '' },
-            { day: 'Saturday', start_time: '', end_time: '' },
-            { day: 'Sunday', start_time: '', end_time: '' },
+            { day: 'Monday', start_time: null, end_time: null },
+            { day: 'Tuesday', start_time: null, end_time: null },
+            { day: 'Wednesday', start_time: null, end_time: null },
+            { day: 'Thursday', start_time: null, end_time: null },
+            { day: 'Friday', start_time: null, end_time: null },
+            { day: 'Saturday', start_time: null, end_time: null },
+            { day: 'Sunday', start_time: null, end_time: null },
         ]
     };
 
