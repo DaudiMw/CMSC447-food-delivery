@@ -48,7 +48,7 @@ function CartPage() {
                     <div className="bg-white rounded-lg shadow-md p-8 text-center">
                         <p className="text-xl text-gray-600 mb-4">Your cart is empty.</p>
                         <button 
-                            onClick={() => window.location.hash = '#/stores'}
+                            onClick={() => window.location.hash = '#/home'}
                             className="btn btn-action"
                         >
                             Continue Shopping
