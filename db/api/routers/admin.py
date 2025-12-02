@@ -54,7 +54,7 @@ async def update_user_role(user_id: str,
                            current_user = Depends(get_current_user)):
     """Update a user's role."""
 
-    if user_id == user.id:
+    if user_id == current_user.id:
         raise HTTPException(status_code=400, detail="Admins cannot change their own role.")
 
     try:
