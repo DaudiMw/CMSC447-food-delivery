@@ -5,6 +5,7 @@ from repositories.user import UserRepository
 from repositories.dasherapplication import ApplicationRepository
 from sqlalchemy.orm import Session, joinedload
 from database import get_db
+from typing import Annotated
 from api.schemas.user_schemas import UserSchema, UserCreate, UserAuth, DasherApplicationSchema
 from api.schemas.order_schemas import OrderSchema
 from repositories.orders import OrderRepository
@@ -13,6 +14,7 @@ from api.schemas.user_schemas import UserSchema, UserCreate, UpdateUserRole
 
 
 router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(admin_required)])
+user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
 @router.get("/users", response_model=list[UserSchema], status_code=200)
 async def list_all_users(db: Session = Depends(get_db)):
@@ -48,10 +50,11 @@ async def get_user_by_id(user_id: str,
 @router.patch("/users/{user_id}/role", response_model=UserSchema)
 async def update_user_role(user_id: str, 
                            new_role: UpdateUserRole,
+                           user: user_dependency,
                            db: Session = Depends(get_db)):
     """Update a user's role."""
 
-    if user_id == current_user.id:
+    if user_id == user.id:
         raise HTTPException(status_code=400, detail="Admins cannot change their own role.")
 
     try:

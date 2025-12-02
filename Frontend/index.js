@@ -29,6 +29,7 @@ function MyApp() {
                     <ProtectedRoute path="/deliveries" component={DeliveriesPage} allowed_roles={['admin', 'store_owner', 'dasher']}/>
                     <ProtectedRoute path="/stores" component={StoresPage} />
                     <ProtectedRoute path="/store/:store_id" component={StorePage} />
+                    <ProtectedRoute path="/orders" component={OrdersPage}/>
                     <ProtectedRoute path="/cart" component={CartPage} />
                     <ProtectedRoute path="/checkout" component={CheckoutPage} />
                     <ProtectedRoute path="/admin" component={AdminPage} allowed_roles={['admin']} />
@@ -132,6 +133,35 @@ function Banner() {
               </button>
             )}
 
+            <button 
+                className="bannerButton" 
+                onClick={() => {
+                    window.location.hash = '#/orders';
+                    setIsMenuOpen(false);
+                }}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m9 14.25 6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185ZM9.75 9h.008v.008H9.75V9Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm4.125 4.5h.008v.008h-.008V13.5Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                </svg>
+
+
+                <span>Orders</span>
+            </button>
+
+            <button 
+                className="bannerButton" 
+                onClick={() => {
+                    window.location.hash = '#/cart';
+                    setIsMenuOpen(false);
+                }}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                </svg>
+
+                <span>Cart {itemCount > 0 && `(${itemCount})`}</span>
+            </button>
+
             {(getUserRole() === "store_owner" || getUserRole() === "admin") && (
               <button 
                   className="bannerButton" 
@@ -163,19 +193,6 @@ function Banner() {
                     <span>Admin</span>
                 </button>
             )}
-
-            <button 
-                className="bannerButton" 
-                onClick={() => {
-                    window.location.hash = '#/cart';
-                    setIsMenuOpen(false);
-                }}
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c.51 0 .962-.343 1.087-.835l1.823-6.44a1.125 1.125 0 0 0-.142-1.295A1.125 1.125 0 0 0 16.5 3H5.25" />
-                </svg>
-                <span>Cart {itemCount > 0 && `(${itemCount})`}</span>
-            </button>
 
             <button 
                 className="bannerButton" 

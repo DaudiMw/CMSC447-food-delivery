@@ -21,7 +21,7 @@ async function get_reports_by_store_id(store_id) {
 async function update_report(reply, report_id) {
     try{
         const response = await authFetch(`/reports/${report_id}`, {
-            method: 'PUT',
+            method: 'PATCH',
             body: JSON.stringify(reply)
         });
         return response;

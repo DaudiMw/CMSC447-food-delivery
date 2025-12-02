@@ -49,7 +49,7 @@ function Report({
   );
 }
 
-function ReportList(store_id) {
+function ReportList({ store_id }) {
   const { data: reports = {}, isLoading: reportsLoading, error: reportsError, refetch: reportsRefetch } = window.ReactQuery.useQuery({
     queryKey: ['store_id', store_id],
     queryFn: () => get_reports_by_store_id(store_id)

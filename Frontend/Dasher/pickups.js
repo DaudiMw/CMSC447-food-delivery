@@ -2,21 +2,16 @@ const { useQuery, useQueryClient, useMutation } = window.ReactQuery;
 const { useParams, useHistory } = ReactRouterDOM;
 
 function Pickup(
-  query_client,
+  { query_client,
   order_id,
-  store_id,
+  store,
   dasher_id,
   address,
   created_at,
-  items
+  items }
 ) {
   const dateObject = new Date(created_at);
   const dateString = dateObject.toLocaleString();
-
-  const { data: stores = {}, error: storesError, refetch: storeRefetch } = useQuery({
-  queryKey: ['store_id', store_id],
-  queryFn: () => get_store(store_id)
-  });
 
   const acceptOrderMutation = useMutation({
     mutationFn: ({ orderData, order_id }) => update_order(orderData, order_id),
@@ -27,31 +22,39 @@ function Pickup(
   });
 
   var acceptOrder = async () => {
-    const orderData = {
-      status: 'accepted',
-      dasher_id: dasher_id,
-      accepted_at: new Date().toISOString(),
-      completed_at: null
-    }
+    if (confirm("Accept this pickup?")) {
+      const orderData = {
+        status: 'accepted',
+        dasher_id: dasher_id,
+        accepted_at: new Date().toISOString(),
+        completed_at: null
+      }
 
-    acceptOrderMutation.mutate(orderData, order_id)
+      acceptOrderMutation.mutate({ orderData, order_id })
+    }
   };
 
-  if (stores.length > 0) {
-    return (
-      <div>
-        Order ID: {order_id}
-        Store Name: {stores[0].name}
-        Store Address: {`${stores[0].address.street}, ${stores[0].address.city}, ${stores[0].address.state} ${stores[0].address.zip}`}
-        Delivery Address: {`${address.street}, ${address.city}, ${address.state} ${address.zip}`}
-        Order Placed: {dateString}
-        Items: {items.map(item => {`${item.item.name}: ${item.quantity}, `})}
-        <button onClick={acceptOrder}>
-          Pickup Order
+  return (
+    <tr>
+      <td>{order_id}</td>
+      <td>{store.name}</td>
+      <td>{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
+      <td>{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
+      <td>{dateString}</td>
+      <td>{items.map((item, index, array) => 
+        {if(index == array.length-1) {
+          return (`${item.item.name}: ${item.quantity}`)
+        }
+        else {
+          return (`${item.item.name}: ${item.quantity}, `);
+        }})}</td>
+      <td>
+        <button className="btn btn-action" onClick={acceptOrder}>
+          Accept Pickup
         </button>
-      </div>
-    );
-  }
+      </td>
+    </tr>
+  );
 };
 
 function PickupsPage() {
@@ -81,27 +84,46 @@ function PickupsPage() {
 
   if (orders.length === 0) {
     return (
-    <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
-      <h1 className="text-4xl font-bold text-gray-800 mb-2">Pickups</h1>
-      No pickups.
-    </div>
+      <div className="min-h-screen bg-gray-50 pt-24 px-4 md:px-10">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-4xl font-bold text-gray-800 mb-6">Pickups</h1>
+          <p className="text-xl text-gray-600 mb-4">No pickups.</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
+    <div className="flex min-w-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
       <h1 className="text-4xl font-bold text-gray-800 mb-2">Pickups</h1>
-      {orders.map(order => {
-        <Pickup
-          query_client={queryClient}
-          order_id={order.id}
-          dasher_id={user_id}
-          store_id={order.store_id}
-          address={order.address}
-          created_at={order.created_at}
-          items={order.items}
-        />
-      })}
+      <div className="bg-white rounded-lg shadow-md p-8 flex-auto min-w-max items-center gap-4">
+        <table className="table-auto w-full border-collapse min-w-[600px]">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Store Name</th>
+            <th>Store Address</th>
+            <th>Delivery Address</th>
+            <th>Order Placed</th>
+            <th>Items</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {orders.map(order => (
+            <Pickup
+              query_client={queryClient}
+              order_id={order.id}
+              dasher_id={user_id}
+              store={order.store}
+              address={order.address}
+              created_at={order.created_at}
+              items={order.items}
+            />
+          ))}
+        </tbody>
+        </table>
+      </div>
     </div>
   );
 };

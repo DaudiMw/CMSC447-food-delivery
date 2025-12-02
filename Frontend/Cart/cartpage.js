@@ -123,7 +123,7 @@ function CartPage() {
                                     Proceed to Checkout
                                 </button>
                                 <button 
-                                    onClick={() => window.location.hash = '#/stores'}
+                                    onClick={() => window.location.hash = '#/home'}
                                     className="btn btn-secondary w-full mt-3"
                                 >
                                     Continue Shopping
