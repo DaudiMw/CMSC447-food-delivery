@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from api.auth.auth import oauth2_scheme
 from api.schemas.order_schemas import OrderSchema, OrderStatusUpdateSchema
+from api.schemas.order_schemas import OrderUpdateSchema
 from api.schemas.user_schemas import UserAuth
 from models import Order, OrderItem, OrderStatus, UserRole
 from database import get_db
@@ -94,7 +95,7 @@ async def update_order_status(order_id: int, status_update: OrderStatusUpdateSch
 
     return updated_order
 
-@router.get("/{order_id}")
+@router.get("/{order_id}", response_model=OrderSchema)
 async def get_order(order_id: int, token : str = Depends(oauth2_scheme), db : Session = Depends(get_db)):
     """Get an order by its ID."""
 
@@ -114,7 +115,7 @@ async def get_order(order_id: int, token : str = Depends(oauth2_scheme), db : Se
     
     return order
 
-@router.get("/{status}")
+@router.get("/status/{status}", response_model=list[OrderSchema])
 async def get_order_by_status(status: str, user: user_dependency, db : Session = Depends(get_db)):
     """Get an order by its status."""
 
@@ -125,15 +126,12 @@ async def get_order_by_status(status: str, user: user_dependency, db : Session =
         if (str(state.value) == status):
             order = order_repo.get_by_order_state(state.value)
 
-    if not order or order.is_deleted: 
-        raise HTTPException(status_code=404, detail="Order not found")
-
     if user.role == UserRole.user:
         raise HTTPException(status_code=403, detail="You do not have permission to access this")
     
     return order
 
-@router.get("/{user_id}")
+@router.get("/users/{user_id}", response_model=list[OrderSchema])
 async def get_order_by_user_id(user_id: str, user: user_dependency, db : Session = Depends(get_db)):
     """Get an order by user ID."""
     
@@ -145,7 +143,7 @@ async def get_order_by_user_id(user_id: str, user: user_dependency, db : Session
     
     return order
 
-@router.get("/{dasher_id}")
+@router.get("/dashers/{dasher_id}", response_model=list[OrderSchema])
 async def get_order_by_dasher_id(dasher_id: str, user: user_dependency, db : Session = Depends(get_db)):
     """Get an order by dasher ID."""
     
@@ -154,6 +152,15 @@ async def get_order_by_dasher_id(dasher_id: str, user: user_dependency, db : Ses
 
     if user.role != UserRole.admin and dasher_id != user.id:
         raise HTTPException(status_code=403, detail="You do not have permission to access this")
+    
+    return order
+
+@router.get("/stores/{store_id}", response_model=list[OrderSchema])
+async def get_store_orders(store_id: int, db: Session = Depends(get_db)):
+
+    order_repo = OrderRepository(db)
+
+    order = order_repo.get_by_store_id(store_id)
     
     return order
 
@@ -183,7 +190,7 @@ async def create_order(order: OrderSchema, user: user_dependency, db : Session =
 @router.put("/{order_id}", response_model=OrderSchema, status_code=200)
 async def update_order(order_id: int, 
                        user: user_dependency,
-                       order_data: OrderSchema, 
+                       order_data: OrderUpdateSchema, 
                        db : Session = Depends(get_db)):
     """Update an order by its ID."""
 
@@ -196,9 +203,6 @@ async def update_order(order_id: int,
 
     if not (admin_required(user) or user.id == db_order.user_id):
         raise HTTPException(status_code=403, detail="You do not have permission to update this order")
-    
-    if db_order.status.value != OrderStatus.initialized:
-        raise HTTPException(status_code=400, detail="Order has already been paid for")
 
     update_data = order_data.dict(exclude_unset=True)
 

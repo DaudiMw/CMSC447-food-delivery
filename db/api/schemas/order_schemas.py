@@ -1,7 +1,7 @@
 
 from pydantic import BaseModel
 from api.schemas.base_schema import BaseSchema, Address
-from datetime import datetime
+from datetime import datetime, time
 from typing import List, Optional
 from models import OrderStatus
 
@@ -35,6 +35,12 @@ class OrderShow(BaseSchema):
     completed_at: str
     updated_at: str
     items: list[ItemSchema]
+
+class OrderUpdateSchema(BaseSchema):
+    status: str
+    dasher_id: str
+    accepted_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
 
 
 
