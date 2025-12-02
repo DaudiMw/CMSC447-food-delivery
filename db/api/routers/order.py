@@ -3,72 +3,61 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from api.auth.auth import oauth2_scheme
-from api.schemas.order_schemas import OrderSchema, OrderStatusUpdateSchema
-from api.schemas.order_schemas import OrderUpdateSchema
+from api.schemas.order_schemas import OrderSchema, OrderStatusUpdateSchema, OrderUpdateSchema
+from api.schemas.cart_schemas import CreateOrderFromCartSchema
 from api.schemas.user_schemas import UserAuth
 from models import Order, OrderItem, OrderStatus, UserRole
 from database import get_db
 from sqlalchemy.orm import Session
 from api.auth.auth import get_current_user, admin_required
 from repositories.orders import OrderRepository
+from repositories.address import AddressRepository
 from repositories.cart import CartRepository
+from repositories.store import StoreRepository
 
 router = APIRouter(prefix="/orders", tags=["orders"], dependencies=[Depends(oauth2_scheme)])
 
 user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
-class CreateOrderFromCartSchema(BaseModel):
-    address_id: int
-
-@router.post("/from_cart", status_code=201, response_model=OrderSchema)
+@router.post("/from_cart", status_code=201, response_model=list[OrderSchema])
 async def create_order_from_cart(order_data: CreateOrderFromCartSchema, user: user_dependency, db: Session = Depends(get_db)):
     """Create a new order from the user's cart."""
-    db.begin() # Start a transaction
-    try:
-        # 1. Get user's cart
-        cart_repo = CartRepository(db)
-        user_cart = cart_repo.get_cart_by_user_id(user.id)
+    orders_repo = OrderRepository(db)
+    address_repo = AddressRepository(db)
+    store_repo = StoreRepository(db)
+    cart_repo = CartRepository(db)
+    user_cart = cart_repo.get_cart_by_user_id(user.id)
 
-        if not user_cart or not user_cart.items:
-            raise HTTPException(status_code=400, detail="Your cart is empty.")
-
-        # 2. Create the Order
-        new_order_obj = Order(
-            user_id=user.id,
-            address_id=order_data.address_id,
-            status=OrderStatus.pending
-        )
-        db.add(new_order_obj)
-        db.flush() # To get the new_order.id
-
-        # 3. Create OrderItems from CartItems
-        new_order_items = []
-        for cart_item in user_cart.items:
-            new_order_items.append(
-                OrderItem(
-                    item_id=cart_item.item_id,
-                    quantity=cart_item.quantity,
-                    order_id=new_order_obj.id
-                )
-            )
-        
-        db.add_all(new_order_items)
-
-        # 4. Clear the cart
-        for cart_item in user_cart.items:
-            db.delete(cart_item)
-
-        # 5. Commit transaction and return order
-        db.commit()
-        db.refresh(new_order_obj)
+    if not user_cart or not user_cart.items:
+        raise HTTPException(status_code=400, detail="Your cart is empty.")
     
-        return new_order_obj
-    except Exception as e:
-        db.rollback()
-        # logger.error(f"Error creating order from cart: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+    cart_items = user_cart.items
+    store_id_list = []
+    orders_list = []
 
-@router.put("/{order_id}/status", response_model=OrderSchema)
+    try:
+        for item in cart_items:
+            if item.item.store_id not in store_id_list:
+                store_id_list.append(item.item.store_id)
+
+        for store_id in store_id_list:
+            same_store_items = []
+            for item in cart_items:
+                if item.item.store_id == store_id:
+                    same_store_items.append(item)
+            
+            order = orders_repo.create(user_id=user.id, 
+                                    status=OrderStatus.pending,
+                                    address=address_repo.get_by_id(order_data.address_id), 
+                                    store=store_repo.get_by_id(order_data.store_id))
+            orders_list.append(order)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    return orders_list
+            
+
+@router.patch("/{order_id}/status", response_model=OrderSchema)
 async def update_order_status(order_id: int, status_update: OrderStatusUpdateSchema, user: user_dependency, db: Session = Depends(get_db)):
     order_repo = OrderRepository(db)
     order = order_repo.get_by_id(order_id)
@@ -83,12 +72,12 @@ async def update_order_status(order_id: int, status_update: OrderStatusUpdateSch
         raise HTTPException(status_code=403, detail="You do not have permission to update this order's status.")
 
     update_data = {
-        "status": status_update.status,
+        "status": OrderStatus(status_update.status),
         "updated_at": datetime.now()
     }
-    if status_update.status == OrderStatus.accepted:
+    if OrderStatus(status_update.status) == OrderStatus.accepted:
         update_data["accepted_at"] = datetime.now()
-    elif status_update.status == OrderStatus.completed:
+    elif OrderStatus(status_update.status) == OrderStatus.completed:
         update_data["completed_at"] = datetime.now()
     
     updated_order = order_repo.update_by_id(order_id, **update_data)
@@ -120,11 +109,11 @@ async def get_order_by_status(status: str, user: user_dependency, db : Session =
     """Get an order by its status."""
 
     order_repo = OrderRepository(db)
-    order = None
 
-    for state in OrderStatus:
-        if (str(state.value) == status):
-            order = order_repo.get_by_order_state(state.value)
+    try:
+        order = order_repo.get_by_order_state(OrderStatus(status))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
     if user.role == UserRole.user:
         raise HTTPException(status_code=403, detail="You do not have permission to access this")
@@ -187,7 +176,7 @@ async def create_order(order: OrderSchema, user: user_dependency, db : Session =
     return order
 
 
-@router.put("/{order_id}", response_model=OrderSchema, status_code=200)
+@router.patch("/{order_id}", response_model=OrderSchema, status_code=200)
 async def update_order(order_id: int, 
                        user: user_dependency,
                        order_data: OrderUpdateSchema, 

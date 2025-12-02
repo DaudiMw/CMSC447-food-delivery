@@ -17,6 +17,7 @@ class OrderSchema(BaseSchema):
     user_id: str
     dasher_id: Optional[str] = None
     address_id: int
+    address: Address
     status: str
     created_at: datetime
     accepted_at: Optional[datetime] = None
@@ -25,7 +26,7 @@ class OrderSchema(BaseSchema):
     items: List[OrderItemSchema]
 
 class OrderStatusUpdateSchema(BaseModel):
-    status: OrderStatus
+    status: str
 
 class OrderShow(BaseSchema):
     address: Address

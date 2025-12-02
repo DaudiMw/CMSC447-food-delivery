@@ -23,3 +23,7 @@ class CartSchema(CartBase):
     id: int
     user_id: str
     items: List[CartItemSchema] = []
+
+class CreateOrderFromCartSchema(BaseSchema):
+    address_id: int
+    store_id: int

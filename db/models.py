@@ -122,6 +122,7 @@ class Order(Base):
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     dasher_id = Column(String, ForeignKey("users.id"))
     address_id = Column(Integer, ForeignKey("addresses.id"), nullable=False)
+    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.pending)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     accepted_at = Column(DateTime(timezone=True), default=None)

@@ -120,7 +120,7 @@ function ReportsPage() {
     );
   }
 
-  if (stores == []) {
+  if (stores.length === 0) {
     return (
     <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
       <h1 className="text-4xl font-bold text-gray-800 mb-2">Reports</h1>

@@ -15,6 +15,24 @@ async function get_orders_by_status(status) {
 
 /**
  * 
+ * @param {*} order_id
+ * @returns 
+ */
+async function update_order_status(order, order_id) {
+    try{
+        const response = await authFetch(`/${order_id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify(order)
+        });
+        return response;
+    } catch (error){
+        console.error('Error updating order status: ', error);
+        throw error;
+    }
+}
+
+/**
+ * 
  * @param {*} dasher_id
  * @returns 
  */
@@ -54,12 +72,12 @@ async function add_item_to_cart(item_id){
 async function update_order(order, order_id) {
     try{
         const response = await authFetch(`/orders/${order_id}`, {
-            method: 'PUT',
+            method: 'PATCH',
             body: JSON.stringify(order)
         });
         return response;
     } catch (error){
-        console.error('Error fetching pickups: ', error);
+        console.error('Error updating order: ', error);
         throw error;
     }
 }
