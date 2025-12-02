@@ -27,7 +27,7 @@ function MyApp() {
                     <ProtectedRoute path="/reports" component={ReportsPage} allowed_roles={['admin', 'store_owner']}/>
                     <ProtectedRoute path="/pickups" component={PickupsPage} allowed_roles={['admin', 'store_owner', 'dasher']}/>
                     <ProtectedRoute path="/deliveries" component={DeliveriesPage} allowed_roles={['admin', 'store_owner', 'dasher']}/>
-                    <ProtectedRoute path="/stores" component={StoresPage} />
+                    <ProtectedRoute path="/stores" component={HomePage} />
                     <ProtectedRoute path="/store/:store_id" component={StorePage} />
                     <ProtectedRoute path="/cart" component={CartPage} />
                     <ProtectedRoute path="/checkout" component={CheckoutPage} />
@@ -75,7 +75,7 @@ function Banner() {
 
     const menuItems = (
         <>
-            {(getUserRole() === "user") && (<button
+            {(getUserRole() === "user" || getUserRole() === "dasher") && (<button
                 className="bannerButton"
                 onClick={() => window.location.hash = '#/'+getUserId()+'/orders'}
             >

@@ -1,7 +1,6 @@
 class OrdersPage extends React.Component {
     async componentDidMount() {
         const user_id = this.props.match.params.user_id
-        console.log(user_id);
         
         let data = await get_user_orders_by_id(user_id);
         const orderList = document.getElementsByClassName("ordersList")[0];
@@ -14,6 +13,7 @@ class OrdersPage extends React.Component {
             orderList.append(noOrders);
             return;
         }
+        console.log(data);
         data.forEach(element => {
             const orderDiv = document.createElement('div');
             orderDiv.className = "order";

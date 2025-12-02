@@ -42,7 +42,7 @@ function CheckoutPage() {
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['cart'] });
             alert(`Order placed successfully! Order ID: ${data.id}`);
-            window.location.hash = '#/orders';
+            window.location.hash = '#/home';
         },
         onError: (error) => {
             alert(`Error creating order: ${error.message}`);
