@@ -2,31 +2,9 @@ const { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider 
 const { Suspense } = React;
 const { useSuspenseQuery } = window.ReactQuery;
 
-
 function AdminPage() {
 
     console.log('AdminPage component is being called!');
-
-    // TEST YOUR API FUNCTIONS
-    React.useEffect(() => {
-        console.log('Testing API functions...');
-        
-        get_all_users()
-            .then(data => console.log('Users data:', data))
-            .catch(err => console.error('Users error:', err));
-            
-        get_all_orders()
-            .then(data => console.log('Orders data:', data))
-            .catch(err => console.error('Orders error:', err));
-
-        get_dasher_applications()
-            .then(data => console.log('Dasher data:', data))
-            .catch(err => console.error('Dasher error:', err));
-
-        get_stores()
-            .then(data => console.log('store data:', data))
-            .catch(err => console.error('store error:', err));
-    }, []);
 
     const [activeTab, setActiveTab] = React.useState('users');
     const [searchQuery, setSearchQuery] = React.useState('');
@@ -69,7 +47,7 @@ function AdminPage() {
     const deleteStoreMutation = window.ReactQuery.useMutation({
         mutationFn: (storeId) => delete_store(storeId),
         onSuccess: () => {
-            refetchStores(); // Refresh the stores list
+            refetchStores();
         }
     });
 
@@ -77,7 +55,7 @@ function AdminPage() {
     const changeRoleMutation = window.ReactQuery.useMutation({
         mutationFn: ({ userId, newRole }) => change_user_role(userId, newRole),
         onSuccess: () => {
-            refetchUsers(); // Refresh the users list
+            refetchUsers();
         }
     });
 
@@ -94,7 +72,7 @@ function AdminPage() {
         mutationFn: ({ appId, action }) => handle_dasher_application(appId, action),
         onSuccess: () => {
             refetchApplications();
-            refetchUsers(); // Refresh users if approved
+            refetchUsers();
         }
     });
 
@@ -152,12 +130,16 @@ function AdminPage() {
     );
 
     const filteredOrders = orders.filter(order => {
-        const matchesSearch = searchQuery === '' || 
-            // order.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            order.store.toLowerCase().includes(searchQuery.toLowerCase());
+        const userName = order.user ? `${order.user.first_name} ${order.user.last_name}` : '';
+        const storeName = order.store?.name || '';
+        const orderDate = order.created_at ? order.created_at.split('T')[0] : '';
         
-        const matchesDate = (!startDate || order.date >= startDate) && 
-                           (!endDate || order.date <= endDate);
+        const matchesSearch = searchQuery === '' || 
+            userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            storeName.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        const matchesDate = (!startDate || orderDate >= startDate) && 
+                           (!endDate || orderDate <= endDate);
         
         return matchesSearch && matchesDate;
     });
@@ -180,22 +162,6 @@ function AdminPage() {
         
         return matchesSearch;
     })
-
-    React.useEffect(() => {
-        console.log('Debug Info:', {
-            usersLoading,
-            dasherApplicationsLoading,
-            dasherApplicationsPending,
-            ordersLoading,
-            deliveriesLoading,
-            storesLoading,
-            users,
-            dasherApplications,
-            orders,
-            usersError,
-            dasherApplicationsError
-        });
-    }, [usersLoading, dasherApplicationsLoading, ordersLoading, deliveriesLoading, storesLoading]);
 
     return (
         <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
@@ -370,31 +336,45 @@ function AdminPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredOrders.map(order => (
-                                            <tr key={order.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
-                                                <td className="p-3">#{order.id}</td>
-                                                <td className="p-3">{order.userName}</td>
-                                                <td className="p-3">{order.store}</td>
-                                                <td className="p-3">${order.total.toFixed(2)}</td>
-                                                <td className="p-3">{order.date}</td>
-                                                <td className="p-3">
-                                                    <span className={`px-2 py-1 rounded text-sm ${
-                                                        order.status === 'completed' 
-                                                            ? 'bg-green-100 text-green-800' 
-                                                            : 'bg-red-100 text-red-800'
-                                                    }`}>
-                                                        {order.status}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {filteredOrders.map(order => {
+                                            const userName = order.user ? `${order.user.first_name} ${order.user.last_name}` : 'N/A';
+                                            const storeName = order.store?.name || 'N/A';
+                                            const orderDate = order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A';
+                                            const orderTotal = order.items?.reduce((sum, item) => sum + (parseFloat(item.item?.price || 0) * item.quantity), 0) || 0;
+                                            
+                                            return (
+                                                <tr key={order.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
+                                                    <td className="p-3">#{order.id}</td>
+                                                    <td className="p-3">{userName}</td>
+                                                    <td className="p-3">{storeName}</td>
+                                                    <td className="p-3">${orderTotal.toFixed(2)}</td>
+                                                    <td className="p-3">{orderDate}</td>
+                                                    <td className="p-3">
+                                                        <span className={`px-2 py-1 rounded text-sm ${
+                                                            order.status === 'completed' 
+                                                                ? 'bg-green-100 text-green-800' 
+                                                                : order.status === 'pending'
+                                                                ? 'bg-yellow-100 text-yellow-800'
+                                                                : order.status === 'accepted'
+                                                                ? 'bg-blue-100 text-blue-800'
+                                                                : 'bg-red-100 text-red-800'
+                                                        }`}>
+                                                            {order.status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
                             <div className="mt-4 p-4 bg-gray-100 rounded-lg">
                                 <h3 className="font-semibold text-gray-800 mb-2">Summary</h3>
                                 <p className="text-gray-600">Total Orders: {filteredOrders.length}</p>
-                                <p className="text-gray-600">Total Revenue: ${filteredOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2)}</p>
+                                <p className="text-gray-600">Total Revenue: ${filteredOrders.reduce((sum, order) => {
+                                    const orderTotal = order.items?.reduce((itemSum, item) => itemSum + (parseFloat(item.item?.price || 0) * item.quantity), 0) || 0;
+                                    return sum + orderTotal;
+                                }, 0).toFixed(2)}</p>
                             </div>
                         </>
                     )}
@@ -467,7 +447,7 @@ function AdminPage() {
                                                 <td className="p-3">{delivery.dasherName}</td>
                                                 <td className="p-3">#{delivery.orderId}</td>
                                                 <td className="p-3">{delivery.customer}</td>
-                                                <td className="p-3">{delivery.store}</td>
+                                                <td className="p-3">{delivery.store_id}</td>
                                                 <td className="p-3">{delivery.deliveryDate}</td>
                                                 <td className="p-3 font-semibold text-green-600">${delivery.earnings.toFixed(2)}</td>
                                             </tr>

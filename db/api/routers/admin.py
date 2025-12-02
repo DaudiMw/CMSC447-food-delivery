@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from api.auth.auth import admin_required, get_current_user
-from models import UserRole
+from models import UserRole, Order
 from repositories.user import UserRepository
 from repositories.dasherapplication import ApplicationRepository
 from sqlalchemy.orm import Session, joinedload
@@ -138,7 +138,7 @@ async def get_dasher_deliveries(db: Session = Depends(get_db)):
 async def get_orders(db: Session = Depends(get_db)):
     """Get all orders."""
     order_repo = OrderRepository(db)
-    orders = order_repo.get_all(options=[joinedload("user"), joinedload("items")])
+    orders = order_repo.get_all(options=[joinedload(Order.user), joinedload(Order.items)])
     return orders
 
 @router.post("/dasher-applications/{application_id}/approve")

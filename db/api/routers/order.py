@@ -23,7 +23,7 @@ class CreateOrderFromCartSchema(BaseModel):
 @router.post("/from_cart", status_code=201, response_model=List[OrderSchema])
 async def create_order_from_cart(order_data: CreateOrderFromCartSchema, user: user_dependency, db: Session = Depends(get_db)):
     """Create a new order from the user's cart."""
-    db.begin() # Start a transaction
+
     try:
         # 1. Get user's cart
         cart_repo = CartRepository(db)
@@ -80,6 +80,7 @@ async def create_order_from_cart(order_data: CreateOrderFromCartSchema, user: us
         db.rollback()
         # logger.error(f"Error creating order from cart: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+    
 
 @router.put("/{order_id}/status", response_model=OrderSchema)
 async def update_order_status(order_id: int, status_update: OrderStatusUpdateSchema, user: user_dependency, db: Session = Depends(get_db)):

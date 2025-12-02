@@ -30,6 +30,7 @@ function MyApp() {
                     <ProtectedRoute path="/stores" component={StoresPage} />
                     <ProtectedRoute path="/store/:store_id" component={StorePage} />
                     <ProtectedRoute path="/cart" component={CartPage} />
+                    <ProtectedRoute path="/checkout" component={CheckoutPage} />
                     <ProtectedRoute path="/admin" component={AdminPage} allowed_roles={['admin']} />
 
                 </Switch>
