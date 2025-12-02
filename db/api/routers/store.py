@@ -122,7 +122,6 @@ async def update_store(store_id: int,
         raise HTTPException(status_code=404, detail="Store not found.")
 
     try:
-        db.begin()
 
         # Update Address
         if address:
