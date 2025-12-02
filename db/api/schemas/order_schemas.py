@@ -27,7 +27,7 @@ class OrderSchema(BaseSchema):
     updated_at: datetime
     items: List[OrderItemSchema]
     user: UserSummary
-    store: StoreInfoSchema    
+    store: StoreInfoSchema
 
 
 class OrderStatusUpdateSchema(BaseModel):

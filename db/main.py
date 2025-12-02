@@ -5,6 +5,7 @@ from api.routers import user
 from api.auth import auth
 from api.routers import admin
 from api.routers import items
+from api.routers import reports
 from api.routers import order
 from api.routers import store
 from api.routers import media
@@ -42,6 +43,8 @@ app.include_router(store.router, tags=["stores"])
 app.include_router(media.router, tags=["media"])
 
 app.include_router(items.router, tags=["items"])
+
+app.include_router(reports.router, tags=["reports"])
 
 app.include_router(cart.router, tags=["cart"])
 

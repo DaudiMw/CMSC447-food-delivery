@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from api.auth.auth import admin_required, get_current_user, is_store_owner
+from api.auth.auth import admin_required, get_current_user
 from repositories.orders import OrderRepository
 from repositories.reports import ReportsRepository
 from repositories.store import StoreRepository
@@ -40,13 +40,13 @@ async def create_report(report: ReportCreateSchema,
         raise HTTPException(status_code=404, detail="Order not found")
     
     try:
-        new_report = reports_repo.create(**(report.dict()), order=order, store=store, user=user)
+        new_report = reports_repo.create(**report.dict(), order=order, store=store, user=user)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
     return new_report
 
-@router.put("/{report_id}", status_code=201, response_model=ReportSchema)
+@router.patch("/{report_id}", status_code=201, response_model=ReportSchema)
 async def post_reply(report: ReportReplySchema,
                         report_id: int,
                         user: user_dependency,

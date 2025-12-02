@@ -71,7 +71,7 @@ async function add_item_to_cart(item_id){
  */
 async function update_order(order, order_id) {
     try{
-        const response = await authFetch(`/orders/${order_id}`, {
+        const response = await authFetch(`/orders/update/${order_id}`, {
             method: 'PATCH',
             body: JSON.stringify(order)
         });
@@ -98,7 +98,7 @@ async function get_cart(user_id){
     }
 }
 
-async function create_order_from_cart(address_id) {
+async function create_order_from_cart(order_data) {
     return authFetch(`/orders/from_cart`, {
         method: 'POST',
         body: JSON.stringify(order_data)
