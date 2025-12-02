@@ -18,13 +18,13 @@ function MyApp() {
                     <ProtectedRoute exact path="/" component={HomePage} />
                     <ProtectedRoute path="/home" component={HomePage} />
                     <ProtectedRoute path="/settings" component={SettingsPage} />
-                    <ProtectedRoute path="/:user_id/orders" component={OrdersPage} />
+                    <ProtectedRoute path="/:user_id/orders" component={OrdersPage} allowed_roles={['user']} />
                     <ProtectedRoute path="/stores/create" component={StoreCreatePage} allowed_roles={['admin']} />
                     <ProtectedRoute path="/store/:store_id/edit" component={StoreEditPage} allowed_roles={['admin', 'store_owner']} />
                     <ProtectedRoute path="/store/:store_id/add-item" component={AddItemPage} allowed_roles={['admin', 'store_owner']} />
                     <ProtectedRoute path="/store/:store_id/item/:item_id/edit" component={EditItemPage} allowed_roles={['admin', 'store_owner']} />
                     <ProtectedRoute path="/reports" component={ReportsPage} />
-                    <ProtectedRoute path="/stores" component={StoresPage} />
+                    <ProtectedRoute path="/stores" component={HomePage} />
                     <ProtectedRoute path="/store/:store_id" component={StorePage} />
                     <ProtectedRoute path="/cart" component={CartPage} />
                     <ProtectedRoute path="/admin" component={AdminPage} allowed_roles={['admin']} />
@@ -71,7 +71,7 @@ function Banner() {
 
     const menuItems = (
         <>
-            {(<button
+            {(getUserRole() === "user") && (<button
                 className="bannerButton"
                 onClick={() => window.location.hash = '#/'+getUserId()+'/orders'}
             >

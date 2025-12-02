@@ -4,11 +4,10 @@ class OrdersPage extends React.Component {
         console.log(user_id);
         
         let data = await get_user_orders_by_id(user_id);
-        console.log(data)
         const orderList = document.getElementsByClassName("ordersList")[0];
         if (data.length == 0) {
             const noOrders = document.createElement('div');
-            noOrders.textContent = "You have no orders";
+            noOrders.textContent = "You have no past or current orders";
             noOrders.style.textAlign = "center";
             noOrders.style.alignContent = "center";
             noOrders.style.fontSize = "xx-large"
@@ -62,10 +61,10 @@ class OrdersPage extends React.Component {
                     <div className="ordersList">
                     </div>
                     <div className="orderButtons">
-                        <button className="cancelOrder">
+                        <button className="cancelOrder hover:scale-105 transition duration:2s">
                             Cancel Orders
                         </button>
-                        <button className="cancelOrder">
+                        <button className="cancelOrder hover:scale-105 transition duration:2s">
                             Report Order
                         </button>
                     </div>
