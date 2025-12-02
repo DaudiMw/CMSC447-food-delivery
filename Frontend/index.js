@@ -358,8 +358,6 @@ function Banner() {
 //             return (
 //                 <SignupPage setPage={this.setPage}></SignupPage>
 //             );
-        }
-    }
 
 //     // These are defined here so that they're easy to find and change, and so they can be given to multiple
 //     // pages and not have to be copied.

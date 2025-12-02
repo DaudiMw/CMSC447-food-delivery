@@ -1,25 +1,31 @@
 
 from pydantic import BaseModel
 from api.schemas.base_schema import BaseSchema, Address
-from datetime import datetime, time
+from datetime import datetime
 from typing import List, Optional
+from models import OrderStatus
 
 from api.schemas.item_schemas import ItemSchema
 
+class OrderItemSchema(BaseSchema):
+    id: int
+    item: ItemSchema
+    quantity: int
 
 class OrderSchema(BaseSchema):
     id: int
     user_id: str
     dasher_id: Optional[str] = None
-    store_id: int
-    address: str
+    address_id: int
     status: str
-    created_at: time
-    accepted_at: Optional[time] = None
-    completed_at: Optional[time] = None
-    updated_at: time
-    items: list["ItemSchema"]
+    created_at: datetime
+    accepted_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    updated_at: datetime
+    items: List[OrderItemSchema]
 
+class OrderStatusUpdateSchema(BaseModel):
+    status: OrderStatus
 
 class OrderShow(BaseSchema):
     address: Address
@@ -28,7 +34,7 @@ class OrderShow(BaseSchema):
     accepted_at: str
     completed_at: str
     updated_at: str
-    items: list["ItemSchema"]
+    items: list[ItemSchema]
 
 
 

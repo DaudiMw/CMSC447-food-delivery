@@ -7,15 +7,14 @@ from repositories.address import AddressRepository
 from repositories.orders import OrderRepository
 from repositories.items import ItemRepository
 from repositories.user import UserRepository
-from repositories.pickups import PickupRepository
-from repositories.reports import ReportRepository
+from repositories.reports import ReportsRepository
 from repositories.store import StoreRepository
 from sqlalchemy.orm import Session
 from database import get_db
 from models import UserRole
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
-from api.schemas.user_schemas import ApplicationCreate, UserCreate, UserAuth
+from api.schemas.user_schemas import ApplicationCreate, UserCreate, UserAuth, UserResponse
 from api.schemas.base_schema import Address
 from utils.VerifyAddress import verify_address
 
@@ -27,7 +26,23 @@ user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 async def read_users_me(current_user: UserCreate = Depends(get_current_user)):
     return current_user
 
-@router.put("/{user_id}", response_model=UserCreate, status_code=200)
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user(user_id: str, db: Session = Depends(get_db)):
+    user_repo = UserRepository(db)
+    user = user_repo.get_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@router.get("/profile/{user_id}", response_model=UserResponse)
+async def get_user_profile(user_id: str, db: Session = Depends(get_db)):
+    user_repo = UserRepository(db)
+    user = user_repo.get_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@router.put("/{user_id}", response_model=UserResponse, status_code=200)
 async def update_user(user_id: str, 
                       user: user_dependency,
                       db : Session = Depends(get_db)):
@@ -123,7 +138,7 @@ async def get_user_orders(user_id: str, token: str = Depends(oauth2_scheme), db:
 
     try:
         orders = order_repo.get_by_user_id_ordered_by_date(user_id)
-        orders = [order.status not in ["initialized", "dropped", "completed"] for order in orders]
+        orders = [order for order in orders if order.status not in ["initialized", "dropped", "completed"]]
         return orders
     
     except Exception as e:
@@ -139,7 +154,7 @@ async def get_user_order_history(user_id: str, token: str = Depends(oauth2_schem
 
     try:
         orders = order_repo.get_by_user_id_ordered_by_date(user_id)
-        orders = [order.status != "initialized" for order in orders]
+        orders = [order for order in orders if order.status != "initialized"]
         return orders
     
     except Exception as e:
@@ -151,8 +166,8 @@ async def get_user_deliveries(user_id: str, user: user_dependency, db: Session =
     if user.role != UserRole.admin and user.id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to view this user's deliveries")
     
-    pickup_repo = PickupRepository(db)
-    deliveries = pickup_repo.get_by_dasher_id(user_id)
+    order_repo = OrderRepository(db)
+    deliveries = order_repo.get_by_dasher_id(user_id)
     return deliveries
 
 @router.get("/{user_id}/reports")
@@ -161,8 +176,8 @@ async def get_user_reports(user_id: str, user: user_dependency, db: Session = De
     if user.role != UserRole.admin and user.id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to view this user's reports")
     
-    report_repo = ReportRepository(db)
-    reports = report_repo.get_by_reporter_id(user_id)
+    report_repo = ReportsRepository(db)
+    reports = report_repo.get_by_user_id(user_id)
     return reports
 
 @router.get("/{user_id}/stores")
@@ -172,7 +187,7 @@ async def get_user_stores(user_id: str, user: user_dependency, db: Session = Dep
         raise HTTPException(status_code=403, detail="You do not have permission to view this user's stores")
     
     store_repo = StoreRepository(db)
-    stores = store_repo.get_by_owner_id(user_id)
+    stores = store_repo.get_user_stores(user_id)
     return stores
 
 

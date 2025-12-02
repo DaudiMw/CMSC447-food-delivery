@@ -1,15 +1,21 @@
+from typing import Annotated
 from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
-from api.auth.auth import oauth2_scheme
+from api.auth.auth import get_current_user, oauth2_scheme
 from database import get_db
 from sqlalchemy.orm import Session
+from api.schemas.user_schemas import UserAuth
 from repositories.media import MediaRepository
 
 
 router = APIRouter(prefix="/media", tags=["media"]) #, dependencies=[Depends(oauth2_scheme)])
 
+user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
 @router.post("", status_code=201)
-async def upload_media(file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def upload_media(user: user_dependency, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    
+    if not user:
+        raise HTTPException(status_code=403, detail=f"Error uploading file: {e}")
     
     try:
         contents = await file.read()

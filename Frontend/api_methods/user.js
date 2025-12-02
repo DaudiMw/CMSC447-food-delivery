@@ -1,8 +1,17 @@
 const { useQuery, useMutation, QueryClient, QueryClientProvider } = window.ReactQuery;
 
+async function get_user(user_id) {
+    try {
+        const data = await authFetch(`/users/${user_id}`);
+        return data;
+    } catch (error) {
+        console.error('Error fetching user data: ', error);
+    }
+}
+
 async function get_user_profile(user_id) {
     try {
-        const data = await authFetch(`/users/${user_id}/profile`);
+        const data = await authFetch(`/users/profile/${user_id}`);
         return data;
     } catch (error) {
         console.error('Error fetching user profile: ', error);

@@ -63,7 +63,6 @@ class Store(Base):
     address = relationship("Address", back_populates="store", uselist=False) #1 to 1
     items = relationship("Item", back_populates="store") #1 to many
     owners = relationship("User", secondary="store_owners", back_populates="stores") #many to many
-    orders = relationship("Order", back_populates="store")
     reports = relationship("Reports", back_populates="store")
 
 
@@ -92,7 +91,6 @@ class Item(Base):
 
     # Relationships
     item_info = relationship("ItemInfo", back_populates="item", uselist=False) #1 to 1
-    orders = relationship("Order", secondary="user_orders", back_populates="items") #many to many
     store = relationship("Store", back_populates="items") #many to 1
 
 
@@ -123,7 +121,6 @@ class Order(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     dasher_id = Column(String, ForeignKey("users.id"))
-    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     address_id = Column(Integer, ForeignKey("addresses.id"), nullable=False)
     status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.pending)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -135,9 +132,8 @@ class Order(Base):
     address = relationship("Address", back_populates="order") #many to 1
     user = relationship("User", foreign_keys=[user_id], backref="orders")
     dasher = relationship("User", foreign_keys=[dasher_id], backref="deliveries")
-    items = relationship("Item", secondary="user_orders", back_populates="orders")
+    items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
     reports = relationship("Reports", back_populates="order") #1 to many
-    store = relationship("Store", back_populates="orders") #many to 1
 
 
 class Reports(Base):
@@ -166,8 +162,6 @@ class Address(Base):
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
     zip = Column(String, nullable=False)
-    # building_name = Column(String)
-    # room_number = Column(String)
     
     # Relationships
     users = relationship("User", secondary="user_addresses", back_populates="addresses") #many to many
@@ -220,13 +214,18 @@ class UserAddresses(Base):
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     address_id = Column(Integer, ForeignKey("addresses.id"), nullable=False)
 
-#Association table
-class OrderItems(Base):
-    __tablename__ = "user_orders"
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
 
     id = Column(Integer, primary_key=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
     item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
+    quantity = Column(Integer, nullable=False, default=1)
+
+    order = relationship("Order", back_populates="items")
+    item = relationship("Item")
+
 
 #Association table
 class StoreOwners(Base):

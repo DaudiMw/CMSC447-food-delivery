@@ -85,6 +85,9 @@ function AdminPage() {
         const user = users.find(u => u.id === userId);
         const newStatus = user.status === 'active' ? 'banned' : 'active';
         if (confirm(`${newStatus === 'banned' ? 'Ban' : 'Unban'} this user?`)) {
+            if (userId === getUserId()) {
+                logout();
+            }
             banUserMutation.mutate({ userId, status: newStatus });
         }
     };
@@ -286,7 +289,7 @@ function AdminPage() {
                                                 </td>
                                                 <td className="p-3 flex gap-2">
                                                     <button 
-                                                        onClick={() => viewUserDetails(user)}
+                                                        onClick={() => window.location.hash = `#/user/${user.id}`}
                                                         className="btn btn-secondary"
                                                     >
                                                         View

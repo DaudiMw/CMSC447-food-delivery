@@ -1,30 +1,27 @@
 const { useQuery, useMutation, useQueryClient } = window.ReactQuery;
-
-
-{/* <div class="h-screen w-screen bg-amber-400 p-15">
-  <!--- This is the inner white bg that will surround the content --->
-  <div class="h-full w-full rounded-lg bg-white flex flex-col p-8 gap-4">
-    <h1 class="font-bold text-6xl">Your Cart</h1>
-    <div class="border"></div>
-    <!--- This is the item part --->
-    <div class="w-full h-32 flex flex-row bg-amber-100 rounded-md shadow gap-4 items-center">
-      <div class="w-1/4 h-full bg-amber-300"></div>
-      <p class="w-max h-max text-lg font-semibold">Item Name</p>
-      <p class="w-max h-max text-lg font-semibold">Item Description</p>
-      <p class="w-max h-max text-lg font-semibold">Price</p>
-      <p class="w-max h-max text-lg font-semibold">Qty</p>
-    </div>
-  </div>
-</div> */}
+const { useState, useEffect } = React;
 
 
 function CartPage() {
     const queryClient = useQueryClient();
+    const [selectedAddress, setSelectedAddress] = useState('');
 
-    const { data: cart, isLoading, error } = useQuery({
+    const { data: cart, isLoading: isCartLoading, error: cartError } = useQuery({
         queryKey: ['cart'],
-        queryFn: get_cart
+        queryFn: () => get_cart(getUserId())
     });
+
+    const { data: addresses, isLoading: isAddressesLoading, error: addressesError } = useQuery({
+        queryKey: ['addresses'],
+        queryFn: () => get_user_addresses(getUserId()),
+        enabled: !!getUserId(), // Only fetch addresses if user ID is available
+    });
+
+    useEffect(() => {
+        if (addresses && addresses.length > 0) {
+            setSelectedAddress(addresses[0].id);
+        }
+    }, [addresses]);
 
     const updateItemMutation = useMutation({
         mutationFn: ({ item_id, quantity }) => update_cart_item(item_id, quantity),
@@ -40,20 +37,35 @@ function CartPage() {
         },
     });
 
+    const createOrderMutation = useMutation({
+        mutationFn: create_order_from_cart,
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['cart'] });
+            alert(`Order created successfully! Order ID: ${data.id}`);
+            // Optionally, navigate to an order confirmation page
+        },
+        onError: (error) => {
+            alert(`Error creating order: ${error.message}`);
+        },
+    });
+
     const handleQuantityChange = (item_id, quantity) => {
         const q = parseInt(quantity, 10);
-        // Do not update if quantity is not a number or less than 1, let the user use the remove button
         if (isNaN(q) || q < 1) return;
         updateItemMutation.mutate({ item_id, quantity: q });
     };
     
     const handleCheckout = () => {
-        // To be implemented: navigate to checkout page or trigger order creation
-        alert("Checkout functionality to be implemented!");
+        if (!selectedAddress) {
+            alert("Please select a delivery address.");
+            return;
+        }
+        createOrderMutation.mutate(selectedAddress);
     };
 
-    if (isLoading) return <div>Loading cart...</div>;
-    if (error) return <div>Error loading cart: {error.message}</div>;
+    if (isCartLoading || isAddressesLoading) return <div>Loading...</div>;
+    if (cartError) return <div>Error loading cart: {cartError.message}</div>;
+    if (addressesError) return <div>Error loading addresses: {addressesError.message}</div>;
 
     const cartIsEmpty = !cart || !cart.items || cart.items.length === 0;
 
@@ -92,9 +104,28 @@ function CartPage() {
                         ))}
                     </div>
                     <div className="mt-6 text-right">
+                        <div className="mb-4">
+                            <label htmlFor="address-select" className="mr-2 font-semibold">Delivery Address:</label>
+                            <select
+                                id="address-select"
+                                value={selectedAddress}
+                                onChange={(e) => setSelectedAddress(e.target.value)}
+                                className="border rounded p-2"
+                            >
+                                {addresses && addresses.map(address => (
+                                    <option key={address.id} value={address.id}>
+                                        {address.street}, {address.city}, {address.state} {address.zip}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                         <h2 className="text-2xl font-bold">Total: ${totalPrice.toFixed(2)}</h2>
-                        <button onClick={handleCheckout} className="btn btn-action mt-4">
-                            Proceed to Checkout
+                        <button 
+                            onClick={handleCheckout} 
+                            className="btn btn-action mt-4"
+                            disabled={createOrderMutation.isLoading}
+                        >
+                            {createOrderMutation.isLoading ? 'Placing Order...' : 'Proceed to Checkout'}
                         </button>
                     </div>
                 </div>

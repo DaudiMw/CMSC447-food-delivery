@@ -133,9 +133,9 @@ async def update_store(store_id: int,
             
             address_repo = AddressRepository(db)
             if existing_store.address:
-                address_repo.update(existing_store.address, **address_schema.dict(exclude={'id', 'label'}))
+                address_repo.update_no_commit(existing_store.address, **address_schema.dict(exclude={'id', 'label'}))
             else:
-                new_address = address_repo.create(**address_schema.dict(exclude={'id', 'label'}))
+                new_address = address_repo.create_no_commit(**address_schema.dict(exclude={'id', 'label'}))
                 existing_store.address = new_address
 
         # Update Store Details
@@ -143,7 +143,7 @@ async def update_store(store_id: int,
             store_data = json.loads(store)
             store_schema = StoreUpdateSchema(**store_data)
             update_data = store_schema.dict(exclude_unset=True, exclude={'hours'})
-            store_repo.update(existing_store, **update_data)
+            store_repo.update_no_commit(existing_store, **update_data)
 
             # Update Hours
             if store_schema.hours is not None:
@@ -164,17 +164,17 @@ async def update_store(store_id: int,
         if logo:
             media_data = await logo.read()
             if existing_store.logo:
-                media_repo.update(existing_store.logo, media_data=media_data, filename=logo.filename)
+                media_repo.update_no_commit(existing_store.logo, media_data=media_data, filename=logo.filename)
             else:
-                new_logo = media_repo.create(media_data=media_data, filename=logo.filename)
+                new_logo = media_repo.create_no_commit(media_data=media_data, filename=logo.filename)
                 existing_store.logo_id = new_logo.id
         
         if banner:
             media_data = await banner.read()
             if existing_store.banner:
-                media_repo.update(existing_store.banner, media_data=media_data, filename=banner.filename)
+                media_repo.update_no_commit(existing_store.banner, media_data=media_data, filename=banner.filename)
             else:
-                new_banner = media_repo.create(media_data=media_data, filename=banner.filename)
+                new_banner = media_repo.create_no_commit(media_data=media_data, filename=banner.filename)
                 existing_store.banner_id = new_banner.id
 
         db.commit()

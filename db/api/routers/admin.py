@@ -42,7 +42,7 @@ async def get_user_by_id(user_id: str,
     return user
     
 
-@router.patch("/users/{user_id}/role")
+@router.patch("/users/{user_id}/role", response_model=UserSchema)
 async def update_user_role(user_id: str, 
                            new_role: UserRole,
                            db: Session = Depends(get_db),
@@ -146,6 +146,7 @@ async def approve_dasher_application(application_id: int, db: Session = Depends(
         # Get the user associated with the application
         user_repo = UserRepository(db)
         user = user_repo.update_by_id(str(application.user_id), role=UserRole.dasher)
+        app_repo.hard_delete(application_id)
 
         return {"message": "Application approved", "user": user}
 
