@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class BaseSchema(BaseModel):
     is_deleted: bool = False
@@ -6,11 +7,13 @@ class BaseSchema(BaseModel):
         from_attributes = True
 
 class Address(BaseModel):
-    id: int | None = None
+    id: Optional[int] = None
     street: str
     city: str
     state: str
     zip: str
+    building: Optional[str] = None
+    room_number: Optional[int] = None
     
     class Config:
         from_attributes = True

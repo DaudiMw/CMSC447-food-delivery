@@ -1,7 +1,19 @@
 class OrdersPage extends React.Component {
-    componentDidMount() {
-        let data = this.props.GetOrders();
+    async componentDidMount() {
+        const user_id = this.props.match.params.user_id
+        console.log(user_id);
+        
+        let data = await get_user_orders_by_id(user_id);
         const orderList = document.getElementsByClassName("ordersList")[0];
+        if (data.length == 0) {
+            const noOrders = document.createElement('div');
+            noOrders.textContent = "You have no past or current orders";
+            noOrders.style.textAlign = "center";
+            noOrders.style.alignContent = "center";
+            noOrders.style.fontSize = "xx-large"
+            orderList.append(noOrders);
+            return;
+        }
         data.forEach(element => {
             const orderDiv = document.createElement('div');
             orderDiv.className = "order";
@@ -48,9 +60,30 @@ class OrdersPage extends React.Component {
                     </header>
                     <div className="ordersList">
                     </div>
-                    <div className="orderButtons"></div>
+                    <div className="orderButtons">
+                        <button className="cancelOrder hover:scale-105 transition duration:2s">
+                            Cancel Orders
+                        </button>
+                        <button className="cancelOrder hover:scale-105 transition duration:2s">
+                            Report Order
+                        </button>
+                    </div>
                 </div>
             </div>
         )
+    }
+}
+
+/**
+ * Function to get user's orders by user ID
+ * @param {*} userId 
+ * @returns 
+ */
+async function get_user_orders_by_id(userId) {
+    try {
+        const response = await authFetch(`/users/${userId}/orders`, { method: 'GET' });
+        return response;
+    } catch (error) {
+        console.log(error)
     }
 }

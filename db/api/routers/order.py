@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from api.auth.auth import oauth2_scheme
@@ -19,42 +19,69 @@ router = APIRouter(prefix="/orders", tags=["orders"], dependencies=[Depends(oaut
 
 user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
-@router.post("/from_cart", status_code=201, response_model=list[OrderSchema])
+class CreateOrderFromCartSchema(BaseModel):
+    address_id: int
+
+@router.post("/from_cart", status_code=201, response_model=List[OrderSchema])
 async def create_order_from_cart(order_data: CreateOrderFromCartSchema, user: user_dependency, db: Session = Depends(get_db)):
     """Create a new order from the user's cart."""
-    orders_repo = OrderRepository(db)
-    address_repo = AddressRepository(db)
-    store_repo = StoreRepository(db)
-    cart_repo = CartRepository(db)
-    user_cart = cart_repo.get_cart_by_user_id(user.id)
-
-    if not user_cart or not user_cart.items:
-        raise HTTPException(status_code=400, detail="Your cart is empty.")
-    
-    cart_items = user_cart.items
-    store_id_list = []
-    orders_list = []
 
     try:
-        for item in cart_items:
-            if item.item.store_id not in store_id_list:
-                store_id_list.append(item.item.store_id)
+        # 1. Get user's cart
+        cart_repo = CartRepository(db)
+        user_cart = cart_repo.get_cart_by_user_id(user.id)
 
-        for store_id in store_id_list:
-            same_store_items = []
-            for item in cart_items:
-                if item.item.store_id == store_id:
-                    same_store_items.append(item)
-            
-            order = orders_repo.create(user_id=user.id, 
-                                    status=OrderStatus.pending,
-                                    address=address_repo.get_by_id(order_data.address_id), 
-                                    store=store_repo.get_by_id(order_data.store_id))
-            orders_list.append(order)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        if not user_cart or not user_cart.items:
+            raise HTTPException(status_code=400, detail="Your cart is empty.")
+
+        # Group cart items by store_id
+        items_by_store = {}
+        for cart_item in user_cart.items:
+            store_id = cart_item.item.store_id
+            if store_id not in items_by_store:
+                items_by_store[store_id] = []
+            items_by_store[store_id].append(cart_item)
+
+        new_orders = []
+        all_new_order_items = []
+
+        # 2. Create an Order and OrderItems for each store
+        for store_id, cart_items in items_by_store.items():
+            new_order = Order(
+                user_id=user.id,
+                address_id=order_data.address_id,
+                store_id=store_id,
+                status=OrderStatus.pending
+            )
+            db.add(new_order)
+            db.flush()  # To get the new_order.id
+            new_orders.append(new_order)
+
+            for cart_item in cart_items:
+                order_item = OrderItem(
+                    order_id=new_order.id,
+                    item_id=cart_item.item_id,
+                    quantity=cart_item.quantity
+                )
+                all_new_order_items.append(order_item)
+
+        db.add_all(all_new_order_items)
+        
+        # 3. Clear the cart
+        for cart_item in user_cart.items:
+            db.delete(cart_item)
+
+        # 4. Commit transaction and return orders
+        db.commit()
+        for order in new_orders:
+            db.refresh(order)
     
-    return orders_list
+        return new_orders
+    
+    except Exception as e:
+        db.rollback()
+        # logger.error(f"Error creating order from cart: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
             
 
 @router.patch("/{order_id}/status", response_model=OrderSchema)
@@ -109,16 +136,18 @@ async def get_order_by_status(status: str, user: user_dependency, db : Session =
     """Get an order by its status."""
 
     order_repo = OrderRepository(db)
-
+    
     try:
-        order = order_repo.get_by_order_state(OrderStatus(status))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        status_enum = OrderStatus(status)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
+
+    orders = order_repo.get_by_order_state(status_enum)
 
     if user.role == UserRole.user:
         raise HTTPException(status_code=403, detail="You do not have permission to access this")
     
-    return order
+    return orders
 
 @router.get("/users/{user_id}", response_model=list[OrderSchema])
 async def get_order_by_user_id(user_id: str, user: user_dependency, db : Session = Depends(get_db)):

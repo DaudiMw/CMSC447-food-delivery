@@ -54,9 +54,12 @@ class BaseRepository(Generic[ModelType]):
             primary_key_column.in_(ids)
         ).all()
 
-    def get_all(self) -> List[ModelType]:
+    def get_all(self, options: Optional[List] = None) -> List[ModelType]:
         """Retrieve all records that are not soft-deleted."""
-        return self.session.query(self.model).filter(self.model.is_deleted == False).all()
+        query = self.session.query(self.model).filter(self.model.is_deleted == False)
+        if options:
+            query = query.options(*options)
+        return query.all()
         
     def create(self, **kwargs) -> ModelType:
         """Create a new record."""

@@ -209,7 +209,7 @@ async def change_password(user_id: str, user: user_dependency, new_password: str
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{user_id}/addresses", status_code=201)
+@router.post("/{user_id}/addresses", status_code=201, response_model=Address)
 async def add_address(user_id: str, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):
     """Add an address to a user."""
 
@@ -217,15 +217,23 @@ async def add_address(user_id: str, address_info: Address, user: user_dependency
         raise HTTPException(status_code=401, detail="You do not have permission to update this user")
     
     address_repo = AddressRepository(db)
+    user_repo = UserRepository(db)
 
     try:
         
         if not verify_address(address_info):
             raise HTTPException(status_code=400, detail="Address entered is not within UMBC campus.")
         
-        address = address_repo.create(user_id=user_id, **address_info.dict())
+        address_data = address_info.dict(exclude={'id'})
+        address = address_repo.create(**address_data)
+        
+        user = user_repo.get_by_id(user_id)
+        user.addresses.append(address)
+        db.commit()
+
         return address
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.put("/{user_id}/addresses/{address_id}", response_model=Address, status_code=200)

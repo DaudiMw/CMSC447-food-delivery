@@ -61,7 +61,7 @@ async function get_user_stores(user_id) {
  */
 async function get_user_addresses(user_id) {
     try{
-        const data = await authFetch(`/users/${user_id}/addresses`, {
+        const data = await authFetch(`/users/${user_id}/address`, {
             method: 'GET'
         });
         return data;

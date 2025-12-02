@@ -145,7 +145,7 @@ async function get_users_owned_stores(user_id){
         return response;
     } catch(error){
         console.error('Error fetching the users owned stores: ', error);
-        throw error;
+        return null
     }
 
 }
