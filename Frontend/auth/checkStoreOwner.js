@@ -6,7 +6,8 @@
  */
 async function checkStoreOwnership(user_id, store_id){
     const owned_stores = await get_users_owned_stores(user_id);
-    if (owned_stores && owned_stores.includes(store_id)){
+    console.log(owned_stores)
+    if (owned_stores != null && owned_stores.includes(store_id)){
         return true;
     } else {
         return false

@@ -64,7 +64,7 @@ function ItemDisplay({
             >
               Details
             </button>
-            {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
+            {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id) === true) && (
                 <button
                     onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store_id}/item/${item_id}/edit`; }}
                     className="btn btn-edit"
@@ -307,7 +307,7 @@ function StorePage() {
               {addressString}
             </p>
           </div>
-          {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
+          {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id) === true) && (
             <button className="btn btn-edit mt-5" onClick ={() => window.location.hash = `#/store/${store_id}/edit`}>Edit Store Info</button>
           )}
         </div>
@@ -315,7 +315,7 @@ function StorePage() {
 
       {/* Menu Items Section */}
       <div className="bg-white">
-        {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id)) && (
+        {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id) === true) && (
           <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 flex justify-end">
             <button 
               className="btn btn-action" 
