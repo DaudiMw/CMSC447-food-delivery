@@ -53,6 +53,8 @@ class DasherApplicationSchema(BaseSchema):
     date_applied: datetime
     user: UserSummary
 
+class UpdateUserRole(BaseSchema):
+    user_role: str
 
 
 

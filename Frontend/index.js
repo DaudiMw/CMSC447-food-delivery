@@ -75,7 +75,7 @@ function Banner() {
 
     const menuItems = (
         <>
-            {(<button
+            {(getUserRole() === "user") && (<button
                 className="bannerButton"
                 onClick={() => window.location.hash = '#/'+getUserId()+'/orders'}
             >

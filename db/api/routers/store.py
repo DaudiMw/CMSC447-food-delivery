@@ -199,8 +199,9 @@ async def get_users_stores(user_id: str, user: user_dependency, db: Session = De
     if user_id != user.id and user.role != UserRole.admin:
         raise HTTPException(status_code=403, detail="You do not have permission to access this")
 
-    # if not store:
-    #     raise HTTPException(status_code=404, detail="Store not found.")
+    if not store:
+        # return []
+        raise HTTPException(status_code=404, detail="Store not found.")
     
     return store
 

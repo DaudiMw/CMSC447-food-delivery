@@ -8,6 +8,7 @@ from database import get_db
 from api.schemas.user_schemas import UserSchema, UserCreate, UserAuth, DasherApplicationSchema
 from api.schemas.order_schemas import OrderSchema
 from repositories.orders import OrderRepository
+from api.schemas.user_schemas import UserSchema, UserCreate, UpdateUserRole
 
 
 
@@ -46,9 +47,8 @@ async def get_user_by_id(user_id: str,
 
 @router.patch("/users/{user_id}/role", response_model=UserSchema)
 async def update_user_role(user_id: str, 
-                           new_role: UserRole,
-                           db: Session = Depends(get_db),
-                           current_user: UserAuth = Depends(get_current_user)):
+                           new_role: UpdateUserRole,
+                           db: Session = Depends(get_db)):
     """Update a user's role."""
 
     if user_id == current_user.id:
@@ -56,16 +56,7 @@ async def update_user_role(user_id: str,
 
     try:
         user_repo = UserRepository(db)
-        
-        user_to_update = user_repo.get_by_id(user_id)
-        if not user_to_update:
-            raise HTTPException(status_code=404, detail="User not found")
-
-        if user_to_update.role == UserRole.admin and new_role != UserRole.admin:
-            if user_repo.count_admins() <= 1:
-                raise HTTPException(status_code=400, detail="Cannot remove the last admin.")
-
-        updated_user = user_repo.update_role(user_id, new_role)
+        updated_user = user_repo.update_role(user_id, UserRole(new_role.user_role))
         return updated_user
     
     except Exception as e:
@@ -88,14 +79,13 @@ async def ban_user(user_id: str,
 
 @router.patch("/users/{user_id}/unban")
 async def unban_user(user_id: str,
-                        db: Session = Depends(get_db)):
+                     db: Session = Depends(get_db)):
     """Unban a user."""
-
+    
     try:
         user_repo = UserRepository(db)
         user = user_repo.change_ban_status(user_id, False)
         return user
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
