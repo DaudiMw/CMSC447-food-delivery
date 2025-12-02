@@ -129,9 +129,10 @@ function DeliveriesPage() {
 
   if (orders.length === 0) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="text-xl text-gray-600">Deliveries not found.</div>
-      </div>
+    <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
+      <h1 className="text-4xl font-bold text-gray-800 mb-2">Deliveries</h1>
+      No deliveries.
+    </div>
     );
   }
 
