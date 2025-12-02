@@ -7,12 +7,14 @@ from repositories.address import AddressRepository
 from repositories.orders import OrderRepository
 from repositories.items import ItemRepository
 from repositories.user import UserRepository
+from repositories.reports import ReportsRepository
+from repositories.store import StoreRepository
 from sqlalchemy.orm import Session
 from database import get_db
 from models import UserRole
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
-from api.schemas.user_schemas import ApplicationCreate, UserCreate, UserAuth
+from api.schemas.user_schemas import ApplicationCreate, UserCreate, UserAuth, UserResponse
 from api.schemas.base_schema import Address
 from utils.VerifyAddress import verify_address
 
@@ -24,7 +26,23 @@ user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 async def read_users_me(current_user: UserCreate = Depends(get_current_user)):
     return current_user
 
-@router.put("/{user_id}", response_model=UserCreate, status_code=200)
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user(user_id: str, db: Session = Depends(get_db)):
+    user_repo = UserRepository(db)
+    user = user_repo.get_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@router.get("/profile/{user_id}", response_model=UserResponse)
+async def get_user_profile(user_id: str, db: Session = Depends(get_db)):
+    user_repo = UserRepository(db)
+    user = user_repo.get_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@router.put("/{user_id}", response_model=UserResponse, status_code=200)
 async def update_user(user_id: str, 
                       user: user_dependency,
                       db : Session = Depends(get_db)):
@@ -120,7 +138,7 @@ async def get_user_orders(user_id: str, token: str = Depends(oauth2_scheme), db:
 
     try:
         orders = order_repo.get_by_user_id_ordered_by_date(user_id)
-        orders = [order.status not in ["initialized", "dropped", "completed"] for order in orders]
+        orders = [order for order in orders if order.status not in ["initialized", "dropped", "completed"]]
         return orders
     
     except Exception as e:
@@ -136,12 +154,42 @@ async def get_user_order_history(user_id: str, token: str = Depends(oauth2_schem
 
     try:
         orders = order_repo.get_by_user_id_ordered_by_date(user_id)
-        orders = [order.status != "initialized" for order in orders]
+        orders = [order for order in orders if order.status != "initialized"]
         return orders
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/{user_id}/deliveries")
+async def get_user_deliveries(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
+    """Get a user's deliveries."""
+    if user.role != UserRole.admin and user.id != user_id:
+        raise HTTPException(status_code=403, detail="You do not have permission to view this user's deliveries")
     
+    order_repo = OrderRepository(db)
+    deliveries = order_repo.get_by_dasher_id(user_id)
+    return deliveries
+
+@router.get("/{user_id}/reports")
+async def get_user_reports(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
+    """Get a user's reports."""
+    if user.role != UserRole.admin and user.id != user_id:
+        raise HTTPException(status_code=403, detail="You do not have permission to view this user's reports")
+    
+    report_repo = ReportsRepository(db)
+    reports = report_repo.get_by_user_id(user_id)
+    return reports
+
+@router.get("/{user_id}/stores")
+async def get_user_stores(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
+    """Get a user's owned stores."""
+    if user.role != UserRole.admin and user.id != user_id:
+        raise HTTPException(status_code=403, detail="You do not have permission to view this user's stores")
+    
+    store_repo = StoreRepository(db)
+    stores = store_repo.get_user_stores(user_id)
+    return stores
+
 
 @router.post("/{user_id}/password")
 async def change_password(user_id: str, user: user_dependency, new_password: str, db: Session = Depends(get_db)):
@@ -161,7 +209,7 @@ async def change_password(user_id: str, user: user_dependency, new_password: str
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{user_id}/addresses", status_code=201)
+@router.post("/{user_id}/addresses", status_code=201, response_model=Address)
 async def add_address(user_id: str, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):
     """Add an address to a user."""
 
@@ -169,15 +217,23 @@ async def add_address(user_id: str, address_info: Address, user: user_dependency
         raise HTTPException(status_code=401, detail="You do not have permission to update this user")
     
     address_repo = AddressRepository(db)
+    user_repo = UserRepository(db)
 
     try:
         
         if not verify_address(address_info):
             raise HTTPException(status_code=400, detail="Address entered is not within UMBC campus.")
         
-        address = address_repo.create(user_id=user_id, **address_info.dict())
+        address_data = address_info.dict(exclude={'id'})
+        address = address_repo.create(**address_data)
+        
+        user = user_repo.get_by_id(user_id)
+        user.addresses.append(address)
+        db.commit()
+
         return address
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.put("/{user_id}/addresses/{address_id}", response_model=Address, status_code=200)

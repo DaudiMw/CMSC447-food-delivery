@@ -2,27 +2,26 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from typing import Annotated
 from database import get_db
-from api.auth.auth import get_current_user
+from api.auth.auth import get_current_user, oauth2_scheme
 from api.schemas.user_schemas import UserAuth
 from api.schemas.cart_schemas import CartSchema, CartItemCreate, CartItemSchema, CartItemUpdate
 from repositories.cart import CartRepository
 
-router = APIRouter(prefix="/cart", tags=["cart"])
+router = APIRouter(prefix="/cart", tags=["cart"], dependencies=[Depends(oauth2_scheme)])
 
 user_dependency = Annotated[UserAuth, Depends(get_current_user)]
-db_dependency = Annotated[Session, Depends(get_db)]
 
 @router.get("", response_model=CartSchema)
-async def get_user_cart(user: user_dependency, session: db_dependency):
+async def get_user_cart(user: user_dependency, db: Session = Depends(get_db)):
     """Get the current user's cart."""
-    cart_repo = CartRepository(session)
+    cart_repo = CartRepository(db)
     cart = cart_repo.get_or_create_cart_by_user_id(user.id)
     return cart
 
 @router.post("/items", response_model=CartItemSchema, status_code=201)
-async def add_item_to_cart(user: user_dependency, session: db_dependency, cart_item: CartItemCreate):
+async def add_item_to_cart(user: user_dependency, cart_item: CartItemCreate, db: Session = Depends(get_db)):
     """Add an item to the cart. If the item already exists, its quantity will be increased."""
-    cart_repo = CartRepository(session)
+    cart_repo = CartRepository(db)
     cart = cart_repo.get_or_create_cart_by_user_id(user.id)
     try:
         new_cart_item = cart_repo.add_item_to_cart(cart, cart_item.item_id, cart_item.quantity)
@@ -31,9 +30,9 @@ async def add_item_to_cart(user: user_dependency, session: db_dependency, cart_i
         raise HTTPException(status_code=404, detail=str(e))
 
 @router.put("/items/{item_id}", response_model=CartItemSchema)
-async def update_cart_item_quantity(user: user_dependency, session: db_dependency, item_id: int, item_update: CartItemUpdate):
+async def update_cart_item_quantity(user: user_dependency, item_id: int, item_update: CartItemUpdate, db: Session = Depends(get_db)):
     """Update an item's quantity in the cart. A quantity of 0 or less will remove the item."""
-    cart_repo = CartRepository(session)
+    cart_repo = CartRepository(db)
     cart = cart_repo.get_cart_by_user_id(user.id)
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found")
@@ -49,9 +48,9 @@ async def update_cart_item_quantity(user: user_dependency, session: db_dependenc
     return updated_item
 
 @router.delete("/items/{item_id}", status_code=204)
-async def remove_item_from_cart(user: user_dependency, session: db_dependency, item_id: int):
+async def remove_item_from_cart(user: user_dependency, item_id: int, db: Session = Depends(get_db)):
     """Remove an item from the cart."""
-    cart_repo = CartRepository(session)
+    cart_repo = CartRepository(db)
     cart = cart_repo.get_cart_by_user_id(user.id)
     if cart:
         removed = cart_repo.remove_item_from_cart(cart, item_id)
@@ -61,11 +60,12 @@ async def remove_item_from_cart(user: user_dependency, session: db_dependency, i
     return Response(status_code=204)
 
 @router.delete("", status_code=204)
-async def clear_user_cart(user: user_dependency, session: db_dependency):
+async def clear_user_cart(user: user_dependency, db: Session = Depends(get_db)):
     """Clear all items from the cart."""
-    cart_repo = CartRepository(session)
+    cart_repo = CartRepository(db)
     cart = cart_repo.get_cart_by_user_id(user.id)
     if cart:
         cart_repo.clear_cart(cart)
     
     return Response(status_code=204)
+

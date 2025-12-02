@@ -16,18 +16,23 @@ async function authFetch(endpoint, options = {}) {
         headers,
     };
 
-    const response = await fetch(`${baseUrl}${endpoint}`, config);
+    try {
+        const response = await fetch(`${baseUrl}${endpoint}`, config);
 
-    if (!response.ok) {
-        const error = new Error(`HTTP error! status: ${response.status}`);
-        try {
-            error.response = {
-                data: await response.json()
-            };
-        } catch (e) {
-            // Ignore if response is not JSON
+        if (!response.ok) {
+            const error = new Error(`HTTP error! status: ${response.status}`);
+            try {
+                error.response = {
+                    data: await response.json()
+                };
+            } catch (e) {
+                // Ignore if response is not JSON
+            }
+            throw error;
         }
+        return response.json();
+    } catch (error) {
+        console.error('authFetch error:', error);
         throw error;
     }
-    return response.json();
 }

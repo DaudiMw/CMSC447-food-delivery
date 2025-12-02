@@ -1,7 +1,7 @@
 from typing import Optional
 from api.schemas.base_schema import BaseSchema
-from api.schemas.order_schemas import OrderSchema
 from models import UserRole
+from datetime import datetime
 
 
 class UserSchema(BaseSchema):
@@ -45,6 +45,13 @@ class UserAuth(BaseSchema):
 class ApplicationCreate(BaseSchema):
     id: str
     content: str
+
+class DasherApplicationSchema(BaseSchema):
+    id: int
+    user_id: str
+    content: str
+    date_applied: datetime
+    user: UserSummary
 
 
 

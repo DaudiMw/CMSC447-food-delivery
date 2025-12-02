@@ -3,7 +3,7 @@
 const { Redirect } = window.ReactRouterDOM;
 
 // Auth helper functions
-function checkAuth() {
+async function checkAuth() {
     const token = localStorage.getItem('authToken');
     if (!token) return false;
     
@@ -18,6 +18,13 @@ function checkAuth() {
             logout();
             return false;
         }
+        
+        const user = await get_user(payload.id);
+        if (user.is_banned) {
+            logout();
+            return false;
+        }
+        
         return true;
     } catch (e) {
         return false;
@@ -44,8 +51,22 @@ function getAuthToken() {
 }
 
 function ProtectedRoute({ component: Component, allowedRoles, ...rest }) {
-    const isAuthenticated = checkAuth();
+    const [isAuthenticated, setIsAuthenticated] = React.useState(null);
     const userRole = getUserRole();
+
+    React.useEffect(() => {
+        const verifyAuth = async () => {
+            const auth = await checkAuth();
+            setIsAuthenticated(auth);
+        };
+        verifyAuth();
+    }, []);
+
+    if (isAuthenticated === null) {
+        return <div className="flex min-h-full items-center justify-center">
+            <div className="text-2xl font-semibold text-gray-600">Loading...</div>
+        </div>
+    }
 
     return (
         <Route

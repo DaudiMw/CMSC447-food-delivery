@@ -113,8 +113,8 @@ def admin_required(current_user: UserAuth = Depends(get_current_user)):
     return current_user
 
 def dasher_required(current_user: UserAuth = Depends(get_current_user)):
-    if current_user.role != "admin" or current_user.role != "dasher":
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    if current_user.role != UserRole.admin and current_user.role != UserRole.dasher:
+        raise HTTPException(status_code=403, detail="Forbidden")
     return current_user
 
 def is_first_user():
@@ -148,27 +148,32 @@ def is_first_user():
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
                 db : Session = Depends(get_db)):
     
-    user_repo = UserRepository(db)
-    user = user_repo.get_by_email(form_data.username)
+    try:
+        
+        user_repo = UserRepository(db)
+        user = user_repo.get_by_email(form_data.username)
 
-    if not user or user.is_banned is True or user.is_deleted is True:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-            )
+        if not user or user.is_banned is True or user.is_deleted is True:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password",
+                headers={"WWW-Authenticate": "Bearer"},
+                )
 
-    # Verify the password using the stored hashed password
-    if not verify_password(form_data.password, user.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-            )
-    
-    token = create_access_token(data={"sub": user.email, "role": user.role.value, "id": user.id})
-    # Create an access token for the authenticated user
-    return {"access_token": token, "token_type": "bearer"}
+        # Verify the password using the stored hashed password
+        if not verify_password(form_data.password, user.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password",
+                headers={"WWW-Authenticate": "Bearer"},
+                )
+        
+        token = create_access_token(data={"sub": user.email, "role": user.role.value, "id": user.id})
+        # Create an access token for the authenticated user
+        return {"access_token": token, "token_type": "bearer"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error logging in: {e}")
 
 
 @router.post("/signup", response_model=UserCreate, status_code=201)

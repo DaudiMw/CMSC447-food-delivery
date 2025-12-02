@@ -52,7 +52,7 @@ function ItemDisplay({
           <div className="flex sm:flex-col justify-stretch sm:justify-center gap-2 p-4 sm:w-32 flex-shrink-0">
             <button 
               className="btn btn-action"
-              onClick={() => addToCartMutation.mutate()}
+              onClick={(e) => { e.preventDefault(); addToCartMutation.mutate() }}
               disabled={addToCartMutation.isLoading}
             >
               {addToCartMutation.isLoading ? 'Adding...' : 'Add to Cart'}

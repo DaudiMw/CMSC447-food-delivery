@@ -6,7 +6,6 @@ from api.auth import auth
 from api.routers import admin
 from api.routers import items
 from api.routers import order
-from api.routers import pickups
 from api.routers import store
 from api.routers import media
 from api.routers import cart
@@ -26,7 +25,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
 
@@ -38,8 +36,6 @@ app.include_router(auth.router, tags=["token"])
 app.include_router(admin.router, tags=["admin"])
 
 app.include_router(order.router, tags=["orders"])
-
-app.include_router(pickups.router, tags=["pickups"])
 
 app.include_router(store.router, tags=["stores"])
 
