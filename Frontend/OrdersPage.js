@@ -104,17 +104,3 @@ async function get_user_order_history(userId) {
         throw error;
     }
 }
-
-/**
- * Function to get user's orders by user ID
- * @param {*} userId 
- * @returns 
- */
-async function get_user_orders_by_id(userId) {
-    try {
-        const response = await authFetch(`/users/${userId}/orders`, { method: 'GET' });
-        return response;
-    } catch (error) {
-        console.log(error)
-    }
-}
