@@ -69,21 +69,20 @@ async function get_dasher_deliveries() {
 async function change_user_role(userId, newRole) {
     return authFetch(`/admin/users/${userId}/role`, {
         method: 'PATCH',
-        body: JSON.stringify({ role: newRole })
+        body: JSON.stringify(newRole)
     });
 }
 
 async function ban_user(userId, status) {
-    return authFetch(`/admin/users/${userId}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status })
+    const endpoint = status === 'banned' ? 'ban' : 'unban';
+    return authFetch(`/admin/users/${userId}/${endpoint}`, {
+        method: 'PATCH'
     });
 }
 
 async function handle_dasher_application(appId, action) {
-    return authFetch(`/admin/dasher-applications/${appId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ action })
+    return authFetch(`/admin/dasher-applications/${appId}/${action}`, {
+        method: 'POST'
     });
 }
 

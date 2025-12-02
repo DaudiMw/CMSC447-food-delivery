@@ -3,9 +3,11 @@ from api.auth.auth import admin_required, get_current_user
 from models import UserRole
 from repositories.user import UserRepository
 from repositories.dasherapplication import ApplicationRepository
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from database import get_db
-from api.schemas.user_schemas import UserSchema, UserCreate, UserAuth
+from api.schemas.user_schemas import UserSchema, UserCreate, UserAuth, DasherApplicationSchema
+from api.schemas.order_schemas import OrderSchema
+from repositories.orders import OrderRepository
 
 
 
@@ -84,6 +86,18 @@ async def ban_user(user_id: str,
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.patch("/users/{user_id}/unban")
+async def unban_user(user_id: str,
+                        db: Session = Depends(get_db)):
+    """Unban a user."""
+
+    try:
+        user_repo = UserRepository(db)
+        user = user_repo.change_ban_status(user_id, False)
+        return user
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     
 @router.get("/users/search")
 async def search_users(query: str, 
@@ -99,41 +113,59 @@ async def search_users(query: str,
         raise HTTPException(status_code=500, detail=str(e))
     
 
-@router.get("/dasher-applications")
+@router.get("/dasher-applications", response_model=list[DasherApplicationSchema])
 async def get_dasher_applications(db: Session = Depends(get_db)):
     """Get all dasher applications."""
 
     app_repo = ApplicationRepository(db)
-    user_repo = UserRepository(db)
 
     try:
-        applications = app_repo.get_all()
-        for application in applications:
-            user = user_repo.get_by_id(str(application.user_id))
-            if user:
-                application.user = user
-
+        applications = app_repo.get_all_with_user()
         return applications
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/dasher-deliveries")
+@router.get("/dasher-deliveries", response_model=list[OrderSchema])
 async def get_dasher_deliveries(db: Session = Depends(get_db)):
     """Get all dasher deliveries."""
+    order_repo = OrderRepository(db)
+    deliveries = order_repo.get_all_deliveries()
+    return deliveries
 
-    return []
-
-@router.get("/orders")
+@router.get("/orders", response_model=list[OrderSchema])
 async def get_orders(db: Session = Depends(get_db)):
     """Get all orders."""
-
-    return []
+    order_repo = OrderRepository(db)
+    orders = order_repo.get_all(options=[joinedload("user"), joinedload("items")])
+    return orders
 
 @router.post("/dasher-applications/{application_id}/approve")
 async def approve_dasher_application(application_id: int, db: Session = Depends(get_db)):
     """Approve a dasher application."""
+
+    app_repo = ApplicationRepository(db)
+    user_repo = UserRepository(db)
+
+    try:
+        application = app_repo.get_by_id(application_id)
+
+        if not application:
+            raise HTTPException(status_code=404, detail="Application not found")
+        
+        # Get the user associated with the application
+        user = user_repo.update_role(str(application.user_id), UserRole.dasher)
+        app_repo.hard_delete(application_id)
+
+        return {"message": "Application approved", "user": user}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/dasher-applications/{application_id}/reject")
+async def reject_dasher_application(application_id: int, db: Session = Depends(get_db)):
+    """Reject a dasher application."""
 
     app_repo = ApplicationRepository(db)
 
@@ -143,12 +175,9 @@ async def approve_dasher_application(application_id: int, db: Session = Depends(
         if not application:
             raise HTTPException(status_code=404, detail="Application not found")
         
-        # Get the user associated with the application
-        user_repo = UserRepository(db)
-        user = user_repo.update_by_id(str(application.user_id), role=UserRole.dasher)
         app_repo.hard_delete(application_id)
 
-        return {"message": "Application approved", "user": user}
+        return {"message": "Application rejected"}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

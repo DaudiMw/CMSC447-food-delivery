@@ -43,6 +43,7 @@ class User(Base):
     reports = relationship("Reports", back_populates="user") #1 to many
     stores = relationship("Store", secondary="store_owners", back_populates="owners") #many to many
     cart = relationship("Cart", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    dasher_application = relationship("DasherApplications", back_populates="user", uselist=False)
 
 
 class Store(Base):
@@ -121,6 +122,7 @@ class Order(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     dasher_id = Column(String, ForeignKey("users.id"))
+    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     address_id = Column(Integer, ForeignKey("addresses.id"), nullable=False)
     status = Column(SqlEnum(OrderStatus), nullable=False, default=OrderStatus.pending)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -176,6 +178,7 @@ class DasherApplications(Base):
     user_id = Column(String, ForeignKey("users.id"), nullable=False, unique=True)
     content = Column(String, nullable=False)
     date_applied = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    user = relationship("User", back_populates="dasher_application", uselist=False)
 
 class Cart(Base):
     __tablename__ = "carts"

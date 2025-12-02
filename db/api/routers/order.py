@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from api.auth.auth import oauth2_scheme
@@ -20,7 +20,7 @@ user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 class CreateOrderFromCartSchema(BaseModel):
     address_id: int
 
-@router.post("/from_cart", status_code=201, response_model=OrderSchema)
+@router.post("/from_cart", status_code=201, response_model=List[OrderSchema])
 async def create_order_from_cart(order_data: CreateOrderFromCartSchema, user: user_dependency, db: Session = Depends(get_db)):
     """Create a new order from the user's cart."""
     db.begin() # Start a transaction
@@ -32,37 +32,50 @@ async def create_order_from_cart(order_data: CreateOrderFromCartSchema, user: us
         if not user_cart or not user_cart.items:
             raise HTTPException(status_code=400, detail="Your cart is empty.")
 
-        # 2. Create the Order
-        new_order_obj = Order(
-            user_id=user.id,
-            address_id=order_data.address_id,
-            status=OrderStatus.pending
-        )
-        db.add(new_order_obj)
-        db.flush() # To get the new_order.id
-
-        # 3. Create OrderItems from CartItems
-        new_order_items = []
+        # Group cart items by store_id
+        items_by_store = {}
         for cart_item in user_cart.items:
-            new_order_items.append(
-                OrderItem(
-                    item_id=cart_item.item_id,
-                    quantity=cart_item.quantity,
-                    order_id=new_order_obj.id
-                )
-            )
-        
-        db.add_all(new_order_items)
+            store_id = cart_item.item.store_id
+            if store_id not in items_by_store:
+                items_by_store[store_id] = []
+            items_by_store[store_id].append(cart_item)
 
-        # 4. Clear the cart
+        new_orders = []
+        all_new_order_items = []
+
+        # 2. Create an Order and OrderItems for each store
+        for store_id, cart_items in items_by_store.items():
+            new_order = Order(
+                user_id=user.id,
+                address_id=order_data.address_id,
+                store_id=store_id,
+                status=OrderStatus.pending
+            )
+            db.add(new_order)
+            db.flush()  # To get the new_order.id
+            new_orders.append(new_order)
+
+            for cart_item in cart_items:
+                order_item = OrderItem(
+                    order_id=new_order.id,
+                    item_id=cart_item.item_id,
+                    quantity=cart_item.quantity
+                )
+                all_new_order_items.append(order_item)
+
+        db.add_all(all_new_order_items)
+        
+        # 3. Clear the cart
         for cart_item in user_cart.items:
             db.delete(cart_item)
 
-        # 5. Commit transaction and return order
+        # 4. Commit transaction and return orders
         db.commit()
-        db.refresh(new_order_obj)
+        for order in new_orders:
+            db.refresh(order)
     
-        return new_order_obj
+        return new_orders
+    
     except Exception as e:
         db.rollback()
         # logger.error(f"Error creating order from cart: {e}", exc_info=True)
@@ -120,16 +133,18 @@ async def get_order_by_status(status: str, user: user_dependency, db : Session =
     """Get an order by its status."""
 
     order_repo = OrderRepository(db)
-    order = None
+    
+    try:
+        status_enum = OrderStatus(status)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
 
-    for state in OrderStatus:
-        if (str(state.value) == status):
-            order = order_repo.get_by_order_state(state.value)
+    orders = order_repo.get_by_order_state(status_enum)
 
     if user.role == UserRole.user:
         raise HTTPException(status_code=403, detail="You do not have permission to access this")
     
-    return order
+    return orders
 
 @router.get("/users/{user_id}", response_model=list[OrderSchema])
 async def get_order_by_user_id(user_id: str, user: user_dependency, db : Session = Depends(get_db)):

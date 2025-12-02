@@ -4,6 +4,30 @@ const { useSuspenseQuery } = window.ReactQuery;
 
 
 function AdminPage() {
+
+    console.log('AdminPage component is being called!');
+
+    // TEST YOUR API FUNCTIONS
+    React.useEffect(() => {
+        console.log('Testing API functions...');
+        
+        get_all_users()
+            .then(data => console.log('Users data:', data))
+            .catch(err => console.error('Users error:', err));
+            
+        get_all_orders()
+            .then(data => console.log('Orders data:', data))
+            .catch(err => console.error('Orders error:', err));
+
+        get_dasher_applications()
+            .then(data => console.log('Dasher data:', data))
+            .catch(err => console.error('Dasher error:', err));
+
+        get_stores()
+            .then(data => console.log('store data:', data))
+            .catch(err => console.error('store error:', err));
+    }, []);
+
     const [activeTab, setActiveTab] = React.useState('users');
     const [searchQuery, setSearchQuery] = React.useState('');
     const [startDate, setStartDate] = React.useState('');
@@ -18,7 +42,7 @@ function AdminPage() {
     });
 
     // Fetch dasher applications
-    const { data: dasherApplications = [], isLoading: dasherApplicationsLoading, error: dasherApplicationsError, Pending: dasherApplicationsPending, refetch: refetchApplications} = useQuery({
+    const { data: dasherApplications = [], isLoading: dasherApplicationsLoading, error: dasherApplicationsError, isPending: dasherApplicationsPending, refetch: refetchApplications} = useQuery({
         queryKey: ['dasherApplications'],
         queryFn: get_dasher_applications
     });
@@ -157,6 +181,22 @@ function AdminPage() {
         return matchesSearch;
     })
 
+    React.useEffect(() => {
+        console.log('Debug Info:', {
+            usersLoading,
+            dasherApplicationsLoading,
+            dasherApplicationsPending,
+            ordersLoading,
+            deliveriesLoading,
+            storesLoading,
+            users,
+            dasherApplications,
+            orders,
+            usersError,
+            dasherApplicationsError
+        });
+    }, [usersLoading, dasherApplicationsLoading, ordersLoading, deliveriesLoading, storesLoading]);
+
     return (
         <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
             <h1 className="text-4xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
@@ -280,7 +320,7 @@ function AdminPage() {
                                                 </td>
                                                 <td className="p-3">
                                                     <span className={`px-2 py-1 rounded text-sm ${
-                                                        user.status !== 'is_banned' 
+                                                        !user.is_banned 
                                                             ? 'bg-green-100 text-green-800' 
                                                             : 'bg-red-100 text-red-800'
                                                     }`}>

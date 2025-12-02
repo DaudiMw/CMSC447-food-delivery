@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from models import Order, OrderStatus
 from repositories.base import BaseRepository
 
@@ -58,6 +58,19 @@ class OrderRepository(BaseRepository[Order]):
             self.model.status == status
         ).first()
     
+    def get_by_store_id(self, store_id: int) -> list[Order]:
+        """Get all orders for a given store ID."""
+        return self.session.query(Order).filter(
+            self.model.is_deleted == False,
+            self.model.store_id == store_id
+        ).all()
+    
+    def get_all_deliveries(self) -> list[Order]:
+        """Get all orders that have been assigned to a dasher."""
+        return self.session.query(Order).filter(
+            self.model.is_deleted == False,
+            self.model.dasher_id != None
+        ).options(joinedload(Order.user), joinedload(Order.items)).all()
     
 
     
