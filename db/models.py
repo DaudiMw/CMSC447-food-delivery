@@ -65,6 +65,7 @@ class Store(Base):
     items = relationship("Item", back_populates="store") #1 to many
     owners = relationship("User", secondary="store_owners", back_populates="stores") #many to many
     reports = relationship("Reports", back_populates="store")
+    orders = relationship("Order", back_populates="store")
 
 
 class StoreHours(Base):
@@ -136,6 +137,7 @@ class Order(Base):
     dasher = relationship("User", foreign_keys=[dasher_id], backref="deliveries")
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
     reports = relationship("Reports", back_populates="order") #1 to many
+    store = relationship("Store", back_populates="orders")
 
 
 class Reports(Base):

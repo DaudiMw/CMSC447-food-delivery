@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from api.schemas.base_schema import BaseSchema, Address
 from datetime import datetime, time
 from typing import List, Optional
+from api.schemas.store_schemas import StoreInfoSchema
 from models import OrderStatus
 from api.schemas.item_schemas import ItemSchema
 from api.schemas.user_schemas import UserSummary
@@ -25,9 +26,8 @@ class OrderSchema(BaseSchema):
     updated_at: datetime
     items: List[OrderItemSchema]
     user: UserSummary
+    store: StoreInfoSchema    
 
-    class Config:
-        from_attributes = True
 
 class OrderStatusUpdateSchema(BaseModel):
     status: OrderStatus

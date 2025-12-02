@@ -86,7 +86,7 @@ function Banner() {
                     <span>Orders</span>
             </button>)}
             
-            <button 
+            {/* <button 
                 className="bannerButton" 
                 onClick={() => {
                     window.location.hash = '#/stores';
@@ -98,7 +98,7 @@ function Banner() {
                 </svg>
 
                 <span>Stores</span>
-            </button>
+            </button> */}
 
             {(getUserRole() === "dasher" || getUserRole() === "store_owner" || getUserRole() === "admin") && (
               <button 
