@@ -50,8 +50,8 @@ async def get_user_by_id(user_id: str,
 @router.patch("/users/{user_id}/role", response_model=UserSchema)
 async def update_user_role(user_id: str, 
                            new_role: UpdateUserRole,
-                           user: user_dependency,
-                           db: Session = Depends(get_db)):
+                           db: Session = Depends(get_db),
+                           current_user = Depends(get_current_user)):
     """Update a user's role."""
 
     if user_id == user.id:

@@ -38,11 +38,11 @@ function CheckoutPage() {
     });
 
     const createOrderMutation = useMutation({
-        mutationFn: create_order_from_cart,
+        mutationFn: (address_id) => create_order_from_cart(address_id),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['cart'] });
             alert(`Order placed successfully! Order ID: ${data.id}`);
-            window.location.hash = `#/user/${getUserId()}`;
+            window.location.hash = '#/home';
         },
         onError: (error) => {
             alert(`Error creating order: ${error.message}`);

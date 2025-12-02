@@ -93,8 +93,8 @@ function AdminPage() {
 
     const banUser = (userId) => {
         const user = users.find(u => u.id === userId);
-        const newStatus = user.status === 'active' ? 'banned' : 'active';
-        if (confirm(`${newStatus === 'banned' ? 'Ban' : 'Unban'} this user?`)) {
+        const newStatus = (user.is_banned) ? 'banned' : 'active';
+        if (confirm(`${newStatus === 'banned' ? 'Unban' : 'Ban'} this user?`)) {
             if (userId === getUserId()) {
                 logout();
             }
