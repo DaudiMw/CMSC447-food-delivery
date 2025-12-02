@@ -5,7 +5,7 @@ from repositories.user import UserRepository
 from repositories.dasherapplication import ApplicationRepository
 from sqlalchemy.orm import Session
 from database import get_db
-from api.schemas.user_schemas import UserSchema, UserCreate
+from api.schemas.user_schemas import UserSchema, UserCreate, UpdateUserRole
 
 
 
@@ -44,13 +44,13 @@ async def get_user_by_id(user_id: str,
 
 @router.patch("/users/{user_id}/role")
 async def update_user_role(user_id: str, 
-                           new_role: UserRole,
+                           new_role: UpdateUserRole,
                            db: Session = Depends(get_db)):
     """Update a user's role."""
 
     try:
         user_repo = UserRepository(db)
-        updated_user = user_repo.update_role(user_id, new_role)
+        updated_user = user_repo.update_role(user_id, UserRole(new_role.user_role))
         return updated_user
     
     except Exception as e:
@@ -71,6 +71,17 @@ async def ban_user(user_id: str,
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.patch("/users/{user_id}/unban")
+async def unban_user(user_id: str,
+                     db: Session = Depends(get_db)):
+    """Unban a user."""
+    
+    try:
+        user_repo = UserRepository(db)
+        user = user_repo.change_ban_status(user_id, False)
+        return user
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     
 @router.get("/users/search")
 async def search_users(query: str, 

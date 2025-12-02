@@ -69,14 +69,19 @@ async function get_dasher_deliveries() {
 async function change_user_role(userId, newRole) {
     return authFetch(`/admin/users/${userId}/role`, {
         method: 'PATCH',
-        body: JSON.stringify({ role: newRole })
+        body: JSON.stringify({ user_role: newRole })
     });
 }
 
-async function ban_user(userId, status) {
-    return authFetch(`/admin/users/${userId}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status })
+async function ban_user(userId) {
+    return authFetch(`/admin/users/${userId}/ban`, {
+        method: 'PATCH'
+    });
+}
+
+async function unban_user(userId) {
+    return authFetch(`/admin/users/${userId}/unban`, {
+        method: 'PATCH'
     });
 }
 

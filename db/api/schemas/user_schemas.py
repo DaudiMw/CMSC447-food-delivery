@@ -46,6 +46,8 @@ class ApplicationCreate(BaseSchema):
     id: str
     content: str
 
+class UpdateUserRole(BaseSchema):
+    user_role: str
 
 
 

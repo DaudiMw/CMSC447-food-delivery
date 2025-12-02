@@ -59,7 +59,15 @@ function AdminPage() {
 
     // Mutation for banning/unbanning user
     const banUserMutation = window.ReactQuery.useMutation({
-        mutationFn: ({ userId, status }) => ban_user(userId, status),
+        mutationFn: ({ userId, status }) => {
+            console.log(status)
+            if (status != 'banned') {
+                ban_user(userId)
+            }
+            else {
+                unban_user(userId)
+            }
+        },
         onSuccess: () => {
             refetchUsers();
         }
@@ -83,8 +91,8 @@ function AdminPage() {
 
     const banUser = (userId) => {
         const user = users.find(u => u.id === userId);
-        const newStatus = user.status === 'active' ? 'banned' : 'active';
-        if (confirm(`${newStatus === 'banned' ? 'Ban' : 'Unban'} this user?`)) {
+        const newStatus = (user.is_banned) ? 'banned' : 'active';
+        if (confirm(`${newStatus === 'banned' ? 'Unban' : 'Ban'} this user?`)) {
             banUserMutation.mutate({ userId, status: newStatus });
         }
     };
@@ -274,6 +282,7 @@ function AdminPage() {
                                                         <option value="user">User</option>
                                                         <option value="dasher">Dasher</option>
                                                         <option value="admin">Admin</option>
+                                                        <option value="store_owner">Store Owner</option>
                                                     </select>
                                                 </td>
                                                 <td className="p-3">
