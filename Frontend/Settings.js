@@ -135,18 +135,24 @@ function SettingsPage() {
 
 
   const handleAddAddress = () => {
-    if (addressForm.street && addressForm.city && addressForm.state && addressForm.zip) {
-      addAddressMutation.mutate({
-        label: addressForm.label,
+    // Validate required fields (street, city, state, zip are always required)
+    if (!addressForm.street || !addressForm.city || !addressForm.state || !addressForm.zip) {
+        setErrorMessage('Please fill in all required address fields (Street, City, State, Zip).');
+        return;
+    }
+
+    addAddressMutation.mutate({
+        label: addressForm.label || null, // Label is optional
         street: addressForm.street,
         city: addressForm.city,
         state: addressForm.state,
         zip: addressForm.zip,
-        building: addressForm.building || null, // Pass null if empty
-        room_number: addressForm.room_number || null // Pass null if empty
-      });
-      setAddressForm({ label: '', street: '', city: '', state: '', zip: '', building: '', room_number: '' });
-    }
+        building: addressForm.building || null, // Building is optional
+        room_number: addressForm.room_number || null, // Room number is optional
+    });
+    // Clear the form only on success (after mutation.onSuccess)
+    // For now, clear it here assuming mutation will eventually succeed and update UI
+    setAddressForm({ label: '', street: '', city: '', state: '', zip: '', building: '', room_number: '' });
   };
 
   const handleAddPayment = () => {
@@ -317,14 +323,14 @@ function SettingsPage() {
                       type="text"
                       value={addressForm.building}
                       onChange={(e) => setAddressForm({...addressForm, building: e.target.value})}
-                      placeholder="Building"
+                      placeholder="Building (Optional)"
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
                     <input
                       type="text"
                       value={addressForm.room_number}
                       onChange={(e) => setAddressForm({...addressForm, room_number: e.target.value})}
-                      placeholder="Room Number"
+                      placeholder="Room Number (Optional)"
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
                     <input
@@ -359,20 +365,6 @@ function SettingsPage() {
                         className="w-full md:w-2/3 px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                       />
                     </div>
-                    <input
-                      type="text"
-                      value={addressForm.building}
-                      onChange={(e) => setAddressForm({...addressForm, building: e.target.value})}
-                      placeholder="Building (Optional)"
-                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
-                    />
-                    <input
-                      type="number"
-                      value={addressForm.room_number}
-                      onChange={(e) => setAddressForm({...addressForm, room_number: e.target.value})}
-                      placeholder="Room Number (Optional)"
-                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
-                    />
                     <button 
                       onClick={handleAddAddress}
                       disabled={addAddressMutation.isPending}
@@ -391,7 +383,9 @@ function SettingsPage() {
                       <div key={addr.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="mb-2 md:mb-0">
                           <p className="font-medium text-gray-800">{addr.label}</p>
-                          <p className="text-sm text-gray-600">{`${addr.building || ''}${addr.room_number ? ' Room ' + addr.room_number : ''}, ${addr.street}, ${addr.city}, ${addr.state} ${addr.zip}`}</p>
+                          <p className="text-sm text-gray-600">
+                            {`${addr.building || ''}${addr.room_number ? ' Room ' + addr.room_number : ''}${addr.building || addr.room_number ? ', ' : ''}${addr.street}, ${addr.city}, ${addr.state} ${addr.zip}`}
+                          </p>
                         </div>
                         <button 
                           onClick={() => deleteAddress(addr.id)}
