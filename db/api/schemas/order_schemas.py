@@ -36,17 +36,17 @@ class OrderStatusUpdateSchema(BaseModel):
 class OrderShow(BaseSchema):
     address: Address
     status: str
-    created_at: str
-    accepted_at: str
-    completed_at: str
-    updated_at: str
-    items: list[ItemSchema]
+    created_at: datetime
+    accepted_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    updated_at: datetime
+    items: list[OrderItemSchema]
+    store: StoreInfoSchema
 
 class OrderUpdateSchema(BaseSchema):
     status: str
     dasher_id: str
     accepted_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
-
 
 

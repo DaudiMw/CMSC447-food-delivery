@@ -142,11 +142,10 @@ function SettingsPage() {
         city: addressForm.city,
         state: addressForm.state,
         zip: addressForm.zip,
-        building: addressForm.building,
-        room_number: addressForm.room_number
+        building: addressForm.building || null, // Pass null if empty
+        room_number: addressForm.room_number || null // Pass null if empty
       });
-    } else {
-        setErrorMessage('Please fill all required address fields.');
+      setAddressForm({ label: '', street: '', city: '', state: '', zip: '', building: '', room_number: '' });
     }
   };
 
@@ -360,6 +359,20 @@ function SettingsPage() {
                         className="w-full md:w-2/3 px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                       />
                     </div>
+                    <input
+                      type="text"
+                      value={addressForm.building}
+                      onChange={(e) => setAddressForm({...addressForm, building: e.target.value})}
+                      placeholder="Building (Optional)"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
+                    />
+                    <input
+                      type="number"
+                      value={addressForm.room_number}
+                      onChange={(e) => setAddressForm({...addressForm, room_number: e.target.value})}
+                      placeholder="Room Number (Optional)"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
+                    />
                     <button 
                       onClick={handleAddAddress}
                       disabled={addAddressMutation.isPending}

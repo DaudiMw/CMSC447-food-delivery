@@ -59,7 +59,7 @@ async function get_store(store_id){
  */
 async function get_user_stores(user_id) {
     try{
-        const response = await authFetch(`/stores/${user_id}`)
+        const response = await authFetch(`/stores/users/${user_id}`)
         return response;
     } catch (error){
         console.error('Error fetching store', error);

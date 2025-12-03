@@ -14,7 +14,7 @@ class HomePage extends React.Component {
         // Gets the div called restaurants, you can see where it is in this class's render() function.
         const restaurants = document.getElementsByClassName("restaurants")[0];
         // For every restaurant in the database, do this.
-        data.filter(e => !e.deleted).forEach(element => {
+        data.filter(e => !e.deleted).forEach(async element => {
             // Create a new div
             const restaurantDiv = document.createElement('div');
             // Give it a className, which home.css has parameters to modify.
@@ -33,9 +33,12 @@ class HomePage extends React.Component {
             restaurantDiv.appendChild(restaurantTitle);
 
             // Popular items, same logic as above
-            for (let i = 0; i < 4; i++) {
+            let storeWithItems = await get_store_items(element.id)
+            let items = storeWithItems.items.filter(i => i.picture_id != null)
+            for (let i = 0; i < Math.min(4, items.length); i++) {
                 const popularItem = document.createElement('div');
                 popularItem.className = "popularItem hover:scale-105 transition duration:2s";
+                popularItem.style.backgroundImage = `url('${"http://localhost:8000/media/" + items[i].picture_id}')`
                 restaurantDiv.appendChild(popularItem);
             }
 
@@ -65,6 +68,15 @@ async function get_stores() {
         const response = await authFetch(`/stores`, { method: 'GET' });
         return response;
     } catch (error) {
-        console.log(error)
+        console.log(error);
+    }
+}
+
+async function get_store_items(storeID) {
+    try {
+        const response = await authFetch(`/stores/${storeID}/items-full`, {method: 'GET' });
+        return response;
+    } catch (error) {
+        console.log(error);
     }
 }

@@ -218,22 +218,48 @@ function ItemList({ data, showToast }) {
   );
 }
 
-function getOpenCloseTime(hours){
-    const now = new Date();
-    const currentDay = now.getDay();
+// Helper to format time to AM/PM
+function formatTime(timeString) {
+  if (!timeString) return '';
+  const [hours, minutes] = timeString.split(':').map(Number);
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const formattedHours = hours % 12 || 12; // Convert 24hr to 12hr format
+  return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+}
 
-    for (const dayObj of hours){
-      if (dayObj.day === currentDay){
-        if (dayObj.start_time && dayObj.end_time){
-          return {'start_time': dayObj.start_time,
-                  'end_time':dayObj.end_time,
-                  'is_open': dayObj.start_time <= now && dayObj.end_time >= now
-          }
-        }
+function getOpenCloseTime(hours) {
+  const now = new Date();
+  const dayMap = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const currentDay = dayMap[now.getDay()];
+
+  for (const dayObj of hours) {
+    if (dayObj.day === currentDay) {
+      
+      // If either time is null → store is not open today
+      if (!dayObj.start_time || !dayObj.end_time) {
+        return {
+          start_time: null,
+          end_time: null,
+          is_open: false
+        };
       }
-    }
 
-    return null
+      // Parse valid times
+      const [startHour, startMinute] = dayObj.start_time.split(':').map(Number);
+      const [endHour, endMinute] = dayObj.end_time.split(':').map(Number);
+
+      const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute);
+      const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMinute);
+
+      return {
+        start_time: dayObj.start_time,
+        end_time: dayObj.end_time,
+        is_open: now >= startTime && now <= endTime,
+      };
+    }
+  }
+
+  return null;
 }
 
 function StorePage() {
@@ -303,12 +329,18 @@ function StorePage() {
           <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-2 md:gap-4">
             {hours && (
               <div>
-                <p className={`text-lg md:text-2xl ${hours.is_open ? 'text-green-600' : 'text-red-600'}`}>
-                  {hours.start_time}-{hours.end_time}
-                </p>
-                <span className={hours.is_open ? 'text-green-600' : 'text-red-600'}>
-                  {hours.is_open ? 'Open' : 'Closed'}
-                </span>
+                {hours.start_time && hours.end_time ? (
+                  <>
+                    <p className={hours.is_open ? "text-green-600 text-xl" : "text-red-600 text-xl"}>
+                      {formatTime(hours.start_time)} - {formatTime(hours.end_time)}
+                    </p>
+                    <span className={hours.is_open ? "text-green-600 text-xl" : "text-red-600 text-xl"}>
+                      {hours.is_open ? "Open" : "Closed"}
+                    </span>
+                  </>
+                ) : (
+                  <p className="text-red-600 text-xl">Closed Today</p>
+                )}
               </div>
             )}
             <p className="text-base md:text-xl text-gray-800">

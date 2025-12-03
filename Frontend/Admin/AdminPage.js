@@ -109,8 +109,8 @@ function AdminPage() {
 
     const banUser = (userId) => {
         const user = users.find(u => u.id === userId);
-        const newStatus = user.status === 'active' ? 'banned' : 'active';
-        if (confirm(`${newStatus === 'banned' ? 'Ban' : 'Unban'} this user?`)) {
+        const newStatus = (user.is_banned) ? 'banned' : 'active';
+        if (confirm(`${newStatus === 'banned' ? 'Unban' : 'Ban'} this user?`)) {
             if (userId === getUserId()) {
                 logout();
             }
@@ -518,6 +518,7 @@ function AdminPage() {
                                         <tr className="bg-gray-100">
                                             <th className="p-3 text-left font-semibold border-b">Name</th>
                                             <th className="p-3 text-left font-semibold border-b">Description</th>
+                                            <th className="p-3 text-left font-semibold border-b">Owners</th>
                                             <th className="p-3 text-left font-semibold border-b">Created At</th>
                                             <th className="p-3 text-left font-semibold border-b">Actions</th>
                                         </tr>
@@ -527,6 +528,7 @@ function AdminPage() {
                                             <tr key={store.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
                                                 <td className="p-3">{store.name}</td>
                                                 <td className="p-3">{store.description}</td>
+                                                <td className="p-3">{store.owners.map(owner => `${owner.first_name} ${owner.last_name}<br>`)}</td>
                                                 <td className="p-3">{new Date(store.created_at).toLocaleDateString()}</td>
                                                 <td className="p-3 flex gap-2">
                                                     <button 

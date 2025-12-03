@@ -249,7 +249,7 @@ async def create_order(order: OrderSchema, user: user_dependency, db : Session =
 
 
 
-@router.patch("/{order_id}", response_model=OrderSchema, status_code=200)
+@router.patch("/update/{order_id}", response_model=OrderSchema, status_code=200)
 async def update_order(order_id: int, 
                        user: user_dependency,
                        order_data: OrderUpdateSchema, 

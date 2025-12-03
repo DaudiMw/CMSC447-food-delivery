@@ -122,7 +122,6 @@ async def update_store(store_id: int,
         raise HTTPException(status_code=404, detail="Store not found.")
 
     try:
-        # db.begin()
 
         # Update Address
         if address:
@@ -187,8 +186,8 @@ async def update_store(store_id: int,
             raise e
         # logger.error(f"Store creation error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-    
-@router.get("/{user_id}", response_model=list[StoreSchema])
+
+@router.get("/users/{user_id}", response_model=list[StoreSchema])
 async def get_users_stores(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
     """Gets all stores that a user owns."""
     try:
@@ -204,9 +203,11 @@ async def get_users_stores(user_id: str, user: user_dependency, db: Session = De
             raise HTTPException(status_code=404, detail="Store not found.")
         
         return store
-    except HTTPException:
-        raise
+    
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        
         raise HTTPException(status_code=500, detail=f"Unkown server error when getting user's owned stores with user ID: {user_id}")
 
 

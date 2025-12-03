@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
-from models import Order, OrderStatus
+from models import Order, OrderStatus, OrderItem
 from repositories.base import BaseRepository
 
 
@@ -45,7 +45,10 @@ class OrderRepository(BaseRepository[Order]):
     
     def get_by_user_id_ordered_by_date(self, user_id: str) -> list[Order]:
         """Get all orders for a given user ID ordered by date."""
-        return self.session.query(Order).filter(
+        return self.session.query(Order).options(
+            joinedload(Order.items).joinedload(OrderItem.item),
+            joinedload(Order.store)
+        ).filter(
             self.model.is_deleted == False,
             self.model.user_id == user_id
         ).order_by(Order.created_at).all()

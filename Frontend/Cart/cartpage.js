@@ -70,7 +70,7 @@ function CartPage() {
                     <div className="bg-white rounded-lg shadow-md p-8 text-center">
                         <p className="text-xl text-gray-600 mb-4">Your cart is empty.</p>
                         <button 
-                            onClick={() => window.location.hash = '#/stores'}
+                            onClick={() => window.location.hash = '#/home'}
                             className="btn btn-action"
                         >
                             Continue Shopping
@@ -145,7 +145,7 @@ function CartPage() {
                                     Proceed to Checkout
                                 </button>
                                 <button 
-                                    onClick={() => window.location.hash = '#/stores'}
+                                    onClick={() => window.location.hash = '#/home'}
                                     className="btn btn-secondary w-full mt-3"
                                 >
                                     Continue Shopping

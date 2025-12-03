@@ -41,7 +41,7 @@ function CheckoutPage() {
     });
 
     const createOrderMutation = useMutation({
-        mutationFn: create_order_from_cart,
+        mutationFn: (address_id) => create_order_from_cart(address_id),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['cart'] });
             setSuccessMessage(`Order placed successfully! Order ID: ${data.id}`);
@@ -175,7 +175,7 @@ function CheckoutPage() {
                                                 checked={selectedAddress === String(address.id)}
                                                 onChange={(e) => setSelectedAddress(e.target.value)}
                                                 className="mt-1 mr-3"
-                                            /                                        >
+                                            />
                                             <div>
                                                 <p className="font-semibold text-gray-800">{address.building} - Room {address.room_number}</p>
                                                 <p className="text-gray-600">{address.street}</p>
