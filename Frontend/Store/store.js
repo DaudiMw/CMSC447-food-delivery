@@ -9,6 +9,7 @@ function ItemDisplay({
   picture,
   store_id,
   nutrition_info,
+  showToast,
 }) {
   const [showNutrition, setShowNutrition] = React.useState(false);
   const { useMutation, useQueryClient } = window.ReactQuery;
@@ -18,12 +19,11 @@ function ItemDisplay({
     mutationFn: () => add_to_cart(item_id, 1), // Add 1 item by default
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
-      // Consider a more subtle notification than an alert
-      console.log('Item added to cart!');
+      showToast('success', 'Item added to cart!');
     },
     onError: (error) => {
       console.error(`Error adding item to cart: ${error.message}`);
-      alert(`Error adding item to cart: ${error.message}`);
+      showToast('danger', `Error: ${error.message}`);
     }
   });
 
@@ -87,6 +87,7 @@ function ItemDisplay({
   );
 }
 
+// ... (NutritionModal and ItemInfoDisplay remain the same)
 function NutritionModal({ onClose, nutrition_info, itemName }) {
   // The JSX for your modal remains the same
   const modalContent = (
@@ -152,7 +153,7 @@ function ItemInfoDisplay({ nutrition_info }) {
   );
 }
 
-function ItemList({ data }) {
+function ItemList({ data, showToast }) {
   if (!data || data.length === 0) {
     return (
       <div className="bg-white py-8 px-6">
@@ -205,6 +206,7 @@ function ItemList({ data }) {
                     picture={item.picture_id}
                     store_id={item.store_id}
                     nutrition_info={item.nutrition_info}
+                    showToast={showToast}
                   />
                 ))}
               </div>
@@ -235,13 +237,17 @@ function getOpenCloseTime(hours){
 }
 
 function StorePage() {
-
   const { store_id } = ReactRouterDOM.useParams();
+  const [toastInfo, setToastInfo] = React.useState({ show: false, message: '', type: '' });
 
   const { data: store = {}, isLoading: storeLoading, error: storeError, refetch: storeRefetch } = window.ReactQuery.useQuery({
     queryKey: ['store', store_id],
     queryFn: () => get_store_info_with_items(store_id)
   });
+
+  const showToast = (type, message) => {
+    setToastInfo({ show: true, message, type });
+  };
 
   if (storeLoading) {
     return (
@@ -268,19 +274,21 @@ function StorePage() {
   }
 
   const imageUrl = store.banner_id ? `http://localhost:8000/media/${store.banner_id}` : '/placeholder.jpg';
-
-  // const 
   
-  // Format the address as a string
   const addressString = store.address 
-    ? `${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`
+    ? `${store.address.building ? store.address.building + (store.address.room_number ? ' - Room ' + store.address.room_number : '') + ', ' : ''}${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`
     : 'Address not available';
-
 
   const hours = getOpenCloseTime(store.hours);
 
   return (
     <div className="min-h-screen bg-gradient-to-br mt-18 from-amber-50 via-orange-50 to-yellow-50">
+      <Toast 
+        message={toastInfo.message}
+        type={toastInfo.type}
+        show={toastInfo.show}
+        onClose={() => setToastInfo({ show: false, message: '', type: '' })}
+      />
       {/* Hero Section - Company Image */}
       <div className="relative w-full h-60 md:h-[420px] bg-cover bg-center" style={{ backgroundImage: `url(${imageUrl})` }}>
         <div className="absolute inset-0 bg-black opacity-25"></div>
@@ -325,7 +333,7 @@ function StorePage() {
             </button>
           </div>
         )}
-        <ItemList data={store.items || []} />
+        <ItemList data={store.items || []} showToast={showToast} />
       </div>
     </div>
   );

@@ -29,6 +29,7 @@ function ItemForm({ store_id, item: existingItem }) {
 
     const [picturePreview, setPicturePreview] = useState(existingItem?.picture_id ? `http://localhost:8000/media/${existingItem.picture_id}` : null);
     const [serverError, setServerError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
 
     const showNutritionalInfo = watch('showNutritionalInfo', existingItem?.item_info);
     const pictureFile = watch('picture');
@@ -43,6 +44,7 @@ function ItemForm({ store_id, item: existingItem }) {
 
     const onSubmit = async (data) => {
         setServerError(null);
+        setSuccessMessage(null);
         try {
             const formData = new FormData();
             const itemData = {
@@ -76,12 +78,16 @@ function ItemForm({ store_id, item: existingItem }) {
 
             if (existingItem) {
                 await edit_item(formData, store_id, existingItem.id);
-                alert('Item updated successfully!');
+                setSuccessMessage('Item updated successfully!');
             } else {
                 await create_item(formData, store_id);
-                alert('Item created successfully!');
+                setSuccessMessage('Item created successfully!');
             }
-            history.push(`/store/${store_id}`);
+            
+            setTimeout(() => {
+                history.push(`/store/${store_id}`);
+            }, 2000);
+
         } catch (error) {
             console.error('Failed to save item', error);
             setServerError(error.message || 'An unexpected error occurred.');
@@ -90,6 +96,18 @@ function ItemForm({ store_id, item: existingItem }) {
     
     return (
         <div className="flex min-h-screen flex-col items-center justify-center pt-24 px-4 md:px-10 bg-gray-50">
+            <Toast
+                message={successMessage}
+                type="success"
+                show={!!successMessage}
+                onClose={() => setSuccessMessage(null)}
+            />
+            <Toast
+                message={serverError}
+                type="danger"
+                show={!!serverError}
+                onClose={() => setServerError(null)}
+            />
             <div className="w-full max-w-2xl p-8 space-y-6 bg-white rounded-lg shadow-md">
                 <h1 className="text-3xl font-bold text-center text-gray-800">{existingItem ? 'Edit Item' : 'Create a New Item'}</h1>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -202,8 +220,6 @@ function ItemForm({ store_id, item: existingItem }) {
                             </div>
                         </fieldset>
                     )}
-
-                    {serverError && <div className="text-red-500 text-center">{serverError}</div>}
 
                     <button type="submit"
                             disabled={isSubmitting}

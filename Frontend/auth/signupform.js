@@ -10,6 +10,7 @@ function SignupForm(props) {
     const [lastName, setLastName] = React.useState('');
     const [campusId, setCampusId] = React.useState('');
     const [error, setError] = React.useState('');
+    const [success, setSuccess] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
     
     const history = window.ReactRouterDOM.useHistory();
@@ -42,6 +43,7 @@ function SignupForm(props) {
 
     const handleSubmit = async () => {
         setError('');
+        setSuccess(false);
 
         // Validate passwords match
         if (password !== confirmPassword) {
@@ -64,11 +66,17 @@ function SignupForm(props) {
             
             console.log('Signup successful:', data);
             
-            // Navigate to login page on success
-            history.push('/login');
-                        
+            setSuccess(true);
+            setEmail('');
+            setPassword('');
+            setConfirmPassword('');
+            setFirstName('');
+            setLastName('');
+            setCampusId('');
+            
         } catch (error) {
             setError(error.message || 'Signup failed. Please try again.');
+        } finally {
             setLoading(false);
         }
         return false;
@@ -153,6 +161,13 @@ function SignupForm(props) {
                     {error}
                 </div>
             )}
+
+            <Toast 
+                message="Signup successful! You can now log in."
+                type="success"
+                show={success}
+                onClose={() => setSuccess(false)}
+            />
             
             <button 
                 type="button" 

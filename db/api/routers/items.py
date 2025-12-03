@@ -32,7 +32,7 @@ async def add_item_to_store(store_id: int,
     media_repo = MediaRepository(db)
 
     owners_list = store_repo.check_store_owner(user.id, store_id)
-    logger.error(f"User role: {user.role}, type: {type(user.role)}")
+    # logger.error(f"User role: {user.role}, type: {type(user.role)}")
     if user.role != UserRole.admin and not owners_list:
         raise HTTPException(status_code=401, detail="User does not own that store")
     
@@ -72,11 +72,16 @@ async def add_item_to_store(store_id: int,
 @router.get("/{item_id}", response_model=ItemSchemaWithInfo)
 async def get_item_by_id(item_id: int, db: Session = Depends(get_db)):
     """Gets an item by its ID."""
-    items_repo = ItemRepository(db)
-    item = items_repo.get_by_id(item_id)
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return item
+    try:
+        items_repo = ItemRepository(db)
+        item = items_repo.get_by_id(item_id)
+        if not item:
+            raise HTTPException(status_code=404, detail="Item not found")
+        return item
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unkown server error when retrieving item with ID {item_id}")
 
 @router.put("/{store_id}/{item_id}", response_model=ItemSchema)
 async def update_item(store_id: int,
@@ -138,24 +143,34 @@ async def search_item_by_store_id(store_id: int,
                                   query: str,
                                   db: Session = Depends(get_db)):
     """Searches an item by name and description within a store."""
-    items_repo = ItemRepository(db)
-    items = items_repo.search_items_by_store(store_id, query)
-    return items
+    try:
+        items_repo = ItemRepository(db)
+        items = items_repo.search_items_by_store(store_id, query)
+        return items
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unkown server error when searching for items with query {query}")
 
 @router.get("/order/{order_id}", response_model=list[ItemSchema])
 async def get_items_by_order_id(order_id: int,
                                user: user_dependency,
                                db: Session = Depends(get_db)):
     """Gets all items for a given order ID."""
-    order_repo = OrderRepository(db)
-    order = order_repo.get_by_id(order_id)
+    try:
+        order_repo = OrderRepository(db)
+        order = order_repo.get_by_id(order_id)
 
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-        
-    if user.role != UserRole.admin and order.user_id != user.id:
-        raise HTTPException(status_code=401, detail="User did not place that order")
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+            
+        if user.role != UserRole.admin and order.user_id != user.id:
+            raise HTTPException(status_code=401, detail="User did not place that order")
 
-    items_repo = ItemRepository(db)
-    items = items_repo.get_by_order_id(order_id)
-    return items
+        items_repo = ItemRepository(db)
+        items = items_repo.get_by_order_id(order_id)
+        return items
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unkown server error when fetching items by order with ID {order_id}")

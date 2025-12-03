@@ -93,9 +93,9 @@ async def create_store(user: user_dependency,
 
         return created_store
     
-    except HTTPException:
-        raise
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         logger.error(f"Store creation error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -122,7 +122,7 @@ async def update_store(store_id: int,
         raise HTTPException(status_code=404, detail="Store not found.")
 
     try:
-        db.begin()
+        # db.begin()
 
         # Update Address
         if address:
@@ -181,29 +181,33 @@ async def update_store(store_id: int,
         db.refresh(existing_store)
         return existing_store
 
-    except HTTPException:
-        db.rollback()
-        raise
     except Exception as e:
         db.rollback()
-        logger.error(f"Store update error: {str(e)}", exc_info=True)
+        if isinstance(e, HTTPException):
+            raise e
+        # logger.error(f"Store creation error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
+    
 @router.get("/{user_id}", response_model=list[StoreSchema])
 async def get_users_stores(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
     """Gets all stores that a user owns."""
-    store_repo = StoreRepository(db)
+    try:
+        store_repo = StoreRepository(db)
 
-    store = store_repo.get_user_stores(user_id)
+        store = store_repo.get_user_stores(user_id)
 
-    if user_id != user.id and user.role != UserRole.admin:
-        raise HTTPException(status_code=403, detail="You do not have permission to access this")
+        if user_id != user.id and user.role != UserRole.admin:
+            raise HTTPException(status_code=403, detail="You do not have permission to access this")
 
-    if not store:
-        # return []
-        raise HTTPException(status_code=404, detail="Store not found.")
-    
-    return store
+        if not store:
+            # return []
+            raise HTTPException(status_code=404, detail="Store not found.")
+        
+        return store
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unkown server error when getting user's owned stores with user ID: {user_id}")
 
 
 @router.get("/{store_id}/info", response_model=StoreSchema)
@@ -221,6 +225,8 @@ async def get_store_by_id(store_id: int, db : Session = Depends(get_db)):
         return store
     
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.get("/{store_id}/items-full", response_model=StoreWithItemsSchema)
@@ -239,7 +245,7 @@ async def get_store_items_full(store_id: int, db: Session = Depends(get_db)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Unkown server error when fetching a stores items with store ID {store_id}")
     
 @router.get("/{store_id}/items", response_model=list[ItemSchema])
 async def get_store_items(store_id: int, db : Session = Depends(get_db)):
@@ -257,7 +263,9 @@ async def get_store_items(store_id: int, db : Session = Depends(get_db)):
         return items
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unkown server error when getting all items in a store with id {store_id}")
     
     
 @router.post("/address", status_code=201)
@@ -267,7 +275,7 @@ async def create_store_address(address: AddressSchema, db : Session = Depends(ge
     try:
 
         if not verify_address(address):
-            raise HTTPException(status_code=400, detail=f"Invalid address, must be within UMBC Campus")
+            raise HTTPException(status_code=400, detail="Invalid address, must be within UMBC Campus")
         
         address_repo = AddressRepository(db)
 
@@ -276,7 +284,9 @@ async def create_store_address(address: AddressSchema, db : Session = Depends(ge
         return {"address_id": address.address_id}
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail="Unkown server error when adding an address.")
     
 
 @router.delete("/{store_id}", status_code=204)
@@ -313,6 +323,8 @@ async def delete_store(store_id: int, user: user_dependency, db: Session = Depen
 
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unkown server error when deleting a store with id {store_id}")
         
     

@@ -22,12 +22,14 @@ router = APIRouter(dependencies=[Depends(oauth2_scheme)], prefix="/users", tags=
 
 user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 
-@router.get("/me", response_model=UserCreate)
+@router.get("/me", response_model=UserResponse)
 async def read_users_me(current_user: UserCreate = Depends(get_current_user)):
     return current_user
 
 @router.get("/{user_id}", response_model=UserResponse)
-async def get_user(user_id: str, db: Session = Depends(get_db)):
+async def get_user(user_id: str, current_user: user_dependency, db: Session = Depends(get_db)):
+    if current_user.role != UserRole.admin and current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="You do not have permission to view this user")
     user_repo = UserRepository(db)
     user = user_repo.get_by_id(user_id)
     if not user:
@@ -35,7 +37,9 @@ async def get_user(user_id: str, db: Session = Depends(get_db)):
     return user
 
 @router.get("/profile/{user_id}", response_model=UserResponse)
-async def get_user_profile(user_id: str, db: Session = Depends(get_db)):
+async def get_user_profile(user_id: str, current_user: user_dependency, db: Session = Depends(get_db)):
+    if current_user.role != UserRole.admin and current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="You do not have permission to view this user's profile")
     user_repo = UserRepository(db)
     user = user_repo.get_by_id(user_id)
     if not user:
@@ -58,7 +62,7 @@ async def update_user(user_id: str,
         user_data = user.dict()
         updated_user = user_repo.update_by_id(user_id, **user_data)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Unknown server error when updating user information with id {user_id}.")
     
     return updated_user
 
@@ -80,7 +84,7 @@ async def delete_user(user_id: str,
         user_repo.hard_delete(user_id)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Unknown server error when deleting user with id {user_id}.")
     
     return {"message": "User deleted successfully"}
 
@@ -101,7 +105,7 @@ async def get_user_cart(user_id: str, user: user_dependency, db: Session = Depen
         return order
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Unkown server error when fetching users cart with user id {user_id}")
 
 @router.post("/{user_id}/cart", status_code=200)
 async def add_to_cart(user_id: str, item_id: int, user: user_dependency, db: Session = Depends(get_db)):
@@ -125,7 +129,7 @@ async def add_to_cart(user_id: str, item_id: int, user: user_dependency, db: Ses
         return {"message": "Item added to cart successfully"}
     
     except Exception as e: 
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Unkown server error when adding item to users cart with user id {user_id}")
     
 
 
@@ -142,7 +146,7 @@ async def get_user_orders(user_id: str, token: str = Depends(oauth2_scheme), db:
         return orders
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Unkown server error when fetching users orders.")
 
 
 @router.get("/{user_id}/order-history", response_model=list[OrderShow])
@@ -158,7 +162,7 @@ async def get_user_order_history(user_id: str, token: str = Depends(oauth2_schem
         return orders
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Unkown server error when fetching users order history.")
 
 @router.get("/{user_id}/deliveries")
 async def get_user_deliveries(user_id: str, user: user_dependency, db: Session = Depends(get_db)):

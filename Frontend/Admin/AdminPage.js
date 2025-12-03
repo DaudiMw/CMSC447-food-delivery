@@ -12,6 +12,8 @@ function AdminPage() {
     const [endDate, setEndDate] = React.useState('');
     const [selectedUser, setSelectedUser] = React.useState(null);
     const [showUserDetails, setShowUserDetails] = React.useState(false);
+    const [successMessage, setSuccessMessage] = React.useState('');
+    const [errorMessage, setErrorMessage] = React.useState('');
 
     // Fetch users with React Query
     const { data: users = [], isLoading: usersLoading, error: usersError, refetch: refetchUsers } = window.ReactQuery.useQuery({
@@ -48,6 +50,10 @@ function AdminPage() {
         mutationFn: (storeId) => delete_store(storeId),
         onSuccess: () => {
             refetchStores();
+            setSuccessMessage('Store deleted successfully.');
+        },
+        onError: (error) => {
+            setErrorMessage(error.message || 'Failed to delete store.');
         }
     });
 
@@ -56,22 +62,28 @@ function AdminPage() {
         mutationFn: ({ userId, newRole }) => change_user_role(userId, newRole),
         onSuccess: () => {
             refetchUsers();
+            setSuccessMessage('User role updated successfully.');
+        },
+        onError: (error) => {
+            setErrorMessage(error.message || 'Failed to update user role.');
         }
     });
 
     // Mutation for banning/unbanning user
     const banUserMutation = window.ReactQuery.useMutation({
         mutationFn: ({ userId, status }) => {
-            console.log(status)
-            if (status != 'banned') {
-                ban_user(userId)
-            }
-            else {
-                unban_user(userId)
+            if (status !== 'banned') {
+                return ban_user(userId);
+            } else {
+                return unban_user(userId);
             }
         },
         onSuccess: () => {
             refetchUsers();
+            setSuccessMessage('User status updated successfully.');
+        },
+        onError: (error) => {
+            setErrorMessage(error.message || 'Failed to update user status.');
         }
     });
 
@@ -81,6 +93,10 @@ function AdminPage() {
         onSuccess: () => {
             refetchApplications();
             refetchUsers();
+            setSuccessMessage('Application handled successfully.');
+        },
+        onError: (error) => {
+            setErrorMessage(error.message || 'Failed to handle application.');
         }
     });
 
@@ -173,6 +189,18 @@ function AdminPage() {
 
     return (
         <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
+            <Toast 
+                message={successMessage}
+                type="success"
+                show={!!successMessage}
+                onClose={() => setSuccessMessage('')}
+            />
+            <Toast 
+                message={errorMessage}
+                type="danger"
+                show={!!errorMessage}
+                onClose={() => setErrorMessage('')}
+            />
             <h1 className="text-4xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
             <p className="text-gray-600 mb-4">Manage users, orders, and dasher applications</p>
             <div className="mt-4 h-px w-full bg-gray-400"></div>
