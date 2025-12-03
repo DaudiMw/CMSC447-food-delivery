@@ -7,13 +7,14 @@ function Delivery(
   user_id,
   store,
   address,
+  order_status,
   created_at,
   accepted_at,
   completed_at,
   items }
 ) {
   const [report, setReport] = React.useState(null);
-  const [showCompleteButton, setShowCompleteButton] = React.useState(false);
+  const [showStatusButtons, setShowStatusButtons] = React.useState(false);
   const [showReportContent, setShowReportContent] = React.useState(false);
 
   const dateCreationObject = new Date(created_at);
@@ -30,15 +31,15 @@ function Delivery(
 
   React.useEffect(
     () => {
-      if (!completed_at) {setShowCompleteButton(true)};
+      if (order_status == "accepted") {setShowStatusButtons(true)};
     }
   )
 
-  const completeOrderMutation = useMutation({
+  const updateOrderMutation = useMutation({
     mutationFn: ({ orderData, order_id }) => update_order(orderData, order_id),
     onSuccess: () => {
         query_client.invalidateQueries({ queryKey: ['dasher_id'] });
-        alert("Order completed!");
+        alert("Order status updated!");
     },
   });
 
@@ -60,7 +61,19 @@ function Delivery(
         accepted_at: accepted_at,
         completed_at: new Date().toISOString()};
 
-      completeOrderMutation.mutate({ orderData, order_id })
+      updateOrderMutation.mutate({ orderData, order_id })
+    }
+  }
+
+  var dropOrder = async () => {
+    if (confirm("Are you sure you want to cancel this delivery?")) {
+      const orderData = {
+        status: 'dropped',
+        dasher_id: user_id, 
+        accepted_at: accepted_at,
+        completed_at: null};
+
+      updateOrderMutation.mutate({ orderData, order_id })
     }
   }
 
@@ -78,28 +91,33 @@ function Delivery(
 
   return (
     <tr>
-      <td>{order_id}</td>
-      <td>{store.name}</td>
-      <td>{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
-      <td>{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
-      <td>{dateCreationString}</td>
-      <td>{dateAcceptedString}</td>
-      <td>{dateCompletionString ? dateCompletionString : 'N/A'}</td>
-      <td>{items.map((item, index, array) => 
+      <td className="p-2">{order_id}</td>
+      <td className="p-2">{store.name}</td>
+      <td className="p-2">{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
+      <td className="p-2">{dateCreationString}</td>
+      <td className="p-2">{dateAcceptedString}</td>
+      <td className="p-2">{dateCompletionString ? dateCompletionString : 'N/A'}</td>
+      <td className="p-2">{items.map((item, index, array) => 
         {if(index == array.length-1) {
           return (`${item.item.name}: ${item.quantity}`)
         }
         else {
           return (`${item.item.name}: ${item.quantity}, `);
         }})}</td>
+      <td>{order_status}</td>
 
       <td className="text-right">
-        {showCompleteButton && (
-        <button className="btn btn-action" onClick={completeOrder}>
+        {showStatusButtons && (
+        <button className="btn btn-success" onClick={completeOrder}>
           Complete
         </button>)}
 
-        <button className="btn btn-delete justify-self-end" onClick={() => setShowReportContent(!showReportContent)}>
+        {showStatusButtons && (
+        <button className="btn btn-action" onClick={dropOrder}>
+          Drop
+        </button>)}
+
+        <button className="btn btn-delete" onClick={() => setShowReportContent(!showReportContent)}>
           {showReportContent ? 'Cancel' : 'Report'}
         </button>
       </td>
@@ -151,11 +169,9 @@ function DeliveriesPage() {
 
   if (orders.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-24 px-4 md:px-10">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold text-gray-800 mb-6">Deliveries</h1>
-          <p className="text-xl text-gray-600 mb-4">No deliveries.</p>
-        </div>
+      <div className="flex min-w-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
+        <h1 className="text-4xl font-bold text-gray-800 mb-2">Deliveries</h1>
+            <p className="text-xl text-gray-600 mb-2">No deliveries.</p>
       </div>
     );
   }
@@ -169,12 +185,12 @@ function DeliveriesPage() {
           <tr>
             <th>Order ID</th>
             <th>Store Name</th>
-            <th>Store Address</th>
             <th>Delivery Address</th>
             <th>Order Placed</th>
             <th>Order Accepted</th>
             <th>Order Completed</th>
             <th>Items</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
@@ -187,6 +203,7 @@ function DeliveriesPage() {
               created_at={order.created_at}
               accepted_at={order.accepted_at}
               completed_at={order.completed_at}
+              order_status={order.status}
               store={order.store}
               items={order.items}
             />

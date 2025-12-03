@@ -17,7 +17,7 @@ function Report({
       <td className="p-2">{user_id}</td>
       <td className="p-2">{store_name}</td>
       <td className="p-2">{comment}</td>
-      <td className="p-2">{reply}</td>
+      <td className="p-2">{reply ? reply: 'N/A'}</td>
     </tr>
   );
 }
@@ -32,6 +32,8 @@ function StoreOwnerReport({
   reply }) {
   const [response, setReply] = React.useState(null);
   const [replyExists, setReplyExists] = React.useState(false);
+  const [replyButton, setReplyButton] = React.useState("btn btn-delete");
+  const [replyButtonText, setReplyButtonText] = React.useState('Reply');
   const [showReplyContent, setShowReplyContent] = React.useState(false);
 
   const reportReplyMutation = useMutation({
@@ -50,6 +52,19 @@ function StoreOwnerReport({
     }
   )
 
+  React.useEffect(
+    () => {
+      if (!showReplyContent) {
+        replyExists ? setReplyButtonText('Edit') : setReplyButtonText('Reply')
+        replyExists ? setReplyButton('btn btn-action') : setReplyButton('btn btn-success')
+      }
+      else {
+        setReplyButtonText('Cancel')
+        setReplyButton('btn btn-delete')
+      }
+    }
+  )
+
   var handleSubmit = async () => {
     const replyData = {response: response};
 
@@ -63,11 +78,11 @@ function StoreOwnerReport({
       <td className="p-2">{user_id}</td>
       <td className="p-2">{store_name}</td>
       <td className="p-2">{comment}</td>
-      <td className="p-2">{reply}</td>
+      <td className="p-2">{reply ? reply: 'N/A'}</td>
 
-      <td className="p-2">
-        <button className="btn btn-action" onClick={() => setShowReplyContent(!showReplyContent)}>
-          {replyExists ? 'Edit' : 'Reply'}
+      <td className="text-right p-2">
+        <button className={replyButton} onClick={() => setShowReplyContent(!showReplyContent)}>
+          {replyButtonText}
         </button>
       </td>
 

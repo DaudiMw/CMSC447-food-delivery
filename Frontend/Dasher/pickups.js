@@ -36,20 +36,20 @@ function Pickup(
 
   return (
     <tr>
-      <td>{order_id}</td>
-      <td>{store.name}</td>
-      <td>{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
-      <td>{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
-      <td>{dateString}</td>
-      <td>{items.map((item, index, array) => 
+      <td className="p-2">{order_id}</td>
+      <td className="p-2">{store.name}</td>
+      <td className="p-2">{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
+      <td className="p-2">{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
+      <td className="p-2">{dateString}</td>
+      <td className="p-2">{items.map((item, index, array) => 
         {if(index == array.length-1) {
           return (`${item.item.name}: ${item.quantity}`)
         }
         else {
           return (`${item.item.name}: ${item.quantity}, `);
         }})}</td>
-      <td>
-        <button className="btn btn-action" onClick={acceptOrder}>
+      <td className="text-right p-2">
+        <button className="btn btn-success" onClick={acceptOrder}>
           Accept Pickup
         </button>
       </td>
@@ -84,12 +84,10 @@ function PickupsPage() {
 
   if (orders.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-24 px-4 md:px-10">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold text-gray-800 mb-6">Pickups</h1>
-          <p className="text-xl text-gray-600 mb-4">No pickups.</p>
-        </div>
-      </div>
+    <div className="flex min-w-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
+      <h1 className="text-4xl font-bold text-gray-800 mb-2">Pickups</h1>
+          <p className="text-xl text-gray-600 mb-2">No pickups.</p>
+    </div>
     );
   }
 
