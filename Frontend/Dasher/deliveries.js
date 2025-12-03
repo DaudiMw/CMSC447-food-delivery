@@ -163,7 +163,7 @@ function DeliveriesPage() {
   return (
     <div className="flex min-w-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
       <h1 className="text-4xl font-bold text-gray-800 mb-2">Deliveries</h1>
-      <div className="bg-white rounded-lg shadow-md p-8 flex-auto min-w-max items-center gap-4">
+      <div className="bg-white rounded-lg border border-gray-300 p-8 flex-auto min-w-max items-center gap-4">
         <table className="table-auto w-full border-collapse min-w-[600px]">
         <thead>
           <tr>

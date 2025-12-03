@@ -5,19 +5,19 @@ const { useParams, useHistory } = ReactRouterDOM;
 function Report({ 
   report_id,
   user_id,
-  store_id,
+  store_name,
   order_id,
   comment,
   reply }) {
 
   return (
     <tr>
-      <td>{report_id}</td>
-      <td>{order_id}</td>
-      <td>{user_id}</td>
-      <td>{store_id}</td>
-      <td>{comment}</td>
-      <td>{reply}</td>
+      <td className="p-2">{report_id}</td>
+      <td className="p-2">{order_id}</td>
+      <td className="p-2">{user_id}</td>
+      <td className="p-2">{store_name}</td>
+      <td className="p-2">{comment}</td>
+      <td className="p-2">{reply}</td>
     </tr>
   );
 }
@@ -26,7 +26,7 @@ function StoreOwnerReport({
   query_client,
   report_id,
   user_id,
-  store_id,
+  store_name,
   order_id,
   comment,
   reply }) {
@@ -58,20 +58,20 @@ function StoreOwnerReport({
 
   return (
     <tr>
-      <td>{report_id}</td>
-      <td>{order_id}</td>
-      <td>{user_id}</td>
-      <td>{store_id}</td>
-      <td>{comment}</td>
-      <td>{reply}</td>
+      <td className="p-2">{report_id}</td>
+      <td className="p-2">{order_id}</td>
+      <td className="p-2">{user_id}</td>
+      <td className="p-2">{store_name}</td>
+      <td className="p-2">{comment}</td>
+      <td className="p-2">{reply}</td>
 
-      <td>
+      <td className="p-2">
         <button className="btn btn-action" onClick={() => setShowReplyContent(!showReplyContent)}>
           {replyExists ? 'Edit' : 'Reply'}
         </button>
       </td>
 
-      <td>
+      <td className="p-2">
         {showReplyContent &&
           (<form onSubmit={handleSubmit}>
             <label className="form-label">Reply:</label>
@@ -120,7 +120,7 @@ function StoreReportList({ query_client, store_id }) {
           query_client={query_client}
           report_id={report.id}
           user_id={report.user_id}
-          store_id={report.store_id}
+          store_name={report.store.name}
           order_id={report.order_id}
           comment={report.comment}
           reply={report.response}
@@ -164,15 +164,15 @@ function ReportsPage() {
     return (
     <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
       <h1 className="text-4xl font-bold text-gray-800 mb-2">Reports</h1>
-      <h1 className="text-2xl font-bold text-gray-800 mb-2">My Reports</h1>
-      <div className="bg-white rounded-lg shadow-md p-8 flex-auto min-w-max items-center gap-4">
+      <h1 className="text-2xl font-bold text-gray-800 mb-2 p-3">My Reports</h1>
+      <div className="bg-white rounded-lg border border-gray-300 p-8 flex-auto min-w-max items-center gap-4">
         <table className="table-auto w-full border-collapse min-w-[600px]">
           <thead>
             <tr>
               <th>Report ID</th>
-              <th>User ID</th>
-              <th>Store ID</th>
               <th>Order ID</th>
+              <th>User ID</th>
+              <th>Store Name</th>
               <th>Comment</th>
               <th>Reply</th>
             </tr>
@@ -182,7 +182,7 @@ function ReportsPage() {
               <Report
                 report_id={report.id}
                 user_id={report.user_id}
-                store_id={report.store_id}
+                store_name={report.store.name}
                 order_id={report.order_id}
                 comment={report.comment}
                 reply={report.response}
@@ -191,8 +191,6 @@ function ReportsPage() {
           </tbody>
         </table>
       </div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-2">Reports from My Stores</h1>
-      <p className="text-xl text-gray-600 mb-4">No reports.</p>
     </div>
     );
   }
@@ -201,17 +199,17 @@ function ReportsPage() {
     return (
     <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
       <h1 className="text-4xl font-bold text-gray-800 mb-2">Reports</h1>
-      <h1 className="text-2xl font-bold text-gray-800 mb-2">My Reports</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-2 p-3">My Reports</h1>
       <p className="text-xl text-gray-600 mb-4">No reports.</p>
-      <h1 className="text-2xl font-bold text-gray-800 mb-2">Reports from My Stores</h1>
-      <div className="bg-white rounded-lg shadow-md p-8 flex-auto min-w-max items-center gap-4">
+      <h1 className="text-2xl font-bold text-gray-800 mb-2 p-3">Reports from My Stores</h1>
+      <div className="bg-white rounded-lg border border-gray-300 p-8 flex-auto min-w-max items-center gap-4">
         <table className="table-auto w-full border-collapse min-w-[600px]">
           <thead>
             <tr>
               <th>Report ID</th>
-              <th>User ID</th>
-              <th>Store ID</th>
               <th>Order ID</th>
+              <th>User ID</th>
+              <th>Store Name</th>
               <th>Comment</th>
               <th>Reply</th>
             </tr>
@@ -241,15 +239,15 @@ function ReportsPage() {
   return (
     <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
       <h1 className="text-4xl font-bold text-gray-800 mb-2">Reports</h1>
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">My Reports</h1>
-        <div className="bg-white rounded-lg shadow-md p-8 flex-auto min-w-max items-center gap-4">
+        <h1 className="text-2xl font-bold text-gray-800 mb-2 p-3">My Reports</h1>
+        <div className="bg-white rounded-lg border border-gray-300 p-8 flex-auto min-w-max items-center gap-4">
           <table className="table-auto w-full border-collapse min-w-[600px]">
             <thead>
               <tr>
                 <th>Report ID</th>
-                <th>User ID</th>
-                <th>Store ID</th>
                 <th>Order ID</th>
+                <th>User ID</th>
+                <th>Store Name</th>
                 <th>Comment</th>
                 <th>Reply</th>
               </tr>
@@ -259,7 +257,7 @@ function ReportsPage() {
                 <Report
                   report_id={report.id}
                   user_id={report.user_id}
-                  store_id={report.store_id}
+                  store_name={report.store.name}
                   order_id={report.order_id}
                   comment={report.comment}
                   reply={report.response}
@@ -267,27 +265,27 @@ function ReportsPage() {
               ))}
             </tbody>
           </table>
-      </div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-2">Reports from My Stores</h1>
-      <div className="bg-white rounded-lg shadow-md p-8 flex-auto min-w-max items-center gap-4">
-        <table className="table-auto w-full border-collapse min-w-[600px]">
-          <thead>
-            <tr>
-              <th>Report ID</th>
-              <th>User ID</th>
-              <th>Store ID</th>
-              <th>Order ID</th>
-              <th>Comment</th>
-              <th>Reply</th>
-            </tr>
-          </thead>
-            {stores.map(store => (
-              <StoreReportList
-                query_client={queryClient}
-                store_id={store.id}
-              />))}
-        </table>
-      </div>
+        </div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2 p-3">Reports from My Stores</h1>
+        <div className="bg-white rounded-lg border border-gray-300 p-8 flex-auto min-w-max items-center gap-4">
+          <table className="table-auto w-full border-collapse min-w-[600px]">
+            <thead>
+              <tr>
+                <th>Report ID</th>
+                <th>Order ID</th>
+                <th>User ID</th>
+                <th>Store Name</th>
+                <th>Comment</th>
+                <th>Reply</th>
+              </tr>
+            </thead>
+              {stores.map(store => (
+                <StoreReportList
+                  query_client={queryClient}
+                  store_id={store.id}
+                />))}
+          </table>
+        </div>
     </div>
   );
 }
