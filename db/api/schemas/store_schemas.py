@@ -6,8 +6,8 @@ from api.schemas.user_schemas import UserSummary
 
 class StoreHoursSchema(BaseSchema):
     day: str
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
 
 class StoreInfoSchema(BaseSchema):
     id: int

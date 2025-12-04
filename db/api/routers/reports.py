@@ -92,12 +92,13 @@ async def get_report_by_user_id(user_id: str,
     """Perms: admin, store owner of order, user who reported, dasher who reported"""
     reports_repo = ReportsRepository(db)
     store_repo = StoreRepository(db)
+
     report = reports_repo.get_by_user_id(user_id)
     
-    owners_list = store_repo.check_store_owner(user.id, report[0].store_id)
+    # owners_list = store_repo.check_store_owner(user.id, report[0].store_id)
 
-    if user.role != UserRole.admin and not owners_list and report.user_id != user.id and report.dasher_id != user.id:
-        raise HTTPException(status_code=401, detail="User is not associated with this order")
+    # if user.role != UserRole.admin and not owners_list and report.user_id != user.id and report.dasher_id != user.id:
+    #     raise HTTPException(status_code=401, detail="User is not associated with this order")
     
     return report
 
