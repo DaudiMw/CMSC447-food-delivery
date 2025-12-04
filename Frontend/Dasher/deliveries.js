@@ -110,6 +110,7 @@ function Delivery(
     <tr className="p-3 border-b hover:bg-amber-100">
       <td className="p-3">{order_id}</td>
       <td className="p-3">{store.name}</td>
+      <td className="p-3">{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
       <td className="p-3">{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
       <td className="p-3">{dateCreationString}</td>
       <td className="p-3">{dateAcceptedString}</td>
@@ -203,6 +204,7 @@ function DeliveriesPage() {
           <tr className="bg-gray-100">
             <th className="p-3 text-left font-semibold border-b">Order ID</th>
             <th className="p-3 text-left font-semibold border-b">Store Name</th>
+            <th className="p-3 text-left font-semibold border-b">Store Address</th>
             <th className="p-3 text-left font-semibold border-b">Delivery Address</th>
             <th className="p-3 text-left font-semibold border-b">Order Placed</th>
             <th className="p-3 text-left font-semibold border-b">Order Accepted</th>

@@ -55,7 +55,7 @@ function CheckoutPage() {
     });
 
     const handleAddAddress = () => {
-        if (!newAddressForm.building || !newAddressForm.room || !newAddressForm.street || !newAddressForm.city || !newAddressForm.state || !newAddressForm.zip) {
+        if (!newAddressForm.street || !newAddressForm.city || !newAddressForm.state || !newAddressForm.zip) {
             setErrorMessage('Please fill in all address fields.');
             return;
         }
@@ -177,7 +177,7 @@ function CheckoutPage() {
                                                 className="mt-1 mr-3"
                                             />
                                             <div>
-                                                <p className="font-semibold text-gray-800">{address.building} - Room {address.room_number}</p>
+                                                <p className="font-semibold text-gray-800">{address.building} {address.room_number ? '- Room' : ''} {address.room_number}</p>
                                                 <p className="text-gray-600">{address.street}</p>
                                                 <p className="text-gray-600">{address.city}, {address.state} {address.zip}</p>
                                             </div>
