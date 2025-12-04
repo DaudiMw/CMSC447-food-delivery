@@ -7,13 +7,14 @@ function Delivery(
   user_id,
   store,
   address,
+  order_status,
   created_at,
   accepted_at,
   completed_at,
   items }
 ) {
   const [report, setReport] = React.useState(null);
-  const [showCompleteButton, setShowCompleteButton] = React.useState(false);
+  const [showStatusButtons, setShowStatusButtons] = React.useState(false);
   const [showReportContent, setShowReportContent] = React.useState(false);
   const [toast, setToast] = React.useState({ show: false, message: '', type: '' });
 
@@ -32,11 +33,11 @@ function Delivery(
 
   React.useEffect(
     () => {
-      if (!completed_at) {setShowCompleteButton(true)};
+      if (order_status == "accepted") {setShowStatusButtons(true)};
     }
   )
 
-  const completeOrderMutation = useMutation({
+  const updateOrderMutation = useMutation({
     mutationFn: ({ orderData, order_id }) => update_order(orderData, order_id),
     onSuccess: () => {
         query_client.invalidateQueries({ queryKey: ['dasher_id'] });
@@ -68,7 +69,19 @@ function Delivery(
         accepted_at: accepted_at,
         completed_at: new Date().toISOString()};
 
-      completeOrderMutation.mutate({ orderData, order_id })
+      updateOrderMutation.mutate({ orderData, order_id })
+    }
+  }
+
+  var dropOrder = async () => {
+    if (confirm("Are you sure you want to cancel this delivery?")) {
+      const orderData = {
+        status: 'dropped',
+        dasher_id: user_id, 
+        accepted_at: accepted_at,
+        completed_at: null};
+
+      updateOrderMutation.mutate({ orderData, order_id })
     }
   }
 
@@ -86,57 +99,63 @@ function Delivery(
   };
 
   return (
+    
     <>
-      <Toast
+    <Toast
         message={toast.message}
         type={toast.type}
         show={toast.show}
         onClose={() => setToast({ ...toast, show: false })}
       />
-      <tr>
-        <td>{order_id}</td>
-        <td>{store.name}</td>
-        <td>{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
-        <td>{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
-        <td>{dateCreationString}</td>
-        <td>{dateAcceptedString}</td>
-        <td>{dateCompletionString ? dateCompletionString : 'N/A'}</td>
-        <td>{items.map((item, index, array) => 
-          {if(index == array.length-1) {
-            return (`${item.item.name}: ${item.quantity}`)
-          }
-          else {
-            return (`${item.item.name}: ${item.quantity}, `);
-          }})}</td>
+    <tr className="p-3 border-b hover:bg-amber-100">
+      <td className="p-3">{order_id}</td>
+      <td className="p-3">{store.name}</td>
+      <td className="p-3">{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
+      <td className="p-3">{dateCreationString}</td>
+      <td className="p-3">{dateAcceptedString}</td>
+      <td className="p-3">{dateCompletionString ? dateCompletionString : 'N/A'}</td>
+      <td className="p-3">{items.map((item, index, array) => 
+        {if(index == array.length-1) {
+          return (`${item.item.name}: ${item.quantity}`)
+        }
+        else {
+          return (`${item.item.name}: ${item.quantity}, `);
+        }})}</td>
+      <td className="p-3">{order_status}</td>
 
-        <td className="text-right">
-          {showCompleteButton && (
-          <button className="btn btn-action" onClick={completeOrder}>
-            Complete
-          </button>)}
+      <td className="p-3 text-right">
+        {showStatusButtons && (
+        <button className="btn btn-success" onClick={completeOrder}>
+          Complete
+        </button>)}
 
-          <button className="btn btn-delete justify-self-end" onClick={() => setShowReportContent(!showReportContent)}>
-            {showReportContent ? 'Cancel' : 'Report'}
-          </button>
-        </td>
+        {showStatusButtons && (
+        <button className="btn btn-action" onClick={dropOrder}>
+          Drop
+        </button>)}
 
-        <td>
-          {showReportContent &&
-            (<form onSubmit={submitReport}>
-              <label className="form-label">Comment:</label>
-              <input 
-                type="response" 
-                className="form-control" 
-                value={report}
-                onChange={(e) => setReport(e.target.value)}
-              />
-              <button className="btn btn-action" type="submit">
-                Post
-              </button>
-            </form>)
-          }
-        </td>
-      </tr>
+        <button className="btn btn-delete" onClick={() => setShowReportContent(!showReportContent)}>
+          {showReportContent ? 'Cancel' : 'Report'}
+        </button>
+      </td>
+
+      <td className="p-3">
+        {showReportContent &&
+          (<form onSubmit={submitReport}>
+            <label className="form-label">Comment:</label>
+            <input 
+              type="response" 
+              className="form-control" 
+              value={report}
+              onChange={(e) => setReport(e.target.value)}
+            />
+            <button className="btn btn-action" type="submit">
+              Post
+            </button>
+          </form>)
+        }
+      </td>
+    </tr>
     </>
   );
 }
@@ -168,11 +187,9 @@ function DeliveriesPage() {
 
   if (orders.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-24 px-4 md:px-10">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold text-gray-800 mb-6">Deliveries</h1>
-          <p className="text-xl text-gray-600 mb-4">No deliveries.</p>
-        </div>
+      <div className="flex min-w-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
+        <h1 className="text-4xl font-bold text-gray-800 mb-2">Deliveries</h1>
+            <p className="text-xl text-gray-600 mb-2">No deliveries.</p>
       </div>
     );
   }
@@ -180,18 +197,20 @@ function DeliveriesPage() {
   return (
     <div className="flex min-w-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
       <h1 className="text-4xl font-bold text-gray-800 mb-2">Deliveries</h1>
-      <div className="bg-white rounded-lg border border-gray-300 p-8 flex-auto min-w-max items-center gap-4">
+      <div className="bg-white rounded-lg border border-gray-300 p-8 flex-basis-auto min-w-max items-center gap-4">
         <table className="table-auto w-full border-collapse min-w-[600px]">
         <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Store Name</th>
-            <th>Store Address</th>
-            <th>Delivery Address</th>
-            <th>Order Placed</th>
-            <th>Order Accepted</th>
-            <th>Order Completed</th>
-            <th>Items</th>
+          <tr className="bg-gray-100">
+            <th className="p-3 text-left font-semibold border-b">Order ID</th>
+            <th className="p-3 text-left font-semibold border-b">Store Name</th>
+            <th className="p-3 text-left font-semibold border-b">Delivery Address</th>
+            <th className="p-3 text-left font-semibold border-b">Order Placed</th>
+            <th className="p-3 text-left font-semibold border-b">Order Accepted</th>
+            <th className="p-3 text-left font-semibold border-b">Order Completed</th>
+            <th className="p-3 text-left font-semibold border-b">Items</th>
+            <th className="p-3 text-left font-semibold border-b">Status</th>
+            <th className="p-3 text-left font-semibold border-b"></th>
+            <th className="p-3 text-left font-semibold border-b"></th>
           </tr>
         </thead>
         <tbody>
@@ -204,6 +223,7 @@ function DeliveriesPage() {
               created_at={order.created_at}
               accepted_at={order.accepted_at}
               completed_at={order.completed_at}
+              order_status={order.status}
               store={order.store}
               items={order.items}
             />
