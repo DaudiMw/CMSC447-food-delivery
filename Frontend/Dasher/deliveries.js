@@ -41,7 +41,7 @@ function Delivery(
     mutationFn: ({ orderData, order_id }) => update_order(orderData, order_id),
     onSuccess: () => {
         query_client.invalidateQueries({ queryKey: ['dasher_id'] });
-        setToast({ show: true, message: 'Order completed!', type: 'success' });
+        setToast({ show: true, message: `Order ${orderData.status}!`, type: 'success' });
     },
     onError: (error) => {
         setToast({ show: true, message: error?.response?.data?.detail || 'Failed to complete order.', type: 'danger' });

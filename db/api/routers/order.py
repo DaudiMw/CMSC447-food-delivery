@@ -262,7 +262,7 @@ async def update_order(order_id: int,
     if not db_order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    if not (admin_required(user) or user.id == db_order.user_id):
+    if user.role != UserRole.admin and user.role != UserRole.dasher:
         raise HTTPException(status_code=403, detail="You do not have permission to update this order")
 
     update_data = order_data.dict(exclude_unset=True)
@@ -272,6 +272,8 @@ async def update_order(order_id: int,
         return updated_order
 
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/{user_id}/{order_id}", status_code=200)
