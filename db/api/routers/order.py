@@ -277,7 +277,7 @@ async def update_order(order_id: int,
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/{user_id}/{order_id}", status_code=200)
-async def delete_order(order_id: int, user: user_dependency, token : str = Depends(oauth2_scheme), db : Session = Depends(get_db)):
+async def delete_order(order_id: int, user: user_dependency, db : Session = Depends(get_db)):
     """Delete an order by its ID."""
 
     order_repo = OrderRepository(db)
@@ -288,14 +288,13 @@ async def delete_order(order_id: int, user: user_dependency, token : str = Depen
         raise HTTPException(status_code=404, detail="Order not found")
     
 
-    user = await get_current_user(token)
 
-    if not (admin_required(user) or user.id == order.user_id):
+    if (user.role != UserRole.admin and user.id != order.user_id):
         raise HTTPException(status_code=403, detail="You do not have permission to delete this order")
     
     try:
         # We will hard-delete orders that have not been paid for yet.
-        if order.status.value == OrderStatus.initialized:
+        if order.status.value == OrderStatus.pending:
             order_repo.hard_delete(order_id)
         else:
             order_repo.update_by_id(order_id, is_deleted=True)
