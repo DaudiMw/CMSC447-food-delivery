@@ -12,6 +12,8 @@ function AdminPage() {
     const [endDate, setEndDate] = React.useState('');
     const [selectedUser, setSelectedUser] = React.useState(null);
     const [showUserDetails, setShowUserDetails] = React.useState(false);
+    const [successMessage, setSuccessMessage] = React.useState('');
+    const [errorMessage, setErrorMessage] = React.useState('');
 
     // Fetch users with React Query
     const { data: users = [], isLoading: usersLoading, error: usersError, refetch: refetchUsers } = window.ReactQuery.useQuery({
@@ -48,6 +50,10 @@ function AdminPage() {
         mutationFn: (storeId) => delete_store(storeId),
         onSuccess: () => {
             refetchStores();
+            setSuccessMessage('Store deleted successfully.');
+        },
+        onError: (error) => {
+            setErrorMessage(error?.response?.data?.detail || 'Failed to delete store.');
         }
     });
 
@@ -56,22 +62,28 @@ function AdminPage() {
         mutationFn: ({ userId, newRole }) => change_user_role(userId, newRole),
         onSuccess: () => {
             refetchUsers();
+            setSuccessMessage('User role updated successfully.');
+        },
+        onError: (error) => {
+            setErrorMessage(error?.response?.data?.detail || 'Failed to update user role.');
         }
     });
 
     // Mutation for banning/unbanning user
     const banUserMutation = window.ReactQuery.useMutation({
         mutationFn: ({ userId, status }) => {
-            console.log(status)
-            if (status != 'banned') {
-                ban_user(userId)
-            }
-            else {
-                unban_user(userId)
+            if (status !== 'banned') {
+                return ban_user(userId);
+            } else {
+                return unban_user(userId);
             }
         },
         onSuccess: () => {
             refetchUsers();
+            setSuccessMessage('User status updated successfully.');
+        },
+        onError: (error) => {
+            setErrorMessage(error?.response?.data?.detail || 'Failed to update user status.');
         }
     });
 
@@ -81,6 +93,10 @@ function AdminPage() {
         onSuccess: () => {
             refetchApplications();
             refetchUsers();
+            setSuccessMessage('Application handled successfully.');
+        },
+        onError: (error) => {
+            setErrorMessage(error?.response?.data?.detail || 'Failed to handle application.');
         }
     });
 
@@ -153,12 +169,16 @@ function AdminPage() {
     });
 
     const filteredDeliveries = dasherDeliveries.filter(delivery => {
+        const dasherName = delivery.dasher ? `${delivery.dasher.first_name} ${delivery.dasher.last_name}` : '';
+        const customerName = delivery.user ? `${delivery.user.first_name} ${delivery.user.last_name}` : '';
+        const deliveryDate = delivery.completed_at ? delivery.completed_at.split('T')[0] : '';
+
         const matchesSearch = searchQuery === '' || 
-            delivery.dasherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            delivery.customer.toLowerCase().includes(searchQuery.toLowerCase());
+            dasherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            customerName.toLowerCase().includes(searchQuery.toLowerCase());
         
-        const matchesDate = (!startDate || delivery.deliveryDate >= startDate) && 
-                           (!endDate || delivery.deliveryDate <= endDate);
+        const matchesDate = (!startDate || deliveryDate >= startDate) && 
+                           (!endDate || deliveryDate <= endDate);
         
         return matchesSearch && matchesDate;
     });
@@ -173,6 +193,18 @@ function AdminPage() {
 
     return (
         <div className="flex min-h-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
+            <Toast 
+                message={successMessage}
+                type="success"
+                show={!!successMessage}
+                onClose={() => setSuccessMessage('')}
+            />
+            <Toast 
+                message={errorMessage}
+                type="danger"
+                show={!!errorMessage}
+                onClose={() => setErrorMessage('')}
+            />
             <h1 className="text-4xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
             <p className="text-gray-600 mb-4">Manage users, orders, and dasher applications</p>
             <div className="mt-4 h-px w-full bg-gray-400"></div>
@@ -451,23 +483,29 @@ function AdminPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredDeliveries.map(delivery => (
-                                            <tr key={delivery.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
-                                                <td className="p-3">{delivery.dasherName}</td>
-                                                <td className="p-3">#{delivery.orderId}</td>
-                                                <td className="p-3">{delivery.customer}</td>
-                                                <td className="p-3">{delivery.store_id}</td>
-                                                <td className="p-3">{delivery.deliveryDate}</td>
-                                                <td className="p-3 font-semibold text-green-600">${delivery.earnings.toFixed(2)}</td>
-                                            </tr>
-                                        ))}
+                                        {filteredDeliveries.map(delivery => {
+                                            const dasherName = delivery.dasher ? `${delivery.dasher.first_name} ${delivery.dasher.last_name}` : 'N/A';
+                                            const customerName = delivery.user ? `${delivery.user.first_name} ${delivery.user.last_name}` : 'N/A';
+                                            const deliveryDate = delivery.completed_at ? new Date(delivery.completed_at).toLocaleDateString() : 'N/A';
+                                            const earnings = delivery.earnings || 0;
+                                            return (
+                                                <tr key={delivery.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
+                                                    <td className="p-3">{dasherName}</td>
+                                                    <td className="p-3">#{delivery.id}</td>
+                                                    <td className="p-3">{customerName}</td>
+                                                    <td className="p-3">{delivery.store.name}</td>
+                                                    <td className="p-3">{deliveryDate}</td>
+                                                    <td className="p-3 font-semibold text-green-600">${earnings.toFixed(2)}</td>
+                                                </tr>
+                                            )
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
                             <div className="mt-4 p-4 bg-gray-100 rounded-lg">
                                 <h3 className="font-semibold text-gray-800 mb-2">Summary</h3>
                                 <p className="text-gray-600">Total Deliveries: {filteredDeliveries.length}</p>
-                                <p className="text-gray-600">Total Earnings: ${filteredDeliveries.reduce((sum, d) => sum + d.earnings, 0).toFixed(2)}</p>
+                                <p className="text-gray-600">Total Earnings: ${filteredDeliveries.reduce((sum, d) => sum + (d.earnings || 0), 0).toFixed(2)}</p>
                             </div>
                         </>
                     )}
@@ -490,6 +528,7 @@ function AdminPage() {
                                         <tr className="bg-gray-100">
                                             <th className="p-3 text-left font-semibold border-b">Name</th>
                                             <th className="p-3 text-left font-semibold border-b">Description</th>
+                                            <th className="p-3 text-left font-semibold border-b">Owners</th>
                                             <th className="p-3 text-left font-semibold border-b">Created At</th>
                                             <th className="p-3 text-left font-semibold border-b">Actions</th>
                                         </tr>
@@ -499,6 +538,7 @@ function AdminPage() {
                                             <tr key={store.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
                                                 <td className="p-3">{store.name}</td>
                                                 <td className="p-3">{store.description}</td>
+                                                <td className="p-3">{store.owners.map(owner => `${owner.first_name} ${owner.last_name}<br>`)}</td>
                                                 <td className="p-3">{new Date(store.created_at).toLocaleDateString()}</td>
                                                 <td className="p-3 flex gap-2">
                                                     <button 

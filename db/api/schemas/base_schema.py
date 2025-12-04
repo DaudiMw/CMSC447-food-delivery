@@ -13,7 +13,7 @@ class Address(BaseModel):
     state: str
     zip: str
     building: Optional[str] = None
-    room_number: Optional[int] = None
+    room_number: Optional[str] = None
     
     class Config:
         from_attributes = True

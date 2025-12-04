@@ -3,6 +3,8 @@ const { useState } = React;
 
 function CartPage() {
     const queryClient = useQueryClient();
+    const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
     const { data: cart, isLoading: isCartLoading, error: cartError } = useQuery({
         queryKey: ['cart'],
@@ -13,14 +15,22 @@ function CartPage() {
         mutationFn: ({ item_id, quantity }) => update_cart_item(item_id, quantity),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cart'] });
+            setSuccessMessage('Cart updated successfully.');
         },
+        onError: (error) => {
+            setErrorMessage(error.message || 'Failed to update cart.');
+        }
     });
 
     const removeItemMutation = useMutation({
         mutationFn: (item_id) => remove_from_cart(item_id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cart'] });
+            setSuccessMessage('Item removed from cart.');
         },
+        onError: (error) => {
+            setErrorMessage(error.message || 'Failed to remove item.');
+        }
     });
 
     const handleQuantityChange = (item_id, quantity) => {
@@ -41,6 +51,18 @@ function CartPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 pt-24 px-4 md:px-10">
+            <Toast 
+                message={successMessage}
+                type="success"
+                show={!!successMessage}
+                onClose={() => setSuccessMessage('')}
+            />
+            <Toast 
+                message={errorMessage}
+                type="danger"
+                show={!!errorMessage}
+                onClose={() => setErrorMessage('')}
+            />
             <div className="max-w-6xl mx-auto">
                 <h1 className="text-4xl font-bold text-gray-800 mb-6">Your Shopping Cart</h1>
                 
@@ -48,7 +70,7 @@ function CartPage() {
                     <div className="bg-white rounded-lg shadow-md p-8 text-center">
                         <p className="text-xl text-gray-600 mb-4">Your cart is empty.</p>
                         <button 
-                            onClick={() => window.location.hash = '#/stores'}
+                            onClick={() => window.location.hash = '#/home'}
                             className="btn btn-action"
                         >
                             Continue Shopping
@@ -123,7 +145,7 @@ function CartPage() {
                                     Proceed to Checkout
                                 </button>
                                 <button 
-                                    onClick={() => window.location.hash = '#/stores'}
+                                    onClick={() => window.location.hash = '#/home'}
                                     className="btn btn-secondary w-full mt-3"
                                 >
                                     Continue Shopping

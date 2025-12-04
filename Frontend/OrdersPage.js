@@ -2,7 +2,7 @@ class OrdersPage extends React.Component {
     async componentDidMount() {
         const user_id = this.props.match.params.user_id
         
-        let data = await get_user_orders_by_id(user_id);
+        let data = await get_user_order_history(user_id);
         const orderList = document.getElementsByClassName("ordersList")[0];
         if (data.length == 0) {
             const noOrders = document.createElement('div');
@@ -29,22 +29,28 @@ class OrdersPage extends React.Component {
             const middle = document.createElement('div');
             middle.className = "orderMiddle";
             middle.textContent = "Description";
+            middle.style.color = "black";
             orderDiv.appendChild(middle);
             const info = document.createElement('div');
             info.className = "orderInfo";
             const status = document.createElement('div');
-            status.textContent = "Status: Pending";
+            status.textContent = "Status: " + element.status;
+            status.style.color = getStatusColor(element.status);
             info.appendChild(status);
             const total = document.createElement('div');
-            total.textContent = "Total: $XX.XX";
+            total.textContent = "Total: $" + element.items.reduce((acc, orderItem) => acc + orderItem.item.price * orderItem.quantity, 0).toFixed(2);
+            total.style.color = "white"
             info.appendChild(total);
             const arrivalTime = document.createElement('div');
-            arrivalTime.textContent = "Estimated Arrival: XX:XXam/pm";
+            arrivalTime.textContent = "Estimated Arrival: " + (element.completed_at ? new Date(element.completed_at).toLocaleTimeString() : 'N/A');
+            arrivalTime.style.color = "white"
             info.appendChild(arrivalTime);
             middle.appendChild(info);
 
             const image = document.createElement('img');
             image.className = "orderImage";
+            image.src = element.store.logo_id ? `http://localhost:8000/media/${element.store.logo_id}` : '';
+            image.alt = element.store.name;
             orderDiv.appendChild(image);
 
             orderList.appendChild(orderDiv);
@@ -74,16 +80,27 @@ class OrdersPage extends React.Component {
     }
 }
 
-/**
- * Function to get user's orders by user ID
- * @param {*} userId 
- * @returns 
- */
-async function get_user_orders_by_id(userId) {
+function getStatusColor(status) {
+    switch (status) {
+        case 'completed':
+            return 'green';
+        case 'pending':
+            return 'orange';
+        case 'accepted':
+            return 'blue';
+        case 'dropped':
+            return 'red';
+        default:
+            return 'black';
+    }
+}
+
+async function get_user_order_history(userId) {
     try {
-        const response = await authFetch(`/users/${userId}/orders`, { method: 'GET' });
+        const response = await authFetch(`/users/${userId}/order-history`, { method: 'GET' });
         return response;
     } catch (error) {
-        console.log(error)
+        console.log(error);
+        throw error;
     }
 }

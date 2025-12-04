@@ -71,7 +71,7 @@ async function add_item_to_cart(item_id){
  */
 async function update_order(order, order_id) {
     try{
-        const response = await authFetch(`/orders/${order_id}`, {
+        const response = await authFetch(`/orders/update/${order_id}`, {
             method: 'PATCH',
             body: JSON.stringify(order)
         });

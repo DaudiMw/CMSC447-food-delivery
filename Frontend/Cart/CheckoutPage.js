@@ -13,6 +13,8 @@ function CheckoutPage() {
         expiryDate: '',
         cvv: ''
     });
+    const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
     const { data: cart, isLoading: isCartLoading, error: cartError } = useQuery({
         queryKey: ['cart'],
@@ -31,9 +33,10 @@ function CheckoutPage() {
             setSelectedAddress(String(newAddress.id));
             setShowAddAddressForm(false);
             setNewAddressForm({ building: '', room: '', street: '', city: '', state: '', zip: '' });
+            setSuccessMessage('Address added successfully.');
         },
         onError: (error) => {
-            alert(`Error adding address: ${error.message}`);
+            setErrorMessage(`Error adding address: ${error?.response?.data?.detail}`);
         }
     });
 
@@ -41,30 +44,25 @@ function CheckoutPage() {
         mutationFn: (address_id) => create_order_from_cart(address_id),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['cart'] });
-            alert(`Order placed successfully! Order ID: ${data.id}`);
-            window.location.hash = '#/home';
+            setSuccessMessage(`Order placed successfully! Order ID: ${data.id}`);
+            setTimeout(() => {
+                window.location.hash = '#/orders';
+            }, 2000);
         },
         onError: (error) => {
-            alert(`Error creating order: ${error.message}`);
+            setErrorMessage(`Error creating order: ${error?.response?.data?.detail}`);
         },
     });
 
     const handleAddAddress = () => {
         if (!newAddressForm.building || !newAddressForm.room || !newAddressForm.street || !newAddressForm.city || !newAddressForm.state || !newAddressForm.zip) {
-            alert('Please fill in all address fields.');
-            return;
-        }
-        
-        // Convert room to integer
-        const roomNumber = parseInt(newAddressForm.room, 10);
-        if (isNaN(roomNumber)) {
-            alert('Room number must be a valid number.');
+            setErrorMessage('Please fill in all address fields.');
             return;
         }
         
         addAddressMutation.mutate({ 
             building: newAddressForm.building,
-            room_number: roomNumber,  // Changed from 'room' to 'room_number' and converted to integer
+            room_number: newAddressForm.room,
             street: newAddressForm.street, 
             city: newAddressForm.city, 
             state: newAddressForm.state, 
@@ -74,11 +72,11 @@ function CheckoutPage() {
 
     const handlePlaceOrder = () => {
         if (!selectedAddress) {
-            alert('Please select a shipping address.');
+            setErrorMessage('Please select a shipping address.');
             return;
         }
         if (!paymentForm.cardNumber || !paymentForm.cardName || !paymentForm.expiryDate || !paymentForm.cvv) {
-            alert('Please fill in all payment information.');
+            setErrorMessage('Please fill in all payment information.');
             return;
         }
         createOrderMutation.mutate({ address_id: parseInt(selectedAddress) });
@@ -128,6 +126,18 @@ function CheckoutPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 pt-24 px-4 md:px-10 pb-10">
+            <Toast 
+                message={successMessage}
+                type="success"
+                show={!!successMessage}
+                onClose={() => setSuccessMessage('')}
+            />
+            <Toast 
+                message={errorMessage}
+                type="danger"
+                show={!!errorMessage}
+                onClose={() => setErrorMessage('')}
+            />
             <div className="max-w-6xl mx-auto">
                 <div className="flex items-center mb-6">
                     <button 
@@ -201,7 +211,7 @@ function CheckoutPage() {
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
                                                 <input 
-                                                    type="number" 
+                                                    type="text" 
                                                     placeholder="Room/Unit #" 
                                                     value={newAddressForm.room} 
                                                     onChange={(e) => setNewAddressForm({...newAddressForm, room: e.target.value})}

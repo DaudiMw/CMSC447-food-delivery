@@ -29,7 +29,7 @@ function LoginForm(props) {
             return await response.json();
 
         } catch (error) {
-            console.error('Error during login:', error);
+            console.error(error);
             throw error;
         }
     };
@@ -88,11 +88,12 @@ function LoginForm(props) {
                 />
             </div>
             
-            {error && (
-                <div className="alert alert-danger" role="alert">
-                    {error}
-                </div>
-            )}
+            <Toast
+                message={error}
+                type="danger"
+                show={!!error}
+                onClose={() => setError('')}
+            />
             
             <button 
                 type="submit" 

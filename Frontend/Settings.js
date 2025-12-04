@@ -11,10 +11,12 @@ function SettingsPage() {
   const [showChangePassword, setShowChangePassword] = React.useState(false);
   const [dasherReasoning, setDasherReasoning] = React.useState('');
   const [showDasherForm, setShowDasherForm] = React.useState(false);
+  const [successMessage, setSuccessMessage] = React.useState('');
+  const [errorMessage, setErrorMessage] = React.useState('');
   
   // Form state
   const [addressForm, setAddressForm] = React.useState({
-    label: '', street: '', city: '', state: '', zip: ''
+    label: '', street: '', city: '', state: '', zip: '', building: '', room_number: ''
   });
   const [paymentForm, setPaymentForm] = React.useState({
     cardNumber: '', expiry: '', cvv: ''
@@ -23,7 +25,7 @@ function SettingsPage() {
   // Queries
   const { data: addresses = [], isLoading: addressesLoading } = useQuery({
     queryKey: ['addresses'],
-    queryFn: get_user_addresses
+    queryFn: () => get_user_addresses(getUserId())
   });
 
   const { data: paymentMethods = [], isLoading: paymentsLoading } = useQuery({
@@ -43,6 +45,10 @@ function SettingsPage() {
       queryClient.setQueryData(['addresses'], (old = []) => [...old, newAddress]);
       setShowAddAddress(false);
       setAddressForm({ label: '', street: '', city: '', state: '', zip: '' });
+      setSuccessMessage('Address added successfully.');
+    },
+    onError: (error) => {
+        setErrorMessage(error.message || 'Failed to add address.');
     }
   });
 
@@ -52,6 +58,10 @@ function SettingsPage() {
       queryClient.setQueryData(['addresses'], (old = []) => 
         old.filter(addr => addr.id !== deletedId)
       );
+      setSuccessMessage('Address deleted successfully.');
+    },
+    onError: (error) => {
+        setErrorMessage(error.message || 'Failed to delete address.');
     }
   });
 
@@ -62,6 +72,10 @@ function SettingsPage() {
       queryClient.setQueryData(['paymentMethods'], (old = []) => [...old, newMethod]);
       setShowAddPayment(false);
       setPaymentForm({ cardNumber: '', expiry: '', cvv: '' });
+      setSuccessMessage('Payment method added successfully.');
+    },
+    onError: (error) => {
+        setErrorMessage(error.message || 'Failed to add payment method.');
     }
   });
 
@@ -71,6 +85,10 @@ function SettingsPage() {
       queryClient.setQueryData(['paymentMethods'], (old = []) => 
         old.filter(pm => pm.id !== deletedId)
       );
+      setSuccessMessage('Payment method deleted successfully.');
+    },
+    onError: (error) => {
+        setErrorMessage(error.message || 'Failed to delete payment method.');
     }
   });
 
@@ -79,35 +97,62 @@ function SettingsPage() {
     mutationFn: update_user_settings,
     onSuccess: (updatedSettings) => {
       queryClient.setQueryData(['settings'], updatedSettings);
+      setSuccessMessage('Settings updated.');
+    },
+    onError: (error) => {
+        setErrorMessage(error.message || 'Failed to update settings.');
+    }
+  });
+  
+  const applyToDasherMutation = useMutation({
+    mutationFn: apply_to_dasher,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dasherApplications'] });
+      setSuccessMessage('Your application has been submitted!');
+      setDasherReasoning('');
+      setShowDasherForm(false);
+    },
+    onError: (error) => {
+      setErrorMessage(error.message || 'Failed to submit application.');
+      console.error('Application error:', error);
     }
   });
 
   const deleteAddress = (id) => {
-    if (confirm('Are you sure you want to delete this address?')) {
       deleteAddressMutation.mutate(id);
-    }
   };
 
   const deletePayment = (id) => {
-    if (confirm('Are you sure you want to delete this payment method?')) {
       deletePaymentMutation.mutate(id);
-    }
   };
 
   const deleteAccount = () => {
     if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      alert('Account deletion functionality would go here');
+        // Replace with actual delete account mutation when available
+        setErrorMessage('Account deletion is not yet implemented.');
     }
   };
 
 
   const handleAddAddress = () => {
-    if (addressForm.label && addressForm.street && addressForm.city && addressForm.state && addressForm.zip) {
-      addAddressMutation.mutate({
-        label: addressForm.label,
-        address: `${addressForm.street}, ${addressForm.city}, ${addressForm.state} ${addressForm.zip}`
-      });
+    // Validate required fields (street, city, state, zip are always required)
+    if (!addressForm.street || !addressForm.city || !addressForm.state || !addressForm.zip) {
+        setErrorMessage('Please fill in all required address fields (Street, City, State, Zip).');
+        return;
     }
+
+    addAddressMutation.mutate({
+        label: addressForm.label || null, // Label is optional
+        street: addressForm.street,
+        city: addressForm.city,
+        state: addressForm.state,
+        zip: addressForm.zip,
+        building: addressForm.building || null, // Building is optional
+        room_number: addressForm.room_number || null, // Room number is optional
+    });
+    // Clear the form only on success (after mutation.onSuccess)
+    // For now, clear it here assuming mutation will eventually succeed and update UI
+    setAddressForm({ label: '', street: '', city: '', state: '', zip: '', building: '', room_number: '' });
   };
 
   const handleAddPayment = () => {
@@ -118,28 +163,14 @@ function SettingsPage() {
         last4: paymentForm.cardNumber.slice(-4),
         expiry: `${month}/${year}`
       });
+    } else {
+        setErrorMessage('Please fill all payment fields.');
     }
   };
 
-  // Add this mutation with your other mutations:
-  const applyToDasherMutation = useMutation({
-    mutationFn: apply_to_dasher,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dasherApplications'] });
-      alert('Your application has been submitted!');
-      setDasherReasoning('');
-      setShowDasherForm(false);
-    },
-    onError: (error) => {
-      alert('Failed to submit application. Please try again.');
-      console.error('Application error:', error);
-    }
-  });
-
-  // Add this handler function:
   const handleDasherApplication = () => {
     if (!dasherReasoning.trim()) {
-      alert('Please provide your reasoning for wanting to become a Dasher');
+      setErrorMessage('Please provide your reasoning for wanting to become a Dasher.');
       return;
     }
     applyToDasherMutation.mutate({
@@ -155,6 +186,18 @@ function SettingsPage() {
 
   return (
     <div className="flex min-h-full flex-col p-4 md:p-10 bg-gray-50 pt-20">
+      <Toast 
+          message={successMessage}
+          type="success"
+          show={!!successMessage}
+          onClose={() => setSuccessMessage('')}
+      />
+      <Toast 
+          message={errorMessage}
+          type="danger"
+          show={!!errorMessage}
+          onClose={() => setErrorMessage('')}
+      />
       <h1 className="text-4xl font-bold text-gray-800 pt-24">Settings</h1>
       <div className="mt-4 h-px w-full bg-gray-400"></div>
       <div className="mt-5 flex w-full flex-col md:flex-row gap-x-10 rounded-md p-4 border border-gray-300 bg-white">
@@ -278,6 +321,20 @@ function SettingsPage() {
                     />
                     <input
                       type="text"
+                      value={addressForm.building}
+                      onChange={(e) => setAddressForm({...addressForm, building: e.target.value})}
+                      placeholder="Building (Optional)"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
+                    />
+                    <input
+                      type="text"
+                      value={addressForm.room_number}
+                      onChange={(e) => setAddressForm({...addressForm, room_number: e.target.value})}
+                      placeholder="Room Number (Optional)"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
+                    />
+                    <input
+                      type="text"
                       value={addressForm.street}
                       onChange={(e) => setAddressForm({...addressForm, street: e.target.value})}
                       placeholder="Street Address"
@@ -324,9 +381,11 @@ function SettingsPage() {
                   <div className="space-y-2">
                     {addresses.map(addr => (
                       <div key={addr.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div class="mb-2 md:mb-0">
+                        <div className="mb-2 md:mb-0">
                           <p className="font-medium text-gray-800">{addr.label}</p>
-                          <p className="text-sm text-gray-600">{addr.address}</p>
+                          <p className="text-sm text-gray-600">
+                            {`${addr.building || ''}${addr.room_number ? ' Room ' + addr.room_number : ''}${addr.building || addr.room_number ? ', ' : ''}${addr.street}, ${addr.city}, ${addr.state} ${addr.zip}`}
+                          </p>
                         </div>
                         <button 
                           onClick={() => deleteAddress(addr.id)}

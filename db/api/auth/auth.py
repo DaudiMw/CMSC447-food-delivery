@@ -148,15 +148,21 @@ def is_first_user():
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
                 db : Session = Depends(get_db)):
     
-    try:
         
         user_repo = UserRepository(db)
         user = user_repo.get_by_email(form_data.username)
 
-        if not user or user.is_banned is True or user.is_deleted is True:
+        if not user or user.is_deleted is True:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
+                detail="User not found",
+                headers={"WWW-Authenticate": "Bearer"},
+                )
+        
+        if user.is_banned is True:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="This account has been banned.",
                 headers={"WWW-Authenticate": "Bearer"},
                 )
 
@@ -164,16 +170,13 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         if not verify_password(form_data.password, user.password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
+                detail="Incorrect password",
                 headers={"WWW-Authenticate": "Bearer"},
                 )
         
         token = create_access_token(data={"sub": user.email, "role": user.role.value, "id": user.id})
         # Create an access token for the authenticated user
         return {"access_token": token, "token_type": "bearer"}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error logging in: {e}")
 
 
 @router.post("/signup", response_model=UserCreate, status_code=201)
@@ -183,6 +186,11 @@ async def create_user(user: UserCreate,
     """Create a new user."""
 
     user_repo = UserRepository(db)
+
+    # Check if user already exists
+    existing_user = user_repo.get_by_email(user.email)
+    if existing_user:
+        raise HTTPException(status_code=409, detail="Email already registered")
 
     try:
         # Hash the password before saving

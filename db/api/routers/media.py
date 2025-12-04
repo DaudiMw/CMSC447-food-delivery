@@ -4,6 +4,7 @@ from api.auth.auth import get_current_user, oauth2_scheme
 from database import get_db
 from sqlalchemy.orm import Session
 from api.schemas.user_schemas import UserAuth
+from models import UserRole
 from repositories.media import MediaRepository
 
 
@@ -14,8 +15,8 @@ user_dependency = Annotated[UserAuth, Depends(get_current_user)]
 @router.post("", status_code=201)
 async def upload_media(user: user_dependency, file: UploadFile = File(...), db: Session = Depends(get_db)):
     
-    if not user:
-        raise HTTPException(status_code=403, detail=f"Error uploading file: {e}")
+    if user.role != UserRole.admin and user.role != UserRole.store_owner:
+        raise HTTPException(status_code=403, detail="You do not have permissions to upload an image.")
     
     try:
         contents = await file.read()
@@ -32,7 +33,7 @@ async def upload_media(user: user_dependency, file: UploadFile = File(...), db: 
         return {"media_id": new_media.id}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error uploading file: {e}")
+        raise HTTPException(status_code=500, detail="Unkown server error when uploading an image.")
     
 
 @router.get("/{media_id}/info")
@@ -46,7 +47,7 @@ async def get_media_with_info(media_id: str, db : Session = Depends(get_db)):
         return {"content": content}
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching media content: {e}")
+        raise HTTPException(status_code=500, detail=f"Unkown server error when fetching image info with ID {media_id}.")
     
 
 @router.get("/{media_id}")
@@ -77,8 +78,8 @@ async def get_media(media_id: str, db: Session = Depends(get_db)):
             media_type=content_type
         )
         
-    except HTTPException:
-        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unkown server error when fetching image with ID {media_id}.")
     

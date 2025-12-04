@@ -9,9 +9,15 @@ async function create_store(storeFormData){
             method: 'POST',
             body: storeFormData
         });
-        return response
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Failed to create store');
+        }
+
+        return await response.json();
     } catch (error){
-        console.error(`Error creating store ${error}`);
+        console.error(`Error creating store: ${error.message}`);
         throw error;
     }
 }
@@ -53,7 +59,7 @@ async function get_store(store_id){
  */
 async function get_user_stores(user_id) {
     try{
-        const response = await authFetch(`/stores/${user_id}`)
+        const response = await authFetch(`/stores/users/${user_id}`)
         return response;
     } catch (error){
         console.error('Error fetching store', error);
@@ -73,10 +79,15 @@ async function edit_store(storeFormData, store_id){
             body: storeFormData
         });
 
-        return response;
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Failed to edit store');
+        }
+
+        return await response.json();
 
     } catch (error) {
-        console.error(`Error editing store ${error}`)
+        console.error(`Error editing store: ${error.message}`);
         throw error;
     }
 }

@@ -80,36 +80,44 @@ async def create_order_from_cart(order_data: CreateOrderFromCartSchema, user: us
     
     except Exception as e:
         db.rollback()
+        if isinstance(e, HTTPException):
+            raise e
         # logger.error(f"Error creating order from cart: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Unkown server error when placing order.")
             
 
 @router.patch("/{order_id}/status", response_model=OrderSchema)
 async def update_order_status(order_id: int, status_update: OrderStatusUpdateSchema, user: user_dependency, db: Session = Depends(get_db)):
-    order_repo = OrderRepository(db)
-    order = order_repo.get_by_id(order_id)
+    try:
+        order_repo = OrderRepository(db)
+        order = order_repo.get_by_id(order_id)
 
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
 
-    is_admin = user.role == UserRole.admin
-    is_assigned_dasher = order.dasher_id == user.id
+        is_admin = user.role == UserRole.admin
+        is_assigned_dasher = order.dasher_id == user.id
 
-    if not (is_admin or is_assigned_dasher):
-        raise HTTPException(status_code=403, detail="You do not have permission to update this order's status.")
+        if not (is_admin or is_assigned_dasher):
+            raise HTTPException(status_code=403, detail="You do not have permission to update this order's status.")
 
-    update_data = {
-        "status": OrderStatus(status_update.status),
-        "updated_at": datetime.now()
-    }
-    if OrderStatus(status_update.status) == OrderStatus.accepted:
-        update_data["accepted_at"] = datetime.now()
-    elif OrderStatus(status_update.status) == OrderStatus.completed:
-        update_data["completed_at"] = datetime.now()
-    
-    updated_order = order_repo.update_by_id(order_id, **update_data)
+        update_data = {
+            "status": OrderStatus(status_update.status),
+            "updated_at": datetime.now()
+        }
 
-    return updated_order
+        if OrderStatus(status_update.status) == OrderStatus.accepted:
+            update_data["accepted_at"] = datetime.now()
+        elif OrderStatus(status_update.status) == OrderStatus.completed:
+            update_data["completed_at"] = datetime.now()
+        
+        updated_order = order_repo.update_by_id(order_id, **update_data)
+
+        return updated_order
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unkown server error when updating order with ID {order_id}")  
 
 @router.get("/{order_id}", response_model=OrderSchema)
 async def get_order(order_id: int, token : str = Depends(oauth2_scheme), db : Session = Depends(get_db)):
@@ -117,101 +125,136 @@ async def get_order(order_id: int, token : str = Depends(oauth2_scheme), db : Se
 
     # First make sure that order belongs to the user or they are an admin
 
-    order_repo = OrderRepository(db)
+    try:
 
-    order = order_repo.get_by_id(order_id)
+        order_repo = OrderRepository(db)
 
-    if not order or order.is_deleted: 
-        raise HTTPException(status_code=404, detail="Order not found")
-    
-    user = await get_current_user(token)
+        order = order_repo.get_by_id(order_id)
 
-    if user.id != order.user_id and not admin_required(user):
-        raise HTTPException(status_code=403, detail="You do not have permission to view this order")
-    
-    return order
+        if not order or order.is_deleted: 
+            raise HTTPException(status_code=404, detail="Order not found")
+        
+        user = await get_current_user(token)
+
+        if user.id != order.user_id and not admin_required(user):
+            raise HTTPException(status_code=403, detail="You do not have permission to view this order")
+        
+        return order
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unkown server error when fetching order with ID {order_id}")
+
 
 @router.get("/status/{status}", response_model=list[OrderSchema])
 async def get_order_by_status(status: str, user: user_dependency, db : Session = Depends(get_db)):
     """Get an order by its status."""
 
     order_repo = OrderRepository(db)
-    
     try:
-        status_enum = OrderStatus(status)
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
+        
+        try:
+            status_enum = OrderStatus(status)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
 
-    orders = order_repo.get_by_order_state(status_enum)
+        orders = order_repo.get_by_order_state(status_enum)
 
-    if user.role == UserRole.user:
-        raise HTTPException(status_code=403, detail="You do not have permission to access this")
+        if user.role == UserRole.user:
+            raise HTTPException(status_code=403, detail="You do not have permission to access this")
+        
+        return orders
     
-    return orders
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unknown server error when fetching pickups by status '{status}'.")
+    
 
 @router.get("/users/{user_id}", response_model=list[OrderSchema])
 async def get_order_by_user_id(user_id: str, user: user_dependency, db : Session = Depends(get_db)):
     """Get an order by user ID."""
-    
-    order_repo = OrderRepository(db)
-    order = order_repo.get_by_user_id(user_id)
+    try:
+        order_repo = OrderRepository(db)
+        order = order_repo.get_by_user_id(user_id)
 
-    if user.role != UserRole.admin and user_id != user.id:
-        raise HTTPException(status_code=403, detail="You do not have permission to access this")
+        if user.role != UserRole.admin and user_id != user.id:
+            raise HTTPException(status_code=403, detail="You do not have permission to access this")
+        
+        return order
     
-    return order
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unkown server error when fetching orders by user id: {user_id}")
+
 
 @router.get("/dashers/{dasher_id}", response_model=list[OrderSchema])
 async def get_order_by_dasher_id(dasher_id: str, user: user_dependency, db : Session = Depends(get_db)):
     """Get an order by dasher ID."""
-    
-    order_repo = OrderRepository(db)
-    order = order_repo.get_by_dasher_id(dasher_id)
+    try:
+        order_repo = OrderRepository(db)
+        order = order_repo.get_by_dasher_id(dasher_id)
 
-    if user.role != UserRole.admin and dasher_id != user.id:
-        raise HTTPException(status_code=403, detail="You do not have permission to access this")
+        if user.role != UserRole.admin and dasher_id != user.id:
+            raise HTTPException(status_code=403, detail="You do not have permission to access this")
+        
+        return order
     
-    return order
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unkown server error when fetching orders by dasher id: {dasher_id}")
 
 @router.get("/stores/{store_id}", response_model=list[OrderSchema])
 async def get_store_orders(store_id: int, db: Session = Depends(get_db)):
+    try:
+        order_repo = OrderRepository(db)
 
-    order_repo = OrderRepository(db)
+        order = order_repo.get_by_store_id(store_id)
+        
+        return order
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unkown server error when fetching orders by store id: {store_id}")
 
-    order = order_repo.get_by_store_id(store_id)
-    
-    return order
+
 
 @router.post("", status_code=201, response_model=OrderSchema)
 async def create_order(order: OrderSchema, user: user_dependency, db : Session = Depends(get_db)):
     """Create a new order."""
 
-
-    order_repo = OrderRepository(db)
-
-    order.user_id = user.id
-    order.created_at = str(datetime.now())
-    order.updated_at = str(datetime.now())
-
-    if not admin_required(user) and user.id != order.user_id:
-        raise HTTPException(status_code=403, detail="You do not have permission to create an order for this user")
-    
     try:
-        order = order_repo.create(**order.dict())
+        order_repo = OrderRepository(db)
 
+        order.user_id = user.id
+        order.created_at = str(datetime.now())
+        order.updated_at = str(datetime.now())
+
+        if not admin_required(user) and user.id != order.user_id:
+            raise HTTPException(status_code=403, detail="You do not have permission to create an order for this user")
+        
+        try:
+            order = order_repo.create(**order.dict())
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        
+        return order
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-    return order
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Unkown server error when creating order")
 
 
-@router.patch("/{order_id}", response_model=OrderSchema, status_code=200)
+
+@router.patch("/update/{order_id}", response_model=OrderSchema, status_code=200)
 async def update_order(order_id: int, 
                        user: user_dependency,
                        order_data: OrderUpdateSchema, 
                        db : Session = Depends(get_db)):
     """Update an order by its ID."""
-
     order_repo = OrderRepository(db)
 
     db_order = order_repo.get_by_id(order_id)

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from api.auth.auth import admin_required, get_current_user, is_store_owner
+from api.auth.auth import admin_required, get_current_user
 from repositories.orders import OrderRepository
 from repositories.reports import ReportsRepository
 from repositories.store import StoreRepository
@@ -40,13 +40,13 @@ async def create_report(report: ReportCreateSchema,
         raise HTTPException(status_code=404, detail="Order not found")
     
     try:
-        new_report = reports_repo.create(**(report.dict()), order=order, store=store, user=user)
+        new_report = reports_repo.create(**report.dict(), order=order, store=store, user=user)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
     return new_report
 
-@router.put("/{report_id}", status_code=201, response_model=ReportSchema)
+@router.patch("/{report_id}", status_code=201, response_model=ReportSchema)
 async def post_reply(report: ReportReplySchema,
                         report_id: int,
                         user: user_dependency,
@@ -100,7 +100,7 @@ async def get_report_by_user_id(user_id: str,
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     
-    owners_list = store_repo.check_store_owner(user.id, report.store_id)
+    owners_list = store_repo.check_store_owner(user.id, report[0].store_id)
 
     if user.role != UserRole.admin and not owners_list and report.user_id != user.id and report.dasher_id != user.id:
         raise HTTPException(status_code=401, detail="User is not associated with this order")
@@ -116,9 +116,6 @@ async def get_report_by_store_id(store_id: int,
     reports_repo = ReportsRepository(db)
     store_repo = StoreRepository(db)
     report = reports_repo.get_by_store_id(store_id)
-
-    if not report:
-        raise HTTPException(status_code=404, detail="Report not found")
     
     owners_list = store_repo.check_store_owner(user.id, store_id)
 
