@@ -36,6 +36,7 @@ class OrderStatusUpdateSchema(BaseModel):
     status: str
 
 class OrderShow(BaseSchema):
+    id: int
     address: Address
     status: str
     created_at: datetime

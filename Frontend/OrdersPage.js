@@ -1,4 +1,8 @@
 class OrdersPage extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { selectedOrders: [] }
+    }
     async componentDidMount() {
         const user_id = this.props.match.params.user_id
         
@@ -24,6 +28,8 @@ class OrdersPage extends React.Component {
             const checkbox = document.createElement('input');
             checkbox.className = "ordersCheckbox";
             checkbox.type = "checkbox"
+            checkbox.style.height = "20px"
+            checkbox.style.width = "20px"
             right.appendChild(checkbox);
 
             const middle = document.createElement('div');
@@ -67,10 +73,10 @@ class OrdersPage extends React.Component {
                     <div className="ordersList">
                     </div>
                     <div className="orderButtons">
-                        <button className="cancelOrder hover:scale-105 transition duration:2s">
+                        <button className="cancelOrder hover:scale-105 transition duration:2s" onClick={() => cancel_orders()}>
                             Cancel Orders
                         </button>
-                        <button className="cancelOrder hover:scale-105 transition duration:2s">
+                        <button className="cancelOrder hover:scale-105 transition duration:2s" onClick={() => report_order()}>
                             Report Order
                         </button>
                     </div>
@@ -98,6 +104,33 @@ function getStatusColor(status) {
 async function get_user_order_history(userId) {
     try {
         const response = await authFetch(`/users/${userId}/order-history`, { method: 'GET' });
+        return response;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+async function report_order() {
+
+}
+
+async function cancel_orders() {
+    let checkBoxes = document.getElementsByClassName("ordersCheckbox");
+    let orders = await get_user_order_history(getUserId());
+    if (checkBoxes.length >= 1) {
+        for (let i = 0; i < checkBoxes.length; i++) {
+            if (checkBoxes[i].checked) {
+                delete_order(orders[i].id)
+            }
+        }
+        window.location.reload();
+    }
+}
+
+async function delete_order(orderID) {
+    try {
+        const response = await authFetch(`/orders/${getUserId()}/${orderID}`, { method: 'DELETE' });
         return response;
     } catch (error) {
         console.log(error);
