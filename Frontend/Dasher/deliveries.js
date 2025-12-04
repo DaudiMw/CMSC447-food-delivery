@@ -90,23 +90,23 @@ function Delivery(
   };
 
   return (
-    <tr>
-      <td className="p-2">{order_id}</td>
-      <td className="p-2">{store.name}</td>
-      <td className="p-2">{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
-      <td className="p-2">{dateCreationString}</td>
-      <td className="p-2">{dateAcceptedString}</td>
-      <td className="p-2">{dateCompletionString ? dateCompletionString : 'N/A'}</td>
-      <td className="p-2">{items.map((item, index, array) => 
+    <tr className="p-3 border-b hover:bg-amber-100">
+      <td className="p-3">{order_id}</td>
+      <td className="p-3">{store.name}</td>
+      <td className="p-3">{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
+      <td className="p-3">{dateCreationString}</td>
+      <td className="p-3">{dateAcceptedString}</td>
+      <td className="p-3">{dateCompletionString ? dateCompletionString : 'N/A'}</td>
+      <td className="p-3">{items.map((item, index, array) => 
         {if(index == array.length-1) {
           return (`${item.item.name}: ${item.quantity}`)
         }
         else {
           return (`${item.item.name}: ${item.quantity}, `);
         }})}</td>
-      <td>{order_status}</td>
+      <td className="p-3">{order_status}</td>
 
-      <td className="text-right">
+      <td className="p-3 text-right">
         {showStatusButtons && (
         <button className="btn btn-success" onClick={completeOrder}>
           Complete
@@ -122,7 +122,7 @@ function Delivery(
         </button>
       </td>
 
-      <td>
+      <td className="p-3">
         {showReportContent &&
           (<form onSubmit={submitReport}>
             <label className="form-label">Comment:</label>
@@ -179,18 +179,20 @@ function DeliveriesPage() {
   return (
     <div className="flex min-w-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
       <h1 className="text-4xl font-bold text-gray-800 mb-2">Deliveries</h1>
-      <div className="bg-white rounded-lg border border-gray-300 p-8 flex-auto min-w-max items-center gap-4">
+      <div className="bg-white rounded-lg border border-gray-300 p-8 flex-basis-auto min-w-max items-center gap-4">
         <table className="table-auto w-full border-collapse min-w-[600px]">
         <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Store Name</th>
-            <th>Delivery Address</th>
-            <th>Order Placed</th>
-            <th>Order Accepted</th>
-            <th>Order Completed</th>
-            <th>Items</th>
-            <th>Status</th>
+          <tr className="bg-gray-100">
+            <th className="p-3 text-left font-semibold border-b">Order ID</th>
+            <th className="p-3 text-left font-semibold border-b">Store Name</th>
+            <th className="p-3 text-left font-semibold border-b">Delivery Address</th>
+            <th className="p-3 text-left font-semibold border-b">Order Placed</th>
+            <th className="p-3 text-left font-semibold border-b">Order Accepted</th>
+            <th className="p-3 text-left font-semibold border-b">Order Completed</th>
+            <th className="p-3 text-left font-semibold border-b">Items</th>
+            <th className="p-3 text-left font-semibold border-b">Status</th>
+            <th className="p-3 text-left font-semibold border-b"></th>
+            <th className="p-3 text-left font-semibold border-b"></th>
           </tr>
         </thead>
         <tbody>

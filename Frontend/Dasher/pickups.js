@@ -35,20 +35,20 @@ function Pickup(
   };
 
   return (
-    <tr>
-      <td className="p-2">{order_id}</td>
-      <td className="p-2">{store.name}</td>
-      <td className="p-2">{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
-      <td className="p-2">{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
-      <td className="p-2">{dateString}</td>
-      <td className="p-2">{items.map((item, index, array) => 
+    <tr className="p-3 border-b hover:bg-amber-100">
+      <td className="p-3">{order_id}</td>
+      <td className="p-3">{store.name}</td>
+      <td className="p-3">{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
+      <td className="p-3">{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
+      <td className="p-3">{dateString}</td>
+      <td className="p-3">{items.map((item, index, array) => 
         {if(index == array.length-1) {
           return (`${item.item.name}: ${item.quantity}`)
         }
         else {
           return (`${item.item.name}: ${item.quantity}, `);
         }})}</td>
-      <td className="text-right p-2">
+      <td className="text-right p-3">
         <button className="btn btn-success" onClick={acceptOrder}>
           Accept Pickup
         </button>
@@ -94,17 +94,17 @@ function PickupsPage() {
   return (
     <div className="flex min-w-screen flex-col pt-24 px-4 md:px-10 bg-gray-50">
       <h1 className="text-4xl font-bold text-gray-800 mb-2">Pickups</h1>
-      <div className="bg-white rounded-lg border border-gray-300 p-8 flex-auto min-w-max items-center gap-4">
+      <div className="bg-white rounded-lg border border-gray-300 p-8 flex-basis-auto min-w-max items-center gap-4">
         <table className="table-auto w-full border-collapse min-w-[600px]">
         <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Store Name</th>
-            <th>Store Address</th>
-            <th>Delivery Address</th>
-            <th>Order Placed</th>
-            <th>Items</th>
-            <th></th>
+          <tr className="bg-gray-100">
+            <th className="p-3 text-left font-semibold border-b">Order ID</th>
+            <th className="p-3 text-left font-semibold border-b">Store Name</th>
+            <th className="p-3 text-left font-semibold border-b">Store Address</th>
+            <th className="p-3 text-left font-semibold border-b">Delivery Address</th>
+            <th className="p-3 text-left font-semibold border-b">Order Placed</th>
+            <th className="p-3 text-left font-semibold border-b">Items</th>
+            <th className="p-3 text-left font-semibold border-b"></th>
           </tr>
         </thead>
         <tbody>

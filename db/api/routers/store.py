@@ -194,6 +194,9 @@ async def get_users_stores(user_id: str, user: user_dependency, db: Session = De
     store_repo = StoreRepository(db)
 
     store = store_repo.get_user_stores(user_id)
+    
+    if user.role == UserRole.admin:
+        store = store_repo.get_all()
 
     if user_id != user.id and user.role != UserRole.admin:
         raise HTTPException(status_code=403, detail="You do not have permission to access this")
