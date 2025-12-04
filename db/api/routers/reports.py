@@ -76,9 +76,6 @@ async def get_report_by_order_id(order_id: int,
     reports_repo = ReportsRepository(db)
     store_repo = StoreRepository(db)
     report = reports_repo.get_by_order_id(order_id)
-
-    if not report:
-        raise HTTPException(status_code=404, detail="Report not found")
     
     owners_list = store_repo.check_store_owner(user.id, report.store_id)
 
@@ -96,9 +93,6 @@ async def get_report_by_user_id(user_id: str,
     reports_repo = ReportsRepository(db)
     store_repo = StoreRepository(db)
     report = reports_repo.get_by_user_id(user_id)
-
-    if not report:
-        raise HTTPException(status_code=404, detail="Report not found")
     
     owners_list = store_repo.check_store_owner(user.id, report[0].store_id)
 
