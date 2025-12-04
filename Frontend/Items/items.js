@@ -78,10 +78,12 @@ function ItemForm({ store_id, item: existingItem }) {
 
             if (existingItem) {
                 await edit_item(formData, store_id, existingItem.id);
-                setSuccessMessage('Item updated successfully!');
+                history.push(`/store/${store_id}`)
+                // setSuccessMessage('Item updated successfully!');
             } else {
                 await create_item(formData, store_id);
-                setSuccessMessage('Item created successfully!');
+                history.push(`/store/${store_id}`)
+                // setSuccessMessage('Item created successfully!');
             }
             
             setTimeout(() => {

@@ -66,13 +66,7 @@ function SignupForm(props) {
             
             console.log('Signup successful:', data);
             
-            setSuccess(true);
-            setEmail('');
-            setPassword('');
-            setConfirmPassword('');
-            setFirstName('');
-            setLastName('');
-            setCampusId('');
+            window.location.hash = '#/login';
             
         } catch (error) {
             setError(error.message || 'Signup failed. Please try again.');

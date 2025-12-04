@@ -232,10 +232,12 @@ function getOpenCloseTime(hours) {
   const dayMap = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const currentDay = dayMap[now.getDay()];
 
+  console.log('Current time:', now);
+  console.log('Current day:', currentDay);
+
   for (const dayObj of hours) {
     if (dayObj.day === currentDay) {
       
-      // If either time is null → store is not open today
       if (!dayObj.start_time || !dayObj.end_time) {
         return {
           start_time: null,
@@ -244,12 +246,15 @@ function getOpenCloseTime(hours) {
         };
       }
 
-      // Parse valid times
       const [startHour, startMinute] = dayObj.start_time.split(':').map(Number);
       const [endHour, endMinute] = dayObj.end_time.split(':').map(Number);
 
       const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute);
       const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMinute);
+
+      console.log('Start time:', startTime);
+      console.log('End time:', endTime);
+      console.log('Is open?', now >= startTime && now <= endTime);
 
       return {
         start_time: dayObj.start_time,

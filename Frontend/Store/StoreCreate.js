@@ -87,11 +87,10 @@ function StoreForm({ store: existingStore }) {
 
             if (existingStore) {
                 await edit_store(formData, existingStore.id);
-                setSuccessMessage('Store updated successfully!');
+                history.goBack();
             } else {
                 await create_store(formData);
-                setSuccessMessage(<span>Store created successfully! <a href="#/admin">Go to Admin</a></span>);
-                reset(); // Clear the form on successful creation
+                history.push('/admin');
             }
         } catch (error) {
             // console.error('Failed to save store', error);

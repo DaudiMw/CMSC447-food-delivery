@@ -39,9 +39,9 @@ function Delivery(
 
   const updateOrderMutation = useMutation({
     mutationFn: ({ orderData, order_id }) => update_order(orderData, order_id),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
         query_client.invalidateQueries({ queryKey: ['dasher_id'] });
-        setToast({ show: true, message: `Order ${orderData.status}!`, type: 'success' });
+        setToast({ show: true, message: `Order ${variables.orderData.status}!`, type: 'success' });
     },
     onError: (error) => {
         setToast({ show: true, message: error?.response?.data?.detail || 'Failed to complete order.', type: 'danger' });

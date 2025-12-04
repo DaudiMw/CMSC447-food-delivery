@@ -4,22 +4,10 @@
  * @param {*} store 
  */
 async function create_store(storeFormData){
-    try {
-        const response = await authFetch('/stores',{
-            method: 'POST',
-            body: storeFormData
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || 'Failed to create store');
-        }
-
-        return await response.json();
-    } catch (error){
-        console.error(`Error creating store: ${error.message}`);
-        throw error;
-    }
+    return await authFetch('/stores', {
+        method: 'POST',
+        body: storeFormData
+    });
 }
 
 /**

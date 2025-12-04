@@ -18,7 +18,7 @@ function CartPage() {
             setSuccessMessage('Cart updated successfully.');
         },
         onError: (error) => {
-            setErrorMessage(error.message || 'Failed to update cart.');
+            setErrorMessage(error?.response?.data?.detail || 'Failed to update cart.');
         }
     });
 
@@ -29,7 +29,7 @@ function CartPage() {
             setSuccessMessage('Item removed from cart.');
         },
         onError: (error) => {
-            setErrorMessage(error.message || 'Failed to remove item.');
+            setErrorMessage(error?.response?.data?.detail || 'Failed to remove item.');
         }
     });
 

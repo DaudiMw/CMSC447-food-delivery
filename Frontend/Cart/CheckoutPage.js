@@ -36,7 +36,7 @@ function CheckoutPage() {
             setSuccessMessage('Address added successfully.');
         },
         onError: (error) => {
-            setErrorMessage(`Error adding address: ${error?.response?.data?.detail}`);
+            setErrorMessage(`Error adding address ${error?.response?.data?.detail || ''}`);
         }
     });
 
