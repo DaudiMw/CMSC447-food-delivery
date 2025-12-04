@@ -53,7 +53,7 @@ function AdminPage() {
             setSuccessMessage('Store deleted successfully.');
         },
         onError: (error) => {
-            setErrorMessage(error.message || 'Failed to delete store.');
+            setErrorMessage(error?.response?.data?.detail || 'Failed to delete store.');
         }
     });
 
@@ -65,7 +65,7 @@ function AdminPage() {
             setSuccessMessage('User role updated successfully.');
         },
         onError: (error) => {
-            setErrorMessage(error.message || 'Failed to update user role.');
+            setErrorMessage(error?.response?.data?.detail || 'Failed to update user role.');
         }
     });
 
@@ -83,7 +83,7 @@ function AdminPage() {
             setSuccessMessage('User status updated successfully.');
         },
         onError: (error) => {
-            setErrorMessage(error.message || 'Failed to update user status.');
+            setErrorMessage(error?.response?.data?.detail || 'Failed to update user status.');
         }
     });
 
@@ -96,7 +96,7 @@ function AdminPage() {
             setSuccessMessage('Application handled successfully.');
         },
         onError: (error) => {
-            setErrorMessage(error.message || 'Failed to handle application.');
+            setErrorMessage(error?.response?.data?.detail || 'Failed to handle application.');
         }
     });
 
@@ -169,12 +169,16 @@ function AdminPage() {
     });
 
     const filteredDeliveries = dasherDeliveries.filter(delivery => {
+        const dasherName = delivery.dasher ? `${delivery.dasher.first_name} ${delivery.dasher.last_name}` : '';
+        const customerName = delivery.user ? `${delivery.user.first_name} ${delivery.user.last_name}` : '';
+        const deliveryDate = delivery.completed_at ? delivery.completed_at.split('T')[0] : '';
+
         const matchesSearch = searchQuery === '' || 
-            delivery.dasherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            delivery.customer.toLowerCase().includes(searchQuery.toLowerCase());
+            dasherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            customerName.toLowerCase().includes(searchQuery.toLowerCase());
         
-        const matchesDate = (!startDate || delivery.deliveryDate >= startDate) && 
-                           (!endDate || delivery.deliveryDate <= endDate);
+        const matchesDate = (!startDate || deliveryDate >= startDate) && 
+                           (!endDate || deliveryDate <= endDate);
         
         return matchesSearch && matchesDate;
     });
@@ -479,23 +483,29 @@ function AdminPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredDeliveries.map(delivery => (
-                                            <tr key={delivery.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
-                                                <td className="p-3">{delivery.dasherName}</td>
-                                                <td className="p-3">#{delivery.orderId}</td>
-                                                <td className="p-3">{delivery.customer}</td>
-                                                <td className="p-3">{delivery.store_id}</td>
-                                                <td className="p-3">{delivery.deliveryDate}</td>
-                                                <td className="p-3 font-semibold text-green-600">${delivery.earnings.toFixed(2)}</td>
-                                            </tr>
-                                        ))}
+                                        {filteredDeliveries.map(delivery => {
+                                            const dasherName = delivery.dasher ? `${delivery.dasher.first_name} ${delivery.dasher.last_name}` : 'N/A';
+                                            const customerName = delivery.user ? `${delivery.user.first_name} ${delivery.user.last_name}` : 'N/A';
+                                            const deliveryDate = delivery.completed_at ? new Date(delivery.completed_at).toLocaleDateString() : 'N/A';
+                                            const earnings = delivery.earnings || 0;
+                                            return (
+                                                <tr key={delivery.id} className="border-b hover:bg-amber-100 transition-colors duration-200">
+                                                    <td className="p-3">{dasherName}</td>
+                                                    <td className="p-3">#{delivery.id}</td>
+                                                    <td className="p-3">{customerName}</td>
+                                                    <td className="p-3">{delivery.store.name}</td>
+                                                    <td className="p-3">{deliveryDate}</td>
+                                                    <td className="p-3 font-semibold text-green-600">${earnings.toFixed(2)}</td>
+                                                </tr>
+                                            )
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
                             <div className="mt-4 p-4 bg-gray-100 rounded-lg">
                                 <h3 className="font-semibold text-gray-800 mb-2">Summary</h3>
                                 <p className="text-gray-600">Total Deliveries: {filteredDeliveries.length}</p>
-                                <p className="text-gray-600">Total Earnings: ${filteredDeliveries.reduce((sum, d) => sum + d.earnings, 0).toFixed(2)}</p>
+                                <p className="text-gray-600">Total Earnings: ${filteredDeliveries.reduce((sum, d) => sum + (d.earnings || 0), 0).toFixed(2)}</p>
                             </div>
                         </>
                     )}

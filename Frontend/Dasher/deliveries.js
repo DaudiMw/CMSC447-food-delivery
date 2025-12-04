@@ -15,6 +15,8 @@ function Delivery(
   const [report, setReport] = React.useState(null);
   const [showCompleteButton, setShowCompleteButton] = React.useState(false);
   const [showReportContent, setShowReportContent] = React.useState(false);
+  const [toast, setToast] = React.useState({ show: false, message: '', type: '' });
+
 
   const dateCreationObject = new Date(created_at);
   const dateAcceptedObject = new Date(accepted_at);
@@ -38,18 +40,24 @@ function Delivery(
     mutationFn: ({ orderData, order_id }) => update_order(orderData, order_id),
     onSuccess: () => {
         query_client.invalidateQueries({ queryKey: ['dasher_id'] });
-        alert("Order completed!");
+        setToast({ show: true, message: 'Order completed!', type: 'success' });
     },
+    onError: (error) => {
+        setToast({ show: true, message: error?.response?.data?.detail || 'Failed to complete order.', type: 'danger' });
+    }
   });
 
   const reportOrderMutation = useMutation({
     mutationFn: ({ reportData }) => create_report(reportData),
     onSuccess: () => {
         query_client.invalidateQueries({ queryKey: ['dasher_id'] });
-        alert("Delivery reported!");
+        setToast({ show: true, message: 'Delivery reported!', type: 'success' });
         setShowReportContent(false);
         setReport(null);
     },
+    onError: (error) => {
+        setToast({ show: true, message: error?.response?.data?.detail || 'Failed to report delivery.', type: 'danger' });
+    }
   });
 
   var completeOrder = async () => {
@@ -64,7 +72,8 @@ function Delivery(
     }
   }
 
-  var submitReport = async () => {
+  var submitReport = async (e) => {
+    e.preventDefault();
     if (confirm("Are you sure you want to report this delivery?")) {
       const reportData = {
         user_id,
@@ -77,50 +86,58 @@ function Delivery(
   };
 
   return (
-    <tr>
-      <td>{order_id}</td>
-      <td>{store.name}</td>
-      <td>{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
-      <td>{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
-      <td>{dateCreationString}</td>
-      <td>{dateAcceptedString}</td>
-      <td>{dateCompletionString ? dateCompletionString : 'N/A'}</td>
-      <td>{items.map((item, index, array) => 
-        {if(index == array.length-1) {
-          return (`${item.item.name}: ${item.quantity}`)
-        }
-        else {
-          return (`${item.item.name}: ${item.quantity}, `);
-        }})}</td>
+    <>
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        show={toast.show}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
+      <tr>
+        <td>{order_id}</td>
+        <td>{store.name}</td>
+        <td>{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
+        <td>{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
+        <td>{dateCreationString}</td>
+        <td>{dateAcceptedString}</td>
+        <td>{dateCompletionString ? dateCompletionString : 'N/A'}</td>
+        <td>{items.map((item, index, array) => 
+          {if(index == array.length-1) {
+            return (`${item.item.name}: ${item.quantity}`)
+          }
+          else {
+            return (`${item.item.name}: ${item.quantity}, `);
+          }})}</td>
 
-      <td className="text-right">
-        {showCompleteButton && (
-        <button className="btn btn-action" onClick={completeOrder}>
-          Complete
-        </button>)}
+        <td className="text-right">
+          {showCompleteButton && (
+          <button className="btn btn-action" onClick={completeOrder}>
+            Complete
+          </button>)}
 
-        <button className="btn btn-delete justify-self-end" onClick={() => setShowReportContent(!showReportContent)}>
-          {showReportContent ? 'Cancel' : 'Report'}
-        </button>
-      </td>
+          <button className="btn btn-delete justify-self-end" onClick={() => setShowReportContent(!showReportContent)}>
+            {showReportContent ? 'Cancel' : 'Report'}
+          </button>
+        </td>
 
-      <td>
-        {showReportContent &&
-          (<form onSubmit={submitReport}>
-            <label className="form-label">Comment:</label>
-            <input 
-              type="response" 
-              className="form-control" 
-              value={report}
-              onChange={(e) => setReport(e.target.value)}
-            />
-            <button className="btn btn-action" type="submit">
-              Post
-            </button>
-          </form>)
-        }
-      </td>
-    </tr>
+        <td>
+          {showReportContent &&
+            (<form onSubmit={submitReport}>
+              <label className="form-label">Comment:</label>
+              <input 
+                type="response" 
+                className="form-control" 
+                value={report}
+                onChange={(e) => setReport(e.target.value)}
+              />
+              <button className="btn btn-action" type="submit">
+                Post
+              </button>
+            </form>)
+          }
+        </td>
+      </tr>
+    </>
   );
 }
 

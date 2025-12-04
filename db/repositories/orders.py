@@ -73,7 +73,11 @@ class OrderRepository(BaseRepository[Order]):
         return self.session.query(Order).filter(
             self.model.is_deleted == False,
             self.model.dasher_id != None
-        ).options(joinedload(Order.user), joinedload(Order.items)).all()
+        ).options(
+            joinedload(Order.user),
+            joinedload(Order.items),
+            joinedload(Order.dasher)
+        ).all()
     
 
     

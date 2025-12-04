@@ -12,13 +12,17 @@ function Pickup(
 ) {
   const dateObject = new Date(created_at);
   const dateString = dateObject.toLocaleString();
+  const [toast, setToast] = React.useState({ show: false, message: '', type: '' });
 
   const acceptOrderMutation = useMutation({
     mutationFn: ({ orderData, order_id }) => update_order(orderData, order_id),
     onSuccess: () => {
         query_client.invalidateQueries({ queryKey: ['status'] });
-        alert("Pickup accepted!")
+        setToast({ show: true, message: 'Pickup accepted!', type: 'success' });
     },
+    onError: (error) => {
+        setToast({ show: true, message: error?.response?.data?.detail || 'Failed to accept pickup.', type: 'danger' });
+    }
   });
 
   var acceptOrder = async () => {
@@ -35,25 +39,33 @@ function Pickup(
   };
 
   return (
-    <tr>
-      <td>{order_id}</td>
-      <td>{store.name}</td>
-      <td>{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
-      <td>{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
-      <td>{dateString}</td>
-      <td>{items.map((item, index, array) => 
-        {if(index == array.length-1) {
-          return (`${item.item.name}: ${item.quantity}`)
-        }
-        else {
-          return (`${item.item.name}: ${item.quantity}, `);
-        }})}</td>
-      <td>
-        <button className="btn btn-action" onClick={acceptOrder}>
-          Accept Pickup
-        </button>
-      </td>
-    </tr>
+    <>
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        show={toast.show}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
+      <tr>
+        <td>{order_id}</td>
+        <td>{store.name}</td>
+        <td>{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
+        <td>{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
+        <td>{dateString}</td>
+        <td>{items.map((item, index, array) => 
+          {if(index == array.length-1) {
+            return (`${item.item.name}: ${item.quantity}`)
+          }
+          else {
+            return (`${item.item.name}: ${item.quantity}, `);
+          }})}</td>
+        <td>
+          <button className="btn btn-action" onClick={acceptOrder}>
+            Accept Pickup
+          </button>
+        </td>
+      </tr>
+    </>
   );
 };
 

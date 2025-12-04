@@ -129,6 +129,9 @@ async def get_dasher_deliveries(db: Session = Depends(get_db)):
     try:
         order_repo = OrderRepository(db)
         deliveries = order_repo.get_all_deliveries()
+        # Manually add earnings to each delivery
+        for delivery in deliveries:
+            delivery.earnings = 2.50 # placeholder
         return deliveries
     except Exception as e:
         raise HTTPException(status_code=500, detail="Unkown server error when fetching all dasher deliveries.")

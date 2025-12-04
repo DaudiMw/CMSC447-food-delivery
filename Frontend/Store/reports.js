@@ -33,13 +33,17 @@ function StoreOwnerReport({
   const [response, setReply] = React.useState(null);
   const [replyExists, setReplyExists] = React.useState(false);
   const [showReplyContent, setShowReplyContent] = React.useState(false);
+  const [toast, setToast] = React.useState({ show: false, message: '', type: '' });
 
   const reportReplyMutation = useMutation({
     mutationFn: ({ replyData, report_id }) => update_report(replyData, report_id),
     onSuccess: () => {
         query_client.invalidateQueries({ queryKey: ['report'] });
-        alert("Reply posted!");
+        setToast({ show: true, message: 'Reply posted!', type: 'success' });
     },
+    onError: (error) => {
+        setToast({ show: true, message: error.message || 'Failed to post reply.', type: 'danger' });
+    }
   });
 
   React.useEffect(
@@ -50,44 +54,53 @@ function StoreOwnerReport({
     }
   )
 
-  var handleSubmit = async () => {
+  var handleSubmit = async (e) => {
+    e.preventDefault();
     const replyData = {response: response};
 
     reportReplyMutation.mutate({ replyData, report_id })
   };
 
   return (
-    <tr>
-      <td className="p-2">{report_id}</td>
-      <td className="p-2">{order_id}</td>
-      <td className="p-2">{user_id}</td>
-      <td className="p-2">{store_name}</td>
-      <td className="p-2">{comment}</td>
-      <td className="p-2">{reply}</td>
+    <>
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        show={toast.show}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
+      <tr>
+        <td className="p-2">{report_id}</td>
+        <td className="p-2">{order_id}</td>
+        <td className="p-2">{user_id}</td>
+        <td className="p-2">{store_name}</td>
+        <td className="p-2">{comment}</td>
+        <td className="p-2">{reply}</td>
 
-      <td className="p-2">
-        <button className="btn btn-action" onClick={() => setShowReplyContent(!showReplyContent)}>
-          {replyExists ? 'Edit' : 'Reply'}
-        </button>
-      </td>
+        <td className="p-2">
+          <button className="btn btn-action" onClick={() => setShowReplyContent(!showReplyContent)}>
+            {replyExists ? 'Edit' : 'Reply'}
+          </button>
+        </td>
 
-      <td className="p-2">
-        {showReplyContent &&
-          (<form onSubmit={handleSubmit}>
-            <label className="form-label">Reply:</label>
-            <input 
-              type="response" 
-              className="form-control" 
-              value={response}
-              onChange={(e) => setReply(e.target.value)}
-            />
-            <button className="btn btn-action" type="submit">
-              Post
-            </button>
-          </form>)
-        }
-      </td>
-    </tr>
+        <td className="p-2">
+          {showReplyContent &&
+            (<form onSubmit={handleSubmit}>
+              <label className="form-label">Reply:</label>
+              <input 
+                type="response" 
+                className="form-control" 
+                value={response}
+                onChange={(e) => setReply(e.target.value)}
+              />
+              <button className="btn btn-action" type="submit">
+                Post
+              </button>
+            </form>)
+          }
+        </td>
+      </tr>
+    </>
   );
 }
 
