@@ -14,7 +14,7 @@ from database import get_db
 from models import UserRole
 from typing import Annotated
 from api.auth.auth import oauth2_scheme
-from api.schemas.user_schemas import ApplicationCreate, UserCreate, UserAuth, UserResponse
+from api.schemas.user_schemas import ApplicationCreate, UserCreate, UserAuth, UserResponse, UserUpdate
 from api.schemas.base_schema import Address
 from utils.VerifyAddress import verify_address
 
@@ -48,21 +48,27 @@ async def get_user_profile(user_id: str, current_user: user_dependency, db: Sess
 
 @router.put("/{user_id}", response_model=UserResponse, status_code=200)
 async def update_user(user_id: str, 
+                      update_data: UserUpdate,  # Use the schema
                       user: user_dependency,
-                      db : Session = Depends(get_db)):
+                      db: Session = Depends(get_db)):
     """Update a user by their ID."""
     """Perms: admin, user"""
 
     if user.role != UserRole.admin and user.id != user_id:
         raise HTTPException(status_code=403, detail="You do not have permission to update this user")
     
+    # Prevent non-admins from changing role or ban status
+    if user.role != UserRole.admin:
+        if update_data.role is not None or update_data.is_banned is not None:
+            raise HTTPException(status_code=403, detail="Only admins can change user role or ban status")
+    
     user_repo = UserRepository(db)
-
-    try:
-        user_data = user.dict()
-        updated_user = user_repo.update_by_id(user_id, **user_data)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unknown server error when updating user information with id {user_id}.")
+    
+    user_data = update_data.dict(exclude_unset=True)
+    updated_user = user_repo.update_by_id(user_id, **user_data)
+    
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
     
     return updated_user
 
@@ -223,22 +229,19 @@ async def add_address(user_id: str, address_info: Address, user: user_dependency
     address_repo = AddressRepository(db)
     user_repo = UserRepository(db)
 
-    try:
-        
-        if not verify_address(address_info):
-            raise HTTPException(status_code=400, detail="Address entered is not within UMBC campus.")
-        
-        address_data = address_info.dict(exclude={'id'})
-        address = address_repo.create(**address_data)
-        
-        user = user_repo.get_by_id(user_id)
-        user.addresses.append(address)
-        db.commit()
-
-        return address
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+    if not verify_address(address_info):
+        raise HTTPException(status_code=400, detail="Address entered is not within UMBC campus.")
+    
+    address_data = address_info.dict(exclude={'id'})
+    address = address_repo.create_no_commit(**address_data)
+    
+    user_obj = user_repo.get_by_id(user_id)
+    if not user_obj:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user_obj.addresses.append(address)
+    
+    return address
     
 @router.put("/{user_id}/addresses/{address_id}", response_model=Address, status_code=200)
 async def update_address(user_id: str, address_id: str, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):

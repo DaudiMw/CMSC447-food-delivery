@@ -1,9 +1,13 @@
 const { useState, useEffect } = React;
 const { useForm, useFieldArray } = ReactHookForm;
-const { useParams, useHistory } = ReactRouterDOM;
+const { useParams, useHistory, useLocation } = ReactRouterDOM;
 
 function StoreForm({ store: existingStore }) {
     const history = useHistory();
+    const location = useLocation();
+
+    
+
     const defaultValues = {
         name: existingStore?.name || '',
         description: existingStore?.description || '',
@@ -13,7 +17,7 @@ function StoreForm({ store: existingStore }) {
         state: existingStore?.address?.state || '',
         zip: existingStore?.address?.zip || '',
         building: existingStore?.address?.building || '',
-        room_number: existingStore?.address?.room_number || '',
+        // room_number: existingStore?.address?.room_number || '',
         hours: existingStore?.hours?.length ? existingStore.hours.map(h => ({...h})) : [
             { day: 'Monday', start_time: null, end_time: null },
             { day: 'Tuesday', start_time: null, end_time: null },
@@ -25,7 +29,17 @@ function StoreForm({ store: existingStore }) {
         ]
     };
 
+    
     const { register, handleSubmit, control, formState: { errors, isSubmitting }, watch, reset } = useForm({ defaultValues });
+
+    // Parse query params from the hash
+    const hash = window.location.hash; // e.g., "#/store/5/edit?returnTo=store"
+    const queryString = hash.split('?')[1] || '';
+    const params = new URLSearchParams(queryString);
+    const returnTo = params.get('returnTo');
+    
+    // console.log('Full hash:', hash);
+    // console.log('returnTo:', returnTo);
 
     useEffect(() => {
         if (existingStore) {
@@ -63,36 +77,41 @@ function StoreForm({ store: existingStore }) {
         setServerError(null);
         setSuccessMessage(null);
         try {
-            const formData = new FormData();
-            const storeData = {
-                name: data.name,
-                description: data.description,
-                phone: data.phone,
-                hours: data.hours,
-            };
-            const addressData = {
-                street: data.street,
-                city: data.city,
-                state: data.state,
-                zip: data.zip,
-                building: data.building,
-                room_number: data.room_number,
-            };
+                const formData = new FormData();
+                const storeData = {
+                    name: data.name,
+                    description: data.description,
+                    phone: data.phone,
+                    hours: data.hours,
+                };
+                const addressData = {
+                    street: data.street,
+                    city: data.city,
+                    state: data.state,
+                    zip: data.zip,
+                    building: data.building,
+                    // room_number: data.room_number,
+                };
 
-            formData.append('store', JSON.stringify(storeData));
-            formData.append('address', JSON.stringify(addressData));
+                formData.append('store', JSON.stringify(storeData));
+                formData.append('address', JSON.stringify(addressData));
 
-            if (data.logo && data.logo[0]) formData.append('logo', data.logo[0]);
-            if (data.banner && data.banner[0]) formData.append('banner', data.banner[0]);
+                if (data.logo && data.logo[0]) formData.append('logo', data.logo[0]);
+                if (data.banner && data.banner[0]) formData.append('banner', data.banner[0]);
 
-            if (existingStore) {
-                await edit_store(formData, existingStore.id);
-                history.goBack();
-            } else {
-                await create_store(formData);
-                history.push('/admin');
-            }
-        } catch (error) {
+                if (existingStore) {
+                    await edit_store(formData, existingStore.id);
+                    if (returnTo === 'admin') {
+                        window.location.hash = '#/admin';
+                    } else {
+                        window.location.hash = `#/store/${existingStore.id}`;
+                    }
+                }  else {
+                    await create_store(formData);
+                    setSuccessMessage('Store created successfully!');
+                    window.location.hash = '#/admin';
+                }
+            } catch (error) {
             // console.error('Failed to save store', error);
             // Try multiple paths to find the error detail
             const errorMessage = error?.response?.data?.detail
@@ -168,12 +187,12 @@ function StoreForm({ store: existingStore }) {
                                        className={`w-full px-4 py-2 mt-2 border-2 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] ${errors.building ? 'border-red-500' : 'border-gray-300'}`} />
                                 {errors.building && <p className="text-red-500 text-sm mt-1">{errors.building.message}</p>}
                             </div>
-                            <div>
+                            {/* <div>
                                 <label htmlFor="room_number" className="block text-sm font-medium text-gray-700">Room Number</label>
                                 <input type="text" id="room_number" {...register('room_number', { required: 'Room number is required' })}
                                        className={`w-full px-4 py-2 mt-2 border-2 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] ${errors.room_number ? 'border-red-500' : 'border-gray-300'}`} />
                                 {errors.room_number && <p className="text-red-500 text-sm mt-1">{errors.room_number.message}</p>}
-                            </div>
+                            </div> */}
                             <div>
                                 <label htmlFor="street" className="block text-sm font-medium text-gray-700">Street</label>
                                 <input type="text" id="street" {...register('street', { required: 'Street is required' })}

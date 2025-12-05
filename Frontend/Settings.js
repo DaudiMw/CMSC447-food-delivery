@@ -16,7 +16,7 @@ function SettingsPage() {
   
   // Form state
   const [addressForm, setAddressForm] = React.useState({
-    label: '', street: '', city: '', state: '', zip: '', building: '', room_number: ''
+    street: '', city: '', state: '', zip: '', building: '', room_number: ''
   });
   const [paymentForm, setPaymentForm] = React.useState({
     cardNumber: '', expiry: '', cvv: ''
@@ -30,21 +30,26 @@ function SettingsPage() {
 
   const { data: paymentMethods = [], isLoading: paymentsLoading } = useQuery({
     queryKey: ['paymentMethods'],
-    queryFn: get_payment_methods
+    queryFn: () => get_payment_methods(getUserId())
+  });
+
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => get_user(getUserId())
   });
 
   const { data: settings = {}, isLoading: settingsLoading } = useQuery({
     queryKey: ['settings'],
-    queryFn: get_user_settings
+    queryFn: () => get_user_settings(getUserId())
   });
 
   // Mutations for addresses
   const addAddressMutation = useMutation({
-    mutationFn: add_user_address,
+    mutationFn: (addressData) => add_user_address(getUserId(), addressData),
     onSuccess: (newAddress) => {
       queryClient.setQueryData(['addresses'], (old = []) => [...old, newAddress]);
       setShowAddAddress(false);
-      setAddressForm({ label: '', street: '', city: '', state: '', zip: '' });
+      setAddressForm({ label: '', street: '', city: '', state: '', zip: '', building: '', room_number: '' });
       setSuccessMessage('Address added successfully.');
     },
     onError: (error) => {
@@ -53,7 +58,7 @@ function SettingsPage() {
   });
 
   const deleteAddressMutation = useMutation({
-    mutationFn: delete_user_address,
+    mutationFn: (address_id) => delete_user_address(getUserId(), address_id),
     onSuccess: (_, deletedId) => {
       queryClient.setQueryData(['addresses'], (old = []) => 
         old.filter(addr => addr.id !== deletedId)
@@ -67,7 +72,7 @@ function SettingsPage() {
 
   // Mutations for payment methods
   const addPaymentMutation = useMutation({
-    mutationFn: add_user_payment,
+    mutationFn: (paymentData) => add_user_payment(getUserId(), paymentData),
     onSuccess: (newMethod) => {
       queryClient.setQueryData(['paymentMethods'], (old = []) => [...old, newMethod]);
       setShowAddPayment(false);
@@ -80,7 +85,7 @@ function SettingsPage() {
   });
 
   const deletePaymentMutation = useMutation({
-    mutationFn: delete_payment_method,
+    mutationFn: (payment_method_id) => delete_payment_method(getUserId(), payment_method_id),
     onSuccess: (_, deletedId) => {
       queryClient.setQueryData(['paymentMethods'], (old = []) => 
         old.filter(pm => pm.id !== deletedId)
@@ -94,13 +99,42 @@ function SettingsPage() {
 
   // Mutation for settings
   const updateSettingsMutation = useMutation({
-    mutationFn: update_user_settings,
+    mutationFn: (settingsData) => update_user_settings(getUserId(), settingsData),
     onSuccess: (updatedSettings) => {
       queryClient.setQueryData(['settings'], updatedSettings);
       setSuccessMessage('Settings updated.');
     },
     onError: (error) => {
         setErrorMessage(error.message || 'Failed to update settings.');
+    }
+  });
+
+    // Mutations for email and password changes
+  const updateEmailMutation = useMutation({
+    mutationFn: (emailData) => update_user(getUserId(), emailData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      setSuccessMessage('Email updated successfully!');
+      setShowChangeEmail(false);
+      setNewEmail('');
+      setCurrentPasswordEmail('');
+    },
+    onError: (error) => {
+      setErrorMessage(error.message || 'Failed to update email.');
+    }
+  });
+
+  const updatePasswordMutation = useMutation({
+    mutationFn: (passwordData) => update_user(getUserId(), passwordData),
+    onSuccess: () => {
+      setSuccessMessage('Password updated successfully!');
+      setShowChangePassword(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    },
+    onError: (error) => {
+      setErrorMessage(error.message || 'Failed to update password.');
     }
   });
   
@@ -142,13 +176,12 @@ function SettingsPage() {
     }
 
     addAddressMutation.mutate({
-        label: addressForm.label || null, // Label is optional
         street: addressForm.street,
         city: addressForm.city,
         state: addressForm.state,
         zip: addressForm.zip,
         building: addressForm.building || null, // Building is optional
-        room_number: addressForm.room_number || null, // Room number is optional
+        room_number: addressForm.room_number || null,
     });
     // Clear the form only on success (after mutation.onSuccess)
     // For now, clear it here assuming mutation will eventually succeed and update UI
@@ -177,6 +210,30 @@ function SettingsPage() {
       id: String(getUserId()),
       content: dasherReasoning
     });
+  };
+
+  const handleChangeEmail = () => {
+    if (!newEmail || !currentPasswordEmail) {
+      setErrorMessage('Please fill in both new email and current password.');
+      return;
+    }
+    updateEmailMutation.mutate({ email: newEmail, current_password: currentPasswordEmail });
+  };
+
+  const handleChangePassword = () => {
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      setErrorMessage('Please fill in all password fields.');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setErrorMessage('New password and confirmation do not match.');
+      return;
+    }
+    if (newPassword === currentPassword) {
+      setErrorMessage('New password cannot be the same as the current password.');
+      return;
+    }
+    updatePasswordMutation.mutate({ current_password: currentPassword, password: newPassword });
   };
 
 
@@ -245,19 +302,27 @@ function SettingsPage() {
                     <input
                       type="email"
                       placeholder="New email address"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
                       className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
                     <input
                       type="password"
                       placeholder="Current password"
+                      value={currentPasswordEmail}
+                      onChange={(e) => setCurrentPasswordEmail(e.target.value)}
                       className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
-                    <button className="btn btn-action">
-                      Update Email
+                    <button 
+                      onClick={handleChangeEmail}
+                      disabled={updateEmailMutation.isPending}
+                      className="btn btn-action"
+                    >
+                      {updateEmailMutation.isPending ? 'Updating...' : 'Update Email'}
                     </button>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-600">user@umbc.edu</p>
+                  <p className="text-sm text-gray-600">{currentUser?.email || 'N/A'}</p>
                 )}
               </div>
 
@@ -277,20 +342,30 @@ function SettingsPage() {
                     <input
                       type="password"
                       placeholder="Current password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
                       className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
                     <input
                       type="password"
                       placeholder="New password"
-                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:focus:border-[#fdb515] transition-all"
                     />
                     <input
                       type="password"
                       placeholder="Confirm new password"
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
                       className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
-                    <button className="btn btn-action">
-                      Update Password
+                    <button 
+                      onClick={handleChangePassword}
+                      disabled={updatePasswordMutation.isPending}
+                      className="btn btn-action"
+                    >
+                      {updatePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
                     </button>
                   </div>
                 ) : (
@@ -312,13 +387,7 @@ function SettingsPage() {
                 
                 {showAddAddress && (
                   <div className="mb-4 p-4 bg-gray-50 rounded-lg space-y-3">
-                    <input
-                      type="text"
-                      value={addressForm.label}
-                      onChange={(e) => setAddressForm({...addressForm, label: e.target.value})}
-                      placeholder="Label (e.g., Home, Dorm)"
-                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
-                    />
+
                     <input
                       type="text"
                       value={addressForm.building}
