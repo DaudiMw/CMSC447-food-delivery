@@ -174,3 +174,28 @@ async def get_items_by_order_id(order_id: int,
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=500, detail=f"Unkown server error when fetching items by order with ID {order_id}")
+
+
+@router.delete("/{store_id}/{item_id}", status_code=204)
+async def delete_item_from_store(store_id: int,
+                                 item_id: int,
+                                 user: user_dependency,
+                                 db: Session = Depends(get_db)):
+    """Deletes an item from a specified store."""
+    items_repo = ItemRepository(db)
+    store_repo = StoreRepository(db)
+
+    owners_list = store_repo.check_store_owner(user.id, store_id)
+    if user.role != UserRole.admin and not owners_list:
+        raise HTTPException(status_code=401, detail="User does not own that store")
+        
+    existing_item = items_repo.get_by_id(item_id)
+    if not existing_item or existing_item.store_id != store_id:
+        raise HTTPException(status_code=404, detail="Item not found in this store")
+
+    try:
+        items_repo.delete(item_id)
+        return
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete item: {str(e)}")

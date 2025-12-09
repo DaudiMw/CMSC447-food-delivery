@@ -9,6 +9,20 @@ async function get_user(user_id) {
     }
 }
 
+async function update_user(user_id, userData) {
+    return await authFetch(`/users/${user_id}`, {
+        method: 'PUT',
+        body: JSON.stringify(userData),
+    });
+}
+
+async function change_password(user_id, passwordData) {
+    return await authFetch(`/users/${user_id}/password`, {
+        method: 'POST',
+        body: JSON.stringify(passwordData),
+    });
+}
+
 async function get_user_profile(user_id) {
     try {
         const data = await authFetch(`/users/profile/${user_id}`);
@@ -61,7 +75,7 @@ async function get_user_stores(user_id) {
  */
 async function get_user_addresses(user_id) {
     try{
-        const data = await authFetch(`/users/${user_id}/address`, {
+        const data = await authFetch(`/users/${user_id}/addresses`, {
             method: 'GET'
         });
         return data;
@@ -193,32 +207,6 @@ async function delete_payment_method(user_id, payment_method_id) {
         return data;
     } catch (error){
         console.error('Error deleting payment information: ', error);
-    }
-}
-
-/**
- * Function to get a users' settings
- * @param {*} user_id 
- * @returns 
- */
-async function get_user_settings(user_id){
-    try {
-        const data = await authFetch(`/users/${user_id}/settings`);
-        return data;
-    } catch (error){
-        console.error('Error fetching setting information: ', error);
-    }
-}
-
-
-async function update_user_settings(user_id){
-    try{
-        const data = await authFetch(`/users/${user_id}/settings`,{
-            method: 'PUT'
-        });
-        return data;
-    } catch (error) {
-        console.error('Error updating settings: ', error);
     }
 }
 

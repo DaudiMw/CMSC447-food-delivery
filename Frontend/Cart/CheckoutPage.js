@@ -30,13 +30,18 @@ function CheckoutPage() {
         mutationFn: (addressData) => add_user_address(getUserId(), addressData),
         onSuccess: (newAddress) => {
             queryClient.invalidateQueries({ queryKey: ['addresses'] });
-            setSelectedAddress(String(newAddress.id));
+            
+            // Only set selected address if we got a valid response
+            if (newAddress && newAddress.id) {
+                setSelectedAddress(String(newAddress.id));
+            }
+            
             setShowAddAddressForm(false);
             setNewAddressForm({ building: '', room: '', street: '', city: '', state: '', zip: '' });
             setSuccessMessage('Address added successfully.');
         },
         onError: (error) => {
-            setErrorMessage(`Error adding address ${error?.response?.data?.detail || ''}`);
+            setErrorMessage(`Error adding address: ${error?.response?.data?.detail || error.message || 'Unknown error'}`);
         }
     });
 

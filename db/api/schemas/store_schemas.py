@@ -31,11 +31,11 @@ class StoreCreateSchema(BaseSchema):
     phone: Optional[str] = None
     hours: List[StoreHoursSchema] = []
 
-class StoreFormSchema(BaseSchema):
-    store: StoreCreateSchema
-    address: Address
-    logo: Optional[BLOB]
-    banner: Optional[BLOB]
+# class StoreFormSchema(BaseSchema):
+#     store: StoreCreateSchema
+#     address: Address
+#     logo: Optional[BLOB]
+#     banner: Optional[BLOB]
 
 class StoreUpdateSchema(BaseSchema):
     name: Optional[str] = None

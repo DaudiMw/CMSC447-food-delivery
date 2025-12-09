@@ -13,6 +13,12 @@ function SettingsPage() {
   const [showDasherForm, setShowDasherForm] = React.useState(false);
   const [successMessage, setSuccessMessage] = React.useState('');
   const [errorMessage, setErrorMessage] = React.useState('');
+
+  const [newEmail, setNewEmail] = React.useState('');
+  const [currentPasswordEmail, setCurrentPasswordEmail] = React.useState('');
+  const [currentPassword, setCurrentPassword] = React.useState('');
+  const [newPassword, setNewPassword] = React.useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = React.useState('');
   
   // Form state
   const [addressForm, setAddressForm] = React.useState({
@@ -47,13 +53,38 @@ function SettingsPage() {
   const addAddressMutation = useMutation({
     mutationFn: (addressData) => add_user_address(getUserId(), addressData),
     onSuccess: (newAddress) => {
-      queryClient.setQueryData(['addresses'], (old = []) => [...old, newAddress]);
-      setShowAddAddress(false);
-      setAddressForm({ label: '', street: '', city: '', state: '', zip: '', building: '', room_number: '' });
-      setSuccessMessage('Address added successfully.');
+      // Check if the response is valid before adding it
+      if (newAddress && newAddress.id) {
+        queryClient.setQueryData(['addresses'], (old = []) => [...old, newAddress]);
+        setShowAddAddress(false);
+        // Clear form ONLY on success
+        setAddressForm({ 
+          street: '', 
+          city: '', 
+          state: '', 
+          zip: '', 
+          building: '', 
+          room_number: '' 
+        });
+        setSuccessMessage('Address added successfully.');
+      } else {
+        // If response is invalid, refetch to get the updated list
+        queryClient.invalidateQueries({ queryKey: ['addresses'] });
+        setShowAddAddress(false);
+        setAddressForm({ 
+          street: '', 
+          city: '', 
+          state: '', 
+          zip: '', 
+          building: '', 
+          room_number: '' 
+        });
+        setSuccessMessage('Address added successfully.');
+      }
     },
     onError: (error) => {
-        setErrorMessage(error.message || 'Failed to add address.');
+      setErrorMessage(error.message || 'Failed to add address.');
+      // Form stays populated so user can fix errors
     }
   });
 
@@ -169,23 +200,43 @@ function SettingsPage() {
 
 
   const handleAddAddress = () => {
-    // Validate required fields (street, city, state, zip are always required)
-    if (!addressForm.street || !addressForm.city || !addressForm.state || !addressForm.zip) {
-        setErrorMessage('Please fill in all required address fields (Street, City, State, Zip).');
-        return;
+    // Validate required fields - ADD building to the check
+    if (!addressForm.building || !addressForm.street || !addressForm.city || !addressForm.state || !addressForm.zip) {
+      setErrorMessage('Please fill in all required address fields (Building, Street, City, State, Zip).');
+      return;
     }
 
     addAddressMutation.mutate({
-        street: addressForm.street,
-        city: addressForm.city,
-        state: addressForm.state,
-        zip: addressForm.zip,
-        building: addressForm.building || null, // Building is optional
-        room_number: addressForm.room_number || null,
+      building: addressForm.building,  // No longer null
+      street: addressForm.street,
+      city: addressForm.city,
+      state: addressForm.state,
+      zip: addressForm.zip,
+      room_number: addressForm.room_number || null,
     });
-    // Clear the form only on success (after mutation.onSuccess)
-    // For now, clear it here assuming mutation will eventually succeed and update UI
-    setAddressForm({ label: '', street: '', city: '', state: '', zip: '', building: '', room_number: '' });
+  };
+
+  const handleToggleAddAddress = () => {
+    if (showAddAddress) {
+      // If closing, clear the form
+      handleCancelAddAddress();
+    } else {
+      // If opening, just show it
+      setShowAddAddress(true);
+    }
+  };
+
+  const handleCancelAddAddress = () => {
+    setShowAddAddress(false);
+    // Reset form to initial state
+    setAddressForm({ 
+      street: '', 
+      city: '', 
+      state: '', 
+      zip: '', 
+      building: '', 
+      room_number: '' 
+    });
   };
 
   const handleAddPayment = () => {
@@ -378,7 +429,7 @@ function SettingsPage() {
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-gray-800">Delivery Addresses</h3>
                   <button 
-                    onClick={() => setShowAddAddress(!showAddAddress)}
+                    onClick={handleToggleAddAddress}
                     className="btn btn-action"
                   >
                     {showAddAddress ? 'Cancel' : '+ Add Address'}
@@ -392,14 +443,14 @@ function SettingsPage() {
                       type="text"
                       value={addressForm.building}
                       onChange={(e) => setAddressForm({...addressForm, building: e.target.value})}
-                      placeholder="Building (Optional)"
+                      placeholder="Building"
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
                     <input
                       type="text"
                       value={addressForm.room_number}
                       onChange={(e) => setAddressForm({...addressForm, room_number: e.target.value})}
-                      placeholder="Room Number (Optional)"
+                      placeholder="Room Number"
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#fdb515] focus:border-[#fdb515] transition-all"
                     />
                     <input
@@ -525,7 +576,7 @@ function SettingsPage() {
                   <div className="space-y-2">
                     {paymentMethods.map(pm => (
                       <div key={pm.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div class="mb-2 md:mb-0">
+                        <div className="mb-2 md:mb-0">
                           <p className="font-medium text-gray-800">{pm.type} •••• {pm.last4}</p>
                           <p className="text-sm text-gray-600">Expires {pm.expiry}</p>
                         </div>
@@ -546,7 +597,7 @@ function SettingsPage() {
               <div className="p-4 border-2 border-[#fdb515] rounded-lg bg-orange-50">
                 <div>
                   <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-3">
-                    <div class="mb-2 md:mb-0">
+                    <div className="mb-2 md:mb-0">
                       <h3 className="font-semibold text-gray-800">Become a Dasher</h3>
                       <p className="text-sm text-gray-600">Earn money by delivering orders on campus</p>
                     </div>
@@ -588,7 +639,7 @@ function SettingsPage() {
               {/* Delete Account */}
               <div className="p-4 border-2 border-red-300 rounded-lg bg-red-50">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-                  <div class="mb-2 md:mb-0">
+                  <div className="mb-2 md:mb-0">
                     <h3 className="font-semibold text-red-800">Delete Account</h3>
                     <p className="text-sm text-red-600">Permanently delete your account and all data</p>
                   </div>

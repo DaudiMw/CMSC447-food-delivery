@@ -4,7 +4,9 @@ const { useSuspenseQuery } = window.ReactQuery;
 
 function AdminPage() {
 
-    console.log('AdminPage component is being called!');
+    // console.log('AdminPage component is being called!');
+
+    const history = ReactRouterDOM.useHistory();
 
     const [activeTab, setActiveTab] = React.useState('users');
     const [searchQuery, setSearchQuery] = React.useState('');
@@ -548,7 +550,7 @@ function AdminPage() {
                                                         View
                                                     </button>
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store.id}/edit`; }}
+                                                        onClick={() => window.location.hash = `#/store/${store.id}/edit?returnTo=admin`}
                                                         className="btn btn-edit"
                                                     >
                                                         Update

@@ -21,3 +21,9 @@ async function edit_item(itemData, store_id, item_id) {
 async function get_item(item_id) {
     return await authFetch(`/items/${item_id}`);
 }
+
+async function delete_item(store_id, item_id) {
+    return await authFetch(`/items/${store_id}/${item_id}`, {
+        method: 'DELETE',
+    });
+}

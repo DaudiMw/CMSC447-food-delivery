@@ -241,8 +241,11 @@ async def add_address(user_id: str, address_info: Address, user: user_dependency
     
     user_obj.addresses.append(address)
     
-    return address
+    db.flush()
     
+    return address
+
+
 @router.put("/{user_id}/addresses/{address_id}", response_model=Address, status_code=200)
 async def update_address(user_id: str, address_id: str, address_info: Address, user: user_dependency, db: Session = Depends(get_db)):
     """Update an address for a user."""
@@ -263,7 +266,7 @@ async def update_address(user_id: str, address_id: str, address_info: Address, u
         raise HTTPException(status_code=500, detail=str(e))
     
     
-@router.get("/{user_id}/address", response_model=list[Address])
+@router.get("/{user_id}/addresses", response_model=list[Address])
 async def get_user_addresses(user_id: str, user: user_dependency, db: Session = Depends(get_db)):
     """Get a user's addresses."""
 
@@ -282,7 +285,7 @@ async def get_user_addresses(user_id: str, user: user_dependency, db: Session = 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.delete("/{user_id}/address/{address_id}", status_code=204)
+@router.delete("/{user_id}/addresses/{address_id}", status_code=204)
 async def delete_user_address(user_id: str, address_id: int, user: user_dependency, db: Session = Depends(get_db)):
     """Delete a user's address."""
     user_repo = UserRepository(db)

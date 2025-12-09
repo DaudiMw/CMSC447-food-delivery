@@ -28,7 +28,7 @@ function ItemDisplay({
   });
 
   const deleteItemMutation = useMutation({
-    mutationFn: () => delete_item(item_id),
+    mutationFn: () => delete_item(store_id, item_id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store', store_id] });
       showToast('success', 'Item deleted successfully!');

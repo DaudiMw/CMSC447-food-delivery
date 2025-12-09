@@ -37,9 +37,10 @@ function StoreForm({ store: existingStore }) {
     const queryString = hash.split('?')[1] || '';
     const params = new URLSearchParams(queryString);
     const returnTo = params.get('returnTo');
+
     
-    // console.log('Full hash:', hash);
-    // console.log('returnTo:', returnTo);
+    console.log('Full hash:', hash);
+    console.log('returnTo:', returnTo);
 
     useEffect(() => {
         if (existingStore) {
