@@ -1,6 +1,7 @@
 from datetime import datetime, time
 from typing import List, Optional
-from api.schemas.base_schema import BaseSchema, MediaSchema, Address
+from sqlalchemy import BLOB
+from api.schemas.base_schema import BaseSchema, Address
 from api.schemas.item_schemas import ItemSchema, ItemSchemaWithInfo
 from api.schemas.user_schemas import UserSummary
 
@@ -23,12 +24,18 @@ class StoreInfoSchema(BaseSchema):
 
 class StoreSchema(StoreInfoSchema):
     items: List[ItemSchema] = []
-    
+
 class StoreCreateSchema(BaseSchema):
     name: str
     description: Optional[str] = None
     phone: Optional[str] = None
     hours: List[StoreHoursSchema] = []
+
+# class StoreFormSchema(BaseSchema):
+#     store: StoreCreateSchema
+#     address: Address
+#     logo: Optional[BLOB]
+#     banner: Optional[BLOB]
 
 class StoreUpdateSchema(BaseSchema):
     name: Optional[str] = None
@@ -38,5 +45,6 @@ class StoreUpdateSchema(BaseSchema):
 
 class StoreWithItemsSchema(StoreInfoSchema):
     items: List[ItemSchemaWithInfo] = []
+
 
 

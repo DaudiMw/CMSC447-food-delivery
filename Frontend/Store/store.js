@@ -8,7 +8,7 @@ function ItemDisplay({
   price,
   picture,
   store_id,
-  nutrition_info,
+  item_info,
   showToast,
 }) {
   const [showNutrition, setShowNutrition] = React.useState(false);
@@ -23,6 +23,18 @@ function ItemDisplay({
     },
     onError: (error) => {
       console.error(`Error adding item to cart: ${error.message}`);
+      showToast('danger', `Error: ${error.message}`);
+    }
+  });
+
+  const deleteItemMutation = useMutation({
+    mutationFn: () => delete_item(store_id, item_id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store', store_id] });
+      showToast('success', 'Item deleted successfully!');
+    },
+    onError: (error) => {
+      console.error(`Error deleting item: ${error.message}`);
       showToast('danger', `Error: ${error.message}`);
     }
   });
@@ -65,12 +77,26 @@ function ItemDisplay({
               Details
             </button>
             {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id) === true) && (
-                <button
-                    onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store_id}/item/${item_id}/edit`; }}
-                    className="btn btn-edit"
-                >
-                    Edit
-                </button>
+                <>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); window.location.hash = `#/store/${store_id}/item/${item_id}/edit`; }}
+                        className="btn btn-edit"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm('Are you sure you want to delete this item?')) {
+                                deleteItemMutation.mutate();
+                            }
+                        }}
+                        className="btn btn-danger"
+                        disabled={deleteItemMutation.isLoading}
+                    >
+                        {deleteItemMutation.isLoading ? 'Deleting...' : 'Delete'}
+                    </button>
+                </>
             )}
           </div>
         </div>
@@ -79,7 +105,7 @@ function ItemDisplay({
       {showNutrition && (
         <NutritionModal 
           onClose={() => setShowNutrition(false)} 
-          nutrition_info={nutrition_info}
+          item_info={item_info}
           itemName={name || description}
         />
       )}
@@ -87,27 +113,16 @@ function ItemDisplay({
   );
 }
 
-// ... (NutritionModal and ItemInfoDisplay remain the same)
-function NutritionModal({ onClose, nutrition_info, itemName }) {
-  // The JSX for your modal remains the same
+function NutritionModal({ onClose, item_info, itemName }) {  // Change param name
   const modalContent = (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl mx-4"
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 h-8 w-8 rounded-full text-2xl text-gray-500 transition hover:bg-gray-200 hover:text-gray-800"
-        >
+    <div onClick={onClose} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+      <div onClick={(e) => e.stopPropagation()} className="relative w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl mx-4">
+        <button onClick={onClose} className="absolute top-3 right-3 h-8 w-8 rounded-full text-2xl text-gray-500 transition hover:bg-gray-200 hover:text-gray-800">
           &times;
         </button>
         
         <h3 className="text-2xl font-bold text-gray-900 mb-4">{itemName}</h3>
-        <ItemInfoDisplay nutrition_info={nutrition_info} />
+        <ItemInfoDisplay item_info={item_info} />  {/* Change prop name */}
       </div>
     </div>
   );
@@ -119,8 +134,8 @@ function NutritionModal({ onClose, nutrition_info, itemName }) {
   );
 }
 
-function ItemInfoDisplay({ nutrition_info }) {
-  if (!nutrition_info) {
+function ItemInfoDisplay({ item_info }) {  // Change param name
+  if (!item_info) {
     return (
       <div className="text-center text-gray-500 py-4">
         No nutrition information available
@@ -128,13 +143,13 @@ function ItemInfoDisplay({ nutrition_info }) {
     );
   }
   
-  const excludeFields = ['item_info_id', 'is_deleted'];
+  const excludeFields = ['item_info_id', 'is_deleted', 'id'];  // Add 'id' to exclude
   
   return (
     <div className="space-y-2 text-sm">
       <h4 className="font-semibold text-lg mb-4">Nutrition Facts</h4>
       <div className="space-y-2">
-        {Object.entries(nutrition_info)
+        {Object.entries(item_info)
           .filter(([key]) => !excludeFields.includes(key))
           .map(([key, value]) => {
             const label = key.split('_').map(word => 
@@ -205,7 +220,7 @@ function ItemList({ data, showToast }) {
                     price={item.price}
                     picture={item.picture_id}
                     store_id={item.store_id}
-                    nutrition_info={item.nutrition_info}
+                    item_info={item.item_info}  // Change from nutrition_info to item_info
                     showToast={showToast}
                   />
                 ))}
@@ -270,6 +285,7 @@ function getOpenCloseTime(hours) {
 function StorePage() {
   const { store_id } = ReactRouterDOM.useParams();
   const [toastInfo, setToastInfo] = React.useState({ show: false, message: '', type: '' });
+  const history = ReactRouterDOM.useHistory();
 
   const { data: store = {}, isLoading: storeLoading, error: storeError, refetch: storeRefetch } = window.ReactQuery.useQuery({
     queryKey: ['store', store_id],
@@ -353,7 +369,7 @@ function StorePage() {
             </p>
           </div>
           {(getUserRole() === "admin" || checkStoreOwnership(getUserId(), store_id) === true) && (
-            <button className="btn btn-edit mt-5" onClick ={() => window.location.hash = `#/store/${store_id}/edit`}>Edit Store Info</button>
+            <button className="btn btn-edit mt-5" onClick={() => window.location.hash = `#/store/${store_id}/edit?returnTo=store`}>Edit Store Info</button>
           )}
         </div>
       </div>

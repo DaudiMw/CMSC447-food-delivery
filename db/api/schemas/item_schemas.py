@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from api.schemas.base_schema import BaseSchema
 
 class ItemSchema(BaseSchema):
@@ -26,7 +26,10 @@ class ItemInfoSchema(BaseSchema):
     ingredients: str | None = None
 
 class ItemSchemaWithInfo(ItemSchema):
-    nutrition_info: Optional[ItemInfoSchema] = None
+    nutrition_info: Optional[ItemInfoSchema] = Field(None, alias='item_info')
+    
+    class Config:
+        populate_by_name = True  # This allows both 'nutrition_info' and 'item_info' to work
 
 
 class ItemCreateSchema(BaseSchema):

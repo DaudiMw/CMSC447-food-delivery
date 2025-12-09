@@ -56,6 +56,16 @@ class DasherApplicationSchema(BaseSchema):
 class UpdateUserRole(BaseSchema):
     user_role: str
 
+class UserUpdate(BaseSchema):
+    campus_id: Optional[str]
+    email: Optional[str]
+    password: Optional[str]
+    first_name: Optional[str]
+    last_name: Optional[str]
+    role: Optional[UserRole]
+    is_banned: Optional[bool]
+
+
 
 
 

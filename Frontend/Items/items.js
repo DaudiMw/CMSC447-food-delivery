@@ -77,25 +77,25 @@ function ItemForm({ store_id, item: existingItem }) {
             }
 
             if (existingItem) {
-                await edit_item(formData, store_id, existingItem.id);
-                history.push(`/store/${store_id}`)
-                // setSuccessMessage('Item updated successfully!');
-            } else {
-                await create_item(formData, store_id);
-                history.push(`/store/${store_id}`)
-                // setSuccessMessage('Item created successfully!');
-            }
-            
-            setTimeout(() => {
-                history.push(`/store/${store_id}`);
-            }, 2000);
+            console.log('Updating item...');
+            await edit_item(formData, store_id, existingItem.id);
+            console.log('Item updated successfully');
+            window.location.hash = `#/store/${store_id}`;  // Navigate immediately
+        } else {
+            console.log('Creating item...');
+            await create_item(formData, store_id);
+            console.log('Item created successfully');
+            window.location.hash = `#/store/${store_id}`;  // Navigate immediately
+        }
 
         } catch (error) {
             console.error('Failed to save item', error);
-            setServerError(error.message || 'An unexpected error occurred.');
+            console.error('Error details:', error.response);
+            const errorMessage = error?.response?.data?.detail || error.message || 'An unexpected error occurred.';
+            setServerError(errorMessage);
         }
     };
-    
+        
     return (
         <div className="flex min-h-screen flex-col items-center justify-center pt-24 px-4 md:px-10 bg-gray-50">
             <Toast

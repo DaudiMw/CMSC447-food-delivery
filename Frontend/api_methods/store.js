@@ -62,17 +62,21 @@ async function get_user_stores(user_id) {
  */
 async function edit_store(storeFormData, store_id){
     try{
-        const response = await authFetch(`/stores/${store_id}`, {
+        return await authFetch(`/stores/${store_id}`, {
             method: 'PUT',
             body: storeFormData
-        });
+        })
+        // const response = await authFetch(`/stores/${store_id}`, {
+        //     method: 'PUT',
+        //     body: storeFormData
+        // });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || 'Failed to edit store');
-        }
+        // if (!response.ok) {
+        //     const errorData = response;
+        //     throw new Error(errorData.detail || 'Failed to edit store');
+        // }
 
-        return await response.json();
+        // return response;
 
     } catch (error) {
         console.error(`Error editing store: ${error.message}`);

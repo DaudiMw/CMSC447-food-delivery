@@ -87,9 +87,9 @@ async def create_store(user: user_dependency,
             #     logger.error(f"Time parsing error: {ve}, start_time={hour.start_time}, end_time={hour.end_time}")
             #     raise HTTPException(status_code=400, detail=f"Invalid time format: {str(ve)}")
             
-            new_store_hours.append(StoreHours(day=hour.day, start_time=hour.start_time, end_time=hour.end_time))
+            new_store_hours.append(StoreHours(day=hour.day, start_time=hour.start_time, end_time=hour.end_time, is_deleted=False))
 
-        created_store = store_repo.create(**new_store_data, hours=new_store_hours)
+        created_store = store_repo.create_no_commit(**new_store_data, hours=new_store_hours)
 
         return created_store
     
@@ -149,13 +149,12 @@ async def update_store(store_id: int,
                 # Delete existing hours
                 for hour in existing_store.hours:
                     db.delete(hour)
-                db.flush()
                 # Create new hours
                 new_hours = []
                 for hour_data in store_schema.hours:
                     # start_time = time.fromisoformat(hour_data.start_time) if hour_data.start_time else None
                     # end_time = time.fromisoformat(hour_data.end_time) if hour_data.end_time else None
-                    new_hours.append(StoreHours(store_id=store_id, day=hour_data.day, start_time=hour_data.start_time, end_time=hour_data.end_time))
+                    new_hours.append(StoreHours(store_id=store_id, day=hour_data.day, start_time=hour_data.start_time, end_time=hour_data.end_time, is_deleted=False))
                 existing_store.hours = new_hours
 
         # Update Media (Logo and Banner)
@@ -176,12 +175,9 @@ async def update_store(store_id: int,
                 new_banner = media_repo.create_no_commit(media_data=media_data, filename=banner.filename)
                 existing_store.banner_id = new_banner.id
 
-        db.commit()
-        db.refresh(existing_store)
         return existing_store
 
     except Exception as e:
-        db.rollback()
         if isinstance(e, HTTPException):
             raise e
         # logger.error(f"Store creation error: {str(e)}", exc_info=True)
@@ -242,9 +238,9 @@ async def get_store_items_full(store_id: int, db: Session = Depends(get_db)):
         
         return store
     
-    except HTTPException:
-        raise
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(status_code=500, detail=f"Unkown server error when fetching a stores items with store ID {store_id}")
     
 @router.get("/{store_id}/items", response_model=list[ItemSchema])
