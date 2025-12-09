@@ -49,8 +49,10 @@ function Pickup(
     <tr className="p-3 border-b hover:bg-amber-100">
       <td className="p-3">{order_id}</td>
       <td className="p-3">{store.name}</td>
-      <td className="p-3">{`${store.address.street}, ${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
-      <td className="p-3">{`${address.street}, ${address.city}, ${address.state} ${address.zip}`}</td>
+      <td className="p-3">{`${store.address.building}, ${store.address.street},`} <br/>
+                          {`${store.address.city}, ${store.address.state} ${store.address.zip}`}</td>
+      <td className="p-3">{`${address.building}, ${address.street},`} <br/>
+                          {`${address.city}, ${address.state} ${address.zip}`}</td>
       <td className="p-3">{dateString}</td>
       <td className="p-3">{items.map((item, index, array) => 
         {if(index == array.length-1) {
