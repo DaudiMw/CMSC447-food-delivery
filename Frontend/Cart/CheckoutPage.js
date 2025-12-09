@@ -120,7 +120,7 @@ function CheckoutPage() {
     }
 
     const subtotal = cart.items.reduce((total, cartItem) => total + cartItem.item.price * cartItem.quantity, 0);
-    const deliveryFee = 5.99;
+    const deliveryFee = subtotal * 0.2;
     const tax = subtotal * 0.08;
     const total = subtotal + deliveryFee + tax;
 
@@ -387,7 +387,7 @@ function CheckoutPage() {
                                     <span>${subtotal.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">
-                                    <span>Delivery Fee</span>
+                                    <span>Delivery Fee (20%)</span>
                                     <span>${deliveryFee.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">

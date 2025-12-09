@@ -44,7 +44,11 @@ class OrdersPage extends React.Component {
             status.style.color = getStatusColor(element.status);
             info.appendChild(status);
             const total = document.createElement('div');
-            total.textContent = "Total: $" + element.items.reduce((acc, orderItem) => acc + orderItem.item.price * orderItem.quantity, 0).toFixed(2);
+            let orderCost = element.items.reduce((acc, orderItem) => acc + orderItem.item.price * orderItem.quantity, 0);
+            let deliveryFee = (orderCost * 0.2);
+            let tax = (orderCost * 0.08);
+            let orderTotal = (orderCost + deliveryFee + tax).toFixed(2);
+            total.textContent = "Total: $" + orderTotal;
             total.style.color = "white"
             info.appendChild(total);
             const arrivalTime = document.createElement('div');
@@ -112,7 +116,24 @@ async function get_user_order_history(userId) {
 }
 
 async function report_order() {
-
+    let checkBoxes = Array.from(document.getElementsByClassName("ordersCheckbox"));
+    let orders = await get_user_order_history(getUserId());
+    if (checkBoxes.filter(e => e.checked).length != 1) {
+        return;
+    }
+    let report = window.prompt("What is the issue?", "");
+    console.log("User response: \""+report+"\"");
+    if (report != null) {
+        let order = orders[checkBoxes.indexOf(checkBoxes.filter(e => e.checked)[0])]
+        console.log(order)
+        const reportData = {
+            user_id: getUserId(),
+            order_id: order.id,
+            store_id: order.store.id,
+            comment: report
+        };
+        create_report(reportData);
+    }
 }
 
 async function cancel_orders() {
